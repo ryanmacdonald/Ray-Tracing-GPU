@@ -1,6 +1,6 @@
 CC=vcs
 
-FLAGS=-sverilog -debug
+FLAGS=-sverilog -debug_all
 
 default: trtr.sv
 	$(CC) $(FLAGS) trtr.sv
