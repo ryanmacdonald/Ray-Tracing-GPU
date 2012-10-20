@@ -10,6 +10,12 @@ class ray_class;
 
 endclass
 */
+typedef struct {
+  shortreal x;
+  shortreal y;
+  shortreal z;
+} vectorf_t;
+
 
 module tb_int_math();
   logic clk;
@@ -17,21 +23,21 @@ module tb_int_math();
 
   logic v0, v1, v2;
 
-  int_cacheline_t tri0_cacheline;
-  triID_t tri0_ID;
-  int_cacheline_t tri1_cacheline;
-  triID_t tri1_ID;
-  ray_t ray_in;
+   logic valid_in;
+   int_cacheline_t tri0_cacheline;
+   int_cacheline_t tri1_cacheline;
+   int_pipe1_t int_pipe1_in;
 
-  logic hit_out;  // 1 if hit (valid ray/intersection)
-  ray_t ray_out;
-  intersection_t intersection_out;
-  float_t tMax;
-  
-  ray_t EM_ray_out;   // Early Miss Ray
-  ray_t EM_miss;      // 1 if miss, (valid missed ray)
+   logic valid_out;
+   logic hit_out;  // 1 if hit
+   ray_t ray_out;
+   intersection_t intersection_out;
+  // float_t tMax;
 
-  
+  // Early Miss s
+   ray_t EM_ray_out;   // Early Miss Ray
+   ray_t EM_miss ;     // 1 if miss; 0 if hit
+ 
 
   int_math int_math_inst(.*);
   
@@ -62,40 +68,60 @@ module tb_int_math();
   int row;
   int col;
   rayID_t rayID;
-  vector_t A1,B1,C1,A2,B2,C2;
-  vector_t dir;
+  vectorf_t A0,B0,C0,A1,B1,C1;
   initial begin
     
     rayID = 0;
-    row = 0;
-    col = 0;
-    pix_width = 10.0/480.0;
-    dir = create_vec(0.0,0.0,1.0);
-    A1 = create_vec(-2.0,3.0,5.0);
-    B1 = create_vec(-2.0,-2.0, 5.0);
-    C1 = create_vec(2.0,3.0,5.0);
+    A0 = create_vecf(0.5, 3, 4);
+    B0 = create_vecf(3.5, 6, 4);
+    C0 = create_vecf(3, 1.5, 4);
 
-    A2 = create_vec(2.0,-3.0,5.0);
-    B2 = create_vec(2.0,2.0, 5.0);
-    C2 = create_vec(-1.0,-3.0,5.0);
-    tri0_cacheline = create_int_cacheline(A1,B1,C1);
-    tri1_cacheline = create_int_cacheline(A2,B2,C2);
+    A1 = create_vecf(1.5, 1, 2);
+    B1 = create_vecf(4.5, 3.5, 2);
+    C1 = create_vecf(5, 0.5, 2);
+    tri0_cacheline = create_int_cacheline(A0,B0,C0);
+    tri1_cacheline = create_int_cacheline(A1,B1,C1);
+    int_pipe1_in.tri1_valid = 
+    int_pipe1_in.t_min = 
+    int_pipe1_in.t_max = 
+    int_pipe1_in.tri0_ID = 
+    int_pipe1_in.tri1_ID = 
+    int_pipe1_in.ray = 'h0;
     @(posedge clk);
     
-    for(int i=0; i<20; i++) begin
-      @(posedge clk);
-      // want to send out new rays on v0 (1/3 cycles)
-      if(v0) begin
+    for(shortreal r=0; r<=3; r +=1 ) begin
+      for(shortreal c=0; c<=3; c+=1) begin
+        ray_t ray;
+        ray.dir = create_vec(0,0,1);
+        ray,origin = create_vec(c,r,0);
         ray.rayID = rayID;
-        ray.dir = dir;
-        ray.origin = create_vec(row*pix_width,col*pix_width,0.0);
-        ray_in <= ray;
-        rayID += 1'b1;
-        row += 1;
+        rayID += 1;
+        @(posedge v0);
+        send_ray(ray);
       end
     end
-
+    repeat(50) @(posedge clk);
+    $finish;
   end
+
+  // assumes it is called during v0
+  task automatic send_ray(ray_t ray);
+    ray_t tmp_ray = ray;
+    ray_in <= ray;
+    valid_in <= 1'b1;
+    @(posedge clk);
+    ray_in <= 'h0;
+    valid_in <= 1'b0;
+  endtask
+
+  function vectorf_t create_vecf(shortreal x, shortreal y, shortreal z);
+    vectorf_t vec;
+    vec.x = x;
+    vec.y = y;
+    vec.z = z;
+    return vec;
+  endfunction
+
 
   function vector_t create_vec(shortreal x, shortreal y, shortreal z);
     vector_t vec;
@@ -164,22 +190,23 @@ module tb_int_math();
     $display("%f %f %f %f\n",b41,b42,b43,b44);
   */
 
-    c.matrix.m11 = b11;
-    c.matrix.m12 = b12;
-    c.matrix.m13 = b13;
-    c.matrix.m21 = b21;
-    c.matrix.m22 = b22;
-    c.matrix.m23 = b23;
-    c.matrix.m31 = b31;
-    c.matrix.m32 = b32;
-    c.matrix.m33 = b33;
-    c.translate.x = b14;
-    c.translate.y = b24;
-    c.translate.z = b34;
+    c.matrix.m11 = $shortrealtobits(b11);
+    c.matrix.m12 = $shortrealtobits(b12);
+    c.matrix.m13 = $shortrealtobits(b13);
+    c.matrix.m21 = $shortrealtobits(b21);
+    c.matrix.m22 = $shortrealtobits(b22);
+    c.matrix.m23 = $shortrealtobits(b23);
+    c.matrix.m31 = $shortrealtobits(b31);
+    c.matrix.m32 = $shortrealtobits(b32);
+    c.matrix.m33 = $shortrealtobits(b33);
+    c.translate.x = $shortrealtobits(b14);
+    c.translate.y = $shortrealtobits(b24);
+    c.translate.z = $shortrealtobits(b34);
 
     return c;
   endfunction
 
+  // HOLY SHIT COOL 
   function shortreal sqrt(shortreal arg);
     shortreal error, result_new;
     shortreal result = 1.0;

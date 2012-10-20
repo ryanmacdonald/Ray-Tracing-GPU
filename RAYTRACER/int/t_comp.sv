@@ -114,7 +114,7 @@ module t_comp(
   ff_ar_en #(1,'h0) t_sel_f_inst(.d(t_sel), .q(t_sel_f1), .en(v1), .clk, .rst);
   
   // triID_f1
-  ff_ar_en #($bits(triID_t),'h0) t_triID_f(.d(triID), .q(triID_f), .en(v1), .clk, .rst);
+  ff_ar_en #($bits(triID_t),'h0) t_triID_f(.d(triID), .q(triID_f1), .en(v1), .clk, .rst);
 
   // t_min_f1
   ff_ar_en #($bits(float_t),'h0) t_min_f(.d(int_pipe1_in.t_min), .q(t_min_f1), .en(v1), .clk, .rst);
