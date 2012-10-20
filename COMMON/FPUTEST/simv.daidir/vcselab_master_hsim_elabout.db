@@ -1,5 +1,5 @@
 hsDirType                          	1
-fHsimDesignHasDebugNodes           	31
+fHsimDesignHasDebugNodes           	0
 fNSParam                           	1024
 fHsimDelayGateMbme                 	0
 fNoMergeDelays                     	0
@@ -160,7 +160,7 @@ fHsimMdbNewDebugOpt                	0
 fHsimMdbNewDebugOptExitOnError     	1
 fHsimNewDebugOptMemDiag            	0
 hsGlobalVerboseLevel               	0
-fHsimEnableSeqUdpWrite             	1
+fHsimEnableSeqUdpWrite             	0
 fEnableNewFinalStrHash             	0
 fEnableNewAssert                   	0
 fRunDbgDmma                        	0

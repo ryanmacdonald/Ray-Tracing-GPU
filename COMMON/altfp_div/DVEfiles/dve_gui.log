@@ -1,0 +1,69 @@
+
+Chronologic VCS simulator copyright 1991-2012
+Contains Synopsys proprietary information.
+Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 19 17:32 2012
+VCD+ Writer F-2011.12-SP1 Copyright (c) 1991-2012 by Synopsys Inc.
+The file '/afs/ece.cmu.edu/usr/rgd/545/18-545/COMMON/altfp_div/inter.vpd' was opened successfully.
+dve> dump -add / -depth 0
+1
+dve> run
+220model.v, 1 : //-------------------------------------------------------------------------
+$finish called from file "RAYTRACER/int/TBs/tb_tuv_calc.sv", line 73.
+$finish at simulation time                  610
+Simulation complete, time is 610 ps.
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 610 ps
+CPU Time:      0.090 seconds;       Data structure size:   0.3Mb
+Fri Oct 19 17:32:26 2012
+With selected criteria, DVE has found 'results at time 40
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 50
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 60
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 70
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 80
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 90
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 100
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 110
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 120
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 130
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 140
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 150
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 160
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 170
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 180
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 190
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 200
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 210
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 220
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 230
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 240
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 250
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 260
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 270
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 280
+    tb_tuv_calc.clk'.
+With selected criteria, DVE has found 'results at time 290
+    tb_tuv_calc.clk'.

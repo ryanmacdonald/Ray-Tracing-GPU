@@ -31,14 +31,7 @@ _vcsobj_1_1.o : _vcsobj_1_1.a
 
 	@$(AR) -s excl_vcsobj_0_1.a
 
-VCS_INCR_OBJS=pre_vcsobj_0_1.o pre_vcsobj_1_1.o 
-
-pre_vcsobj_0_1.o : pre_vcsobj_0_1.a
-	@$(AR) -s $<
-	ld -r -m elf_i386 -o $@ --whole-archive $< --no-whole-archive
-
-pre_vcsobj_1_1.o : pre_vcsobj_1_1.a
-	ld -r -m elf_i386 -o $@ --whole-archive $< --no-whole-archive
+VCS_INCR_OBJS=
 
 
 

@@ -2,8 +2,25 @@ CC=vcs
 
 FLAGS=-sverilog -debug_all
 
+
+
 default: trtr.sv
 	$(CC) $(FLAGS) trtr.sv
+
+prime_calc:
+	$(CC) $(FLAGS) -top tb_prime_calc COMMON/*v COMMON/altfp_mult/*.v COMMON/altfp_add/*.v RAYTRACER/int/prime_calc.sv RAYTRACER/int/TBs/tb_prim_calc.sv
+
+
+tuv_calc: 
+	$(CC) $(FLAGS) -top tb_tuv_calc COMMON/*v COMMON/sim_lib/altera_mf.v COMMON/altfp*/*.v COMMON/altfp_comp/altfp_comp.v RAYTRACER/int/tuv_calc.sv RAYTRACER/int/TBs/tb_tuv_calc.sv
+
+t_comp: 
+	$(CC) $(FLAGS) -top tb_t_comp COMMON/*v COMMON/altfp_comp/altfp_comp.v RAYTRACER/int/p_calc.sv RAYTRACER/int/t_comp.sv RAYTRACER/int/TBs/tb_t_comp.sv
+
+int_math: 
+	$(CC) $(FLAGS) -top int_math COMMON/*v COMMON/altfp*/*.v RAYTRACER/int/*.sv
+
+
 
 clean:
 	rm -rf simv

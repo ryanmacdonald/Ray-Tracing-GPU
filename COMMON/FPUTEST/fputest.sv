@@ -107,7 +107,7 @@ module fputest();
   // mult flags
   logic nan_mult, overflow_mult, underflow_mult, zero_mult;
 
-  altfp_add_sua add1(
+  altfp_add add1(
   .aclr(aclr ),
   .clock(clock ),
   .dataa(dataa ),
@@ -126,7 +126,7 @@ module fputest();
   .aeb(aeb ),
 	agb);
 */
-
+/*
   altfp_dia div1 (
   .aclr(aclr ),
   .clock(clock ),
@@ -150,5 +150,5 @@ module fputest();
   .result(result_mult ),
   .underflow(underflow_mult ),
 	.zero(zero_mult));
-
+*/
 endmodule
