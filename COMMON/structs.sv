@@ -24,7 +24,7 @@ typedef struct packed {
 } triID_t;
 
 typedef struct packed {
-  logic [7:0] ID;
+  logic [18:0] ID;
 } rayID_t;
 
 typedef struct packed {
