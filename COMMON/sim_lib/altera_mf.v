@@ -36608,12 +36608,12 @@ module altmult_add (    dataa,
                                      (coefsel3_register == "UNREGISTERED") ? 1'b0:
                                      (coefsel3_register == "CLOCK1") ? clock1 :
                                      (coefsel3_register == "CLOCK2") ? clock2 : 1'b0;                                                                                                                                                     
-  logic systolic1_reg_wire_clk; // TODO
+  wire  systolic1_reg_wire_clk; // 
 	assign systolic1_reg_wire_clk =  (systolic_delay1 == "CLOCK0") ? clock0 :
                                      (systolic_delay1 == "UNREGISTERED") ? 1'b0:
                                      (systolic_delay1 == "CLOCK1") ? clock1 :
                                      (systolic_delay1 == "CLOCK2") ? clock2 : 1'b0;                                                                                                                                                                                          
-  logic systolic3_reg_wire_clk; //TODO
+  wire  systolic3_reg_wire_clk; //
 	assign systolic3_reg_wire_clk =  (systolic_delay3 == "CLOCK0") ? clock0 :
                                      (systolic_delay3 == "UNREGISTERED") ? 1'b0:
                                      (systolic_delay3 == "CLOCK1") ? clock1 :
@@ -37021,12 +37021,12 @@ module altmult_add (    dataa,
                                     (coefsel3_register == "UNREGISTERED") ? 1'b1:
                                     (coefsel3_register == "CLOCK1") ? ena1:
                                     (coefsel3_register == "CLOCK2") ? ena2: 1'b1;                                                                                                                                                                                        
-  logic systolic1_reg_wire_en; // TODO
+  wire  systolic1_reg_wire_en; // 
 	assign systolic1_reg_wire_en =  (systolic_delay1 == "CLOCK0") ? ena0:
                                     (systolic_delay1 == "UNREGISTERED") ? 1'b1:
                                     (systolic_delay1 == "CLOCK1") ? ena1:
                                     (systolic_delay1 == "CLOCK2") ? ena2: 1'b1;                                                                                                                                                                                        
-  logic systolic3_reg_wire_en; // TODO                     
+  wire  systolic3_reg_wire_en; //                      
 	assign systolic3_reg_wire_en =  (systolic_delay3 == "CLOCK0") ? ena0:
                                     (systolic_delay3 == "UNREGISTERED") ? 1'b1:
                                     (systolic_delay3 == "CLOCK1") ? ena1:
@@ -37443,12 +37443,12 @@ module altmult_add (    dataa,
 	assign coeffseld_reg_wire_clr =  (coefsel3_aclr == "ACLR0") ? aclr0 :
                                      (coefsel3_aclr == "NONE") ? 1'b0:
                                      (coefsel3_aclr == "ACLR1") ? aclr1 : 1'b0;                                                                                                                                                        
-  logic systolic1_reg_wire_clr; //TODO                                   
+  wire  systolic1_reg_wire_clr; //                                   
 	assign systolic1_reg_wire_clr =  (systolic_aclr1 == "ACLR0") ? aclr0 :
                                      (systolic_aclr1 == "NONE") ? 1'b0:
                                      (systolic_aclr1 == "ACLR1") ? aclr1 : 1'b0;                                                                                                                                                                                             
                                      
-  logic systolic3_reg_wire_clr; //TODO                                   
+  wire  systolic3_reg_wire_clr; //                                   
 	assign systolic3_reg_wire_clr =  (systolic_aclr3 == "ACLR0") ? aclr0 :
                                      (systolic_aclr3 == "NONE") ? 1'b0:
                                      (systolic_aclr3 == "ACLR1") ? aclr1 : 1'b0;                                                                                                                                                                                                                                  
