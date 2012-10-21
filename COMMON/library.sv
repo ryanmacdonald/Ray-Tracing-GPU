@@ -101,4 +101,58 @@ module range_check
     assign is_between = ((val >= low) && (val <= high)) ? 1'b1 : 1'b0;
 
 endmodule
+
+module sync_to_v
+  #(parameter V=0) (
+  output logic synced_signal,
+  input logic clk, rst,
+  input logic v0,v1,v2,
+  input logic signal_to_sync );
+
+  logic [1:0] CS, NS;
+  
+  logic d0, d1, d2;
+  always_comb begin
+    case(V)
+      2'b00 : begin
+        d0 = v0;
+        d1 = v2;
+        d2 = v1;
+      end
+      2'b01 : begin
+        d0 = v1;
+        d1 = v0;
+        d2 = v2;
+      end
+      2'b10 : begin
+        d0 = v2;
+        d1 = v1;
+        d2 = v0;
+      end
+    endcase
+  end
+
+  always_comb begin
+    synced_signal = 1'b0;
+    NS = 2'b00;
+    case(CS)
+      2'b00 : begin
+        if(signal_to_sync) begin
+          synced_signal = d0;
+          NS = d2 ? 2'b10 : (d1 ? 2'b01 : 2'b00);
+        end
+      end
+      2'b01 : begin
+        NS = 2'b00;
+        synced_signal = 1'b1;
+      end
+      2'b10 : begin
+        NS = 2'b10;
+      end
+    endcase
+  end
+
+  ff_ar #(2,2'b00) ff(.q(CS), .d(NS), .clk, .rst);
+
+endmodule
 `endif
