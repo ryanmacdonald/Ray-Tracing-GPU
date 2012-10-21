@@ -1,12 +1,15 @@
 # Begin_DVE_Session_Save_Info
 # DVE restart session
-# Saved on Sun Oct 14 23:35:55 2012
+# Saved on Sat Oct 20 17:30:50 2012
 # Designs open: 1
 #   Sim: /afs/ece.cmu.edu/usr/rgd/545/18-545/simv
-# Toplevel windows open: 1
+# Toplevel windows open: 2
 # 	TopLevel.1
-#   Source.1: _vcs_unit__2482561988
-#   Group count = 0
+# 	TopLevel.2
+#   Source.1: _vcs_unit__1901605189
+#   Wave.1: 16 signals
+#   Group count = 1
+#   Group Group1 signal count = 16
 # End_DVE_Session_Save_Info
 
 # DVE version: F-2011.12-SP1
@@ -41,9 +44,23 @@ gui_sync_global -id ${TopLevel.1} -option true
 # MDI window settings
 set DLPane.1 DLPane.1
 set Data.1 Data.1
-gui_update_layout -id ${DLPane.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_data_colvariable 316} {child_data_colvalue 200} {child_data_coltype 151} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
+gui_update_layout -id ${DLPane.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_data_colvariable 370} {child_data_colvalue 248} {child_data_coltype 281} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
 set Source.1 Source.1
 gui_update_layout -id ${Source.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false}}
+
+# End MDI window settings
+
+
+# Create and position top-level windows :TopLevel.2
+
+set TopLevel.2 TopLevel.2
+
+# Docked window settings
+gui_sync_global -id ${TopLevel.2} -option true
+
+# MDI window settings
+set Wave.1 Wave.1
+gui_update_layout -id ${Wave.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_wave_left 442} {child_wave_right 1076} {child_wave_colname 219} {child_wave_colvalue 219} {child_wave_col1 0} {child_wave_col2 1}}
 
 # End MDI window settings
 
@@ -69,13 +86,16 @@ gui_update_layout -id ${Source.1} {{show_state maximized} {dock_state undocked} 
 
 # Global: Signal Groups
 
+set Group1 Group1
+gui_sg_create ${Group1}
+gui_sg_addsignal -group ${Group1} { tb_int_math.clk tb_int_math.rst tb_int_math.v0 tb_int_math.v1 tb_int_math.v2 tb_int_math.valid_in tb_int_math.int_pipe1_in tb_int_math.valid_out tb_int_math.hit_out tb_int_math.ray_out tb_int_math.intersection_out tb_int_math.EM_ray_out tb_int_math.EM_miss tb_int_math.t_int_f tb_int_math.bary_u_f tb_int_math.bary_v_f }
 
 # Global: Highlighting
 
 # Post database loading setting...
 
 # Restore C1 time
-gui_set_time -C1_only 340
+gui_set_time -C1_only 990
 
 
 
@@ -99,14 +119,16 @@ gui_show_window -window ${Hier.1}
 gui_list_set_filter -id ${Hier.1} -list { {Package 1} {All 0} {Process 1} {UnnamedProcess 1} {Function 1} {Block 1} {OVA Unit 1} {LeafScCell 1} {LeafVlgCell 1} {Interface 1} {PowSwitch 0} {LeafVhdCell 1} {$unit 1} {NamedBlock 1} {Task 1} {VlgPackage 1} {IsoCell 0} {ClassDef 1} }
 gui_list_set_filter -id ${Hier.1} -text {*}
 gui_change_design -id ${Hier.1} -design Sim
-catch {gui_list_select -id ${Hier.1} {tb_prime_calc}}
+catch {gui_list_select -id ${Hier.1} {tb_int_math}}
 gui_view_scroll -id ${Hier.1} -vertical -set 0
 gui_view_scroll -id ${Hier.1} -horizontal -set 0
 
 # Data 'Data.1'
-gui_list_set_filter -id ${Data.1} -list { {Buffer 0} {Input 1} {Others 0} {Linkage 0} {Output 1} {Parameter 0} {All 0} {Aggregate 0} {Event 0} {Assertion 0} {Constant 0} {Interface 0} {Signal 0} {$unit 0} {Inout 0} {Variable 0} }
+gui_list_set_filter -id ${Data.1} -list { {Buffer 1} {Input 1} {Others 1} {Linkage 1} {Output 1} {Parameter 1} {All 1} {Aggregate 1} {Event 1} {Assertion 1} {Constant 1} {Interface 1} {Signal 1} {$unit 1} {Inout 1} {Variable 1} }
 gui_list_set_filter -id ${Data.1} -text {*}
-gui_list_show_data -id ${Data.1} {tb_prime_calc}
+gui_list_show_data -id ${Data.1} {tb_int_math}
+gui_show_window -window ${Data.1}
+catch { gui_list_select -id ${Data.1} {tb_int_math.valid_in tb_int_math.ray_out tb_int_math.EM_miss tb_int_math.valid_out tb_int_math.v0 tb_int_math.v1 tb_int_math.v2 tb_int_math.int_pipe1_in tb_int_math.hit_out tb_int_math.intersection_out tb_int_math.clk tb_int_math.bary_u_f tb_int_math.bary_v_f tb_int_math.t_int_f tb_int_math.rst tb_int_math.EM_ray_out }}
 gui_view_scroll -id ${Data.1} -vertical -set 0
 gui_view_scroll -id ${Data.1} -horizontal -set 0
 gui_view_scroll -id ${Hier.1} -vertical -set 0
@@ -115,14 +137,49 @@ gui_view_scroll -id ${Hier.1} -horizontal -set 0
 # Source 'Source.1'
 gui_src_value_annotate -id ${Source.1} -switch false
 gui_set_env TOGGLE::VALUEANNOTATE 0
-gui_open_source -id ${Source.1}  -replace -active _vcs_unit__2482561988 /afs/ece.cmu.edu/usr/rgd/545/18-545/COMMON/220model.v
+gui_open_source -id ${Source.1}  -replace -active _vcs_unit__1901605189 /afs/ece.cmu.edu/usr/rgd/545/18-545/COMMON/220model.v
 gui_view_scroll -id ${Source.1} -vertical -set 0
 gui_src_set_reusable -id ${Source.1}
+
+# View 'Wave.1'
+gui_wv_sync -id ${Wave.1} -switch false
+set groupExD [gui_get_pref_value -category Wave -key exclusiveSG]
+gui_set_pref_value -category Wave -key exclusiveSG -value {false}
+set origWaveHeight [gui_get_pref_value -category Wave -key waveRowHeight]
+gui_list_set_height -id Wave -height 25
+set origGroupCreationState [gui_list_create_group_when_add -wave]
+gui_list_create_group_when_add -wave -disable
+gui_wv_zoom_timerange -id ${Wave.1} 0 352
+gui_list_add_group -id ${Wave.1} -after {New Group} {Group1}
+gui_seek_criteria -id ${Wave.1} {Any Edge}
+
+
+
+gui_set_env TOGGLE::DEFAULT_WAVE_WINDOW ${Wave.1}
+gui_set_pref_value -category Wave -key exclusiveSG -value $groupExD
+gui_list_set_height -id Wave -height $origWaveHeight
+if {$origGroupCreationState} {
+	gui_list_create_group_when_add -wave -enable
+}
+if { $groupExD } {
+ gui_msg_report -code DVWW028
+}
+gui_list_set_filter -id ${Wave.1} -list { {Buffer 1} {Input 1} {Others 1} {Linkage 1} {Output 1} {Parameter 1} {All 1} {Aggregate 1} {Event 1} {Assertion 1} {Constant 1} {Interface 1} {Signal 1} {$unit 1} {Inout 1} {Variable 1} }
+gui_list_set_filter -id ${Wave.1} -text {*}
+gui_list_set_insertion_bar  -id ${Wave.1} -group Group1  -position in
+
+gui_marker_move -id ${Wave.1} {C1} 990
+gui_view_scroll -id ${Wave.1} -vertical -set 0
+gui_show_grid -id ${Wave.1} -enable false
 # Restore toplevel window zorder
 # The toplevel window could be closed if it has no view/pane
+if {[gui_exist_window -window ${TopLevel.2}]} {
+	gui_set_active_window -window ${TopLevel.2}
+	gui_set_active_window -window ${Wave.1}
+}
 if {[gui_exist_window -window ${TopLevel.1}]} {
 	gui_set_active_window -window ${TopLevel.1}
-	gui_set_active_window -window ${Source.1}
+	gui_set_active_window -window ${DLPane.1}
 	gui_set_active_window -window ${Console.1}
 }
 #</Session>

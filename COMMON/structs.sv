@@ -1,3 +1,5 @@
+
+
 `ifndef STRUCTS_SV
 `define STRUCTS_SV
 
@@ -67,7 +69,6 @@ typedef struct packed {
 typedef struct packed {
   logic tri1_valid;
   float_t t_max;
-  float_t t_min;
   triID_t tri0_ID;
   triID_t tri1_ID;
   ray_t ray;
@@ -75,12 +76,14 @@ typedef struct packed {
 
 
 typedef struct packed {
-  float_t t_int;
-  logic t_hit;
-  logic t_sel;
-  triID_t triID;
+  float_t t_int0;
+  float_t t_int1;
+  logic t_sel; // triangle value that has smaller tint
+  logic t_val0;
+  logic t_val1;
+  triID_t tri0_ID;
+  triID_t tri1_ID;
   float_t t_max;
-  float_t t_min;
   ray_t ray;
 } int_pipe2_t;
 

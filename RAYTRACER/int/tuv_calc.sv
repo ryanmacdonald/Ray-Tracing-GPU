@@ -165,7 +165,7 @@ module tuv_calc(
   assign inA_comp0 = out_add1;
   assign inB_comp0 = `FP_0;
   
-  altfp_comp comp0 (
+  altfp_compare comp0 (
   .aclr(rst),
   .clock(clk ),
   .dataa(inA_comp0 ),
@@ -178,7 +178,7 @@ module tuv_calc(
   assign inA_comp1 = `FP_1;
   assign inB_comp1 = out_add2;
   
-  altfp_comp comp1 (
+  altfp_compare comp1 (
   .aclr(rst),
   .clock(clk ),
   .dataa(inA_comp1 ),

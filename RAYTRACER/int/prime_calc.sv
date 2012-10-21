@@ -7,14 +7,11 @@
   Outputs Z then Y then X
 
 */
-`default_nettype none
 /*
 `ifndef PRIME_CALC_SV
 `define PRIME_CALC_SV
 */
 
-
-`include "/afs/ece.cmu.edu/usr/rgd/545/18-545/COMMON/altfp_add/altfp_add.v"
 
 module prime_calc(
   input clk,

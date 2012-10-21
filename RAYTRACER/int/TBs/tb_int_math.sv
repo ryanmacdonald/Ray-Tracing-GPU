@@ -36,7 +36,7 @@ module tb_int_math();
 
   // Early Miss s
    ray_t EM_ray_out;   // Early Miss Ray
-   ray_t EM_miss ;     // 1 if miss; 0 if hit
+   logic EM_miss ;     // 1 if miss; 0 if hit
  
 
   int_math int_math_inst(.*);
@@ -63,14 +63,10 @@ module tb_int_math();
 
   
   // Create an arbitrary ray every v0 cycle.
-  ray_t ray;
-  shortreal pix_width;
-  int row;
-  int col;
   rayID_t rayID;
   vectorf_t A0,B0,C0,A1,B1,C1;
   initial begin
-    
+    valid_in = 0;
     rayID = 0;
     A0 = create_vecf(0.5, 3, 4);
     B0 = create_vecf(3.5, 6, 4);
@@ -81,19 +77,18 @@ module tb_int_math();
     C1 = create_vecf(5, 0.5, 2);
     tri0_cacheline = create_int_cacheline(A0,B0,C0);
     tri1_cacheline = create_int_cacheline(A1,B1,C1);
-    int_pipe1_in.tri1_valid = 
-    int_pipe1_in.t_min = 
-    int_pipe1_in.t_max = 
-    int_pipe1_in.tri0_ID = 
-    int_pipe1_in.tri1_ID = 
+    int_pipe1_in.tri1_valid = 1'b1;
+    int_pipe1_in.t_max = $shortrealtobits(14);
+    int_pipe1_in.tri0_ID = 0;
+    int_pipe1_in.tri1_ID = 1;
     int_pipe1_in.ray = 'h0;
     @(posedge clk);
     
-    for(shortreal r=0; r<=3; r +=1 ) begin
-      for(shortreal c=0; c<=3; c+=1) begin
+    for(shortreal r=0; r<=6; r +=1 ) begin
+      for(shortreal c=0; c<=6; c+=1) begin
         ray_t ray;
         ray.dir = create_vec(0,0,1);
-        ray,origin = create_vec(c,r,0);
+        ray.origin = create_vec(c,r,0);
         ray.rayID = rayID;
         rayID += 1;
         @(posedge v0);
@@ -107,12 +102,30 @@ module tb_int_math();
   // assumes it is called during v0
   task automatic send_ray(ray_t ray);
     ray_t tmp_ray = ray;
-    ray_in <= ray;
+    int_pipe1_in.ray <= ray;
     valid_in <= 1'b1;
     @(posedge clk);
-    ray_in <= 'h0;
+    int_pipe1_in.ray <= 'h0;
     valid_in <= 1'b0;
   endtask
+
+  always @(posedge valid_out) begin
+    #1;
+    $display("\nRAY %d was a %s",ray_out.rayID, hit_out ? "HIT!!" : "MISS");
+    $display("\t hit tri%1b at t=%f",intersection_out.triID, t_int_f);
+    $display("\t bary = (%f,%f)",bary_u_f,bary_v_f);
+  end
+
+
+  shortreal t_int_f;
+  shortreal bary_u_f;
+  shortreal bary_v_f;
+  always_comb begin
+    t_int_f = $bitstoshortreal(intersection_out.t_int);
+    bary_u_f = $bitstoshortreal(intersection_out.uv.u);
+    bary_v_f = $bitstoshortreal(intersection_out.uv.v);
+  end
+
 
   function vectorf_t create_vecf(shortreal x, shortreal y, shortreal z);
     vectorf_t vec;
@@ -133,21 +146,39 @@ module tb_int_math();
 
 
   // Creates the cacheline based off of 3 triangle coordinates
-  function int_cacheline_t create_int_cacheline(input vector_t A, input vector_t B, input vector_t C);
+  function int_cacheline_t create_int_cacheline(input vectorf_t A, input vectorf_t B, input vectorf_t C);
     shortreal a11, a12, a13, a14;
     shortreal a21, a22, a23, a24;
     shortreal a31, a32, a33, a34;
     shortreal a41, a42, a43, a44;
-    shortreal det;
+    shortreal b11, b12, b13, b14;
+    shortreal b21, b22, b23, b24;
+    shortreal b31, b32, b33, b34;
+    shortreal b41, b42, b43, b44;
+    shortreal det, inv_det;
     int_cacheline_t c;
     vector_t N;
+    shortreal N_norm;
+    
     N.x = (C.y - A.y)*(B.z - A.z) - (C.z - A.z)*(B.y - A.y);
     N.y = (C.z - A.z)*(B.x - A.x) - (C.x - A.x)*(B.z - A.z);
     N.z = (C.x - A.x)*(B.y - A.y) - (C.y - A.y)*(B.x - A.x);
-    shortreal N_norm = sqrt(N.x*N.x + N.y+N.y + N.z*N.z);
+    
+
+    
+
+    N_norm = sqrt(N.x*N.x + N.y*N.y + N.z*N.z);
     N.x = N.x / N_norm;
     N.y = N.y / N_norm;
     N.z = N.z / N_norm;
+
+    /*
+    $display("Triangle A,B,C");
+    $display("\tA = (%f,%f,%f)",A.x,A.y,A.z);
+    $display("\tB = (%f,%f,%f)",B.x,B.y,B.z);
+    $display("\tC = (%f,%f,%f)",C.x,C.y,C.z);
+    $display("\tN = (%f,%f,%f)",N.x,N.y,N.z);
+    */
 
     a11 = A.x-C.x; a12 = B.x-C.x; a13 = N.x-C.x; a14 = C.x;
     a21 = A.y-C.y; a22 = B.y-C.y; a23 = N.y-C.y; a24 = C.y;
@@ -163,7 +194,7 @@ module tb_int_math();
           a12*a21*a33*a44 - a12*a23*a34*a41 - a12*a24*a31*a43 - 
           a13*a21*a34*a42 - a13*a22*a31*a44 - a13*a24*a32*a41 - 
           a14*a21*a32*a43 - a14*a22*a33*a41 - a14*a23*a31*a42 ;
-    
+    inv_det = 1.0/det;
 
 		b11 = inv_det * (a22*a33*a44 + a23*a34*a42 + a24*a32*a43 - a22*a34*a43 - a23*a32*a44 - a24*a33*a42) ;
 		b12 = inv_det * (a12*a34*a43 + a13*a32*a44 + a14*a33*a42 - a12*a33*a44 - a13*a34*a42 - a14*a32*a43) ;
@@ -181,9 +212,7 @@ module tb_int_math();
     b42 = 0;
     b43 = 0;
     b44 = 1;
-
 /*
-    $display("Inverse Matrix =");
     $display("%f %f %f %f\n",b11,b12,b13,b14);
     $display("%f %f %f %f\n",b21,b22,b23,b24);
     $display("%f %f %f %f\n",b31,b32,b33,b34);
@@ -202,6 +231,7 @@ module tb_int_math();
     c.translate.x = $shortrealtobits(b14);
     c.translate.y = $shortrealtobits(b24);
     c.translate.z = $shortrealtobits(b34);
+    
 
     return c;
   endfunction
@@ -212,7 +242,7 @@ module tb_int_math();
     shortreal result = 1.0;
     error = 1.0;
     while(error > 0.0001) begin
-      result_new = argument/2.0/result + result/2.0;
+      result_new = arg/2.0/result + result/2.0;
       error = (result_new - result)/result;
       if(error < 0.0) error = -error;
       result = result_new;
