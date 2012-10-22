@@ -90,24 +90,14 @@ typedef struct packed {
 
 // for each key, key[0] is the press pulse and key[1] is release pulse
 typedef struct packed {
-  logic [1:0] space;
-  logic [1:0] up;
-  logic [1:0] down;
-  logic [1:0] left;
-  logic [1:0] right;
-  logic [1:0] lshift;
-  logic [1:0] z;
-  logic [1:0] enter;
-  logic [1:0] c;
-  logic [1:0] r;
-  logic [1:0] p;
-  logic [1:0] plus;
-  logic [1:0] h;
+  logic [1:0] q;
+  logic [1:0] w;
+  logic [1:0] e;
+  logic [1:0] a;
   logic [1:0] s;
-  logic [1:0] esc;
-  logic [1:0] f;
   logic [1:0] d;
-
+  logic pressed;
+  logic released;
 } keys_t;
 
 

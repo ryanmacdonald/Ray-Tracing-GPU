@@ -96,23 +96,14 @@ module ps2_parse(clk, rst_b, ps2_pkt_DH, rec_ps2_pkt, keys);
   always_comb begin
     keys_i = 'h0;
     if(parse_pkt) begin
+      keys_i.pressed = ~F0_seen;
+      keys_i.released = F0_seen;
       case({E0_seen,ps2_pkt_DH})
-        9'h029 : keys_i.space = {F0_seen,~F0_seen};
-        9'h175 : keys_i.up = {F0_seen,~F0_seen};
-        9'h172 : keys_i.down = {F0_seen,~F0_seen};
-        9'h16B : keys_i.left = {F0_seen,~F0_seen};
-        9'h174 : keys_i.right = {F0_seen,~F0_seen};
-        9'h012 : keys_i.lshift = {F0_seen,~F0_seen};
-        9'h01A : keys_i.z = {F0_seen,~F0_seen};
-        9'h05A : keys_i.enter = {F0_seen,~F0_seen};
-        9'h021 : keys_i.c = {F0_seen,~F0_seen};
-        9'h02D : keys_i.r = {F0_seen,~F0_seen};
-        9'h04D : keys_i.p = {F0_seen,~F0_seen};
-        9'h079 : keys_i.plus = {F0_seen,~F0_seen};
-        9'h033 : keys_i.h = {F0_seen,~F0_seen};
+        9'h015 : keys_i.q = {F0_seen,~F0_seen};
+        9'h01D : keys_i.w = {F0_seen,~F0_seen};
+        9'h024 : keys_i.e = {F0_seen,~F0_seen};
+        9'h01C : keys_i.a = {F0_seen,~F0_seen};
         9'h01B : keys_i.s = {F0_seen,~F0_seen};
-        9'h076 : keys_i.esc = {F0_seen,~F0_seen};
-        9'h02B : keys_i.f = {F0_seen,~F0_seen};
         9'h023 : keys_i.d = {F0_seen,~F0_seen};
         default : ;
       endcase
