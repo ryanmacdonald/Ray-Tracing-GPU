@@ -5,8 +5,13 @@
 `define screen_height 480 
 `define num_rays 307200
 
+// defines for -w/2 and -h/2
 `define half_screen_width  32'hC3A00000
 `define half_screen_height 32'hC3700000
+
+// D = 6 for now
+`define D		   32'h40C00000
+
 
 // -frame_done asserted from FBH
 // -output rayReady asserted every three cycles when
@@ -15,7 +20,7 @@ module prg(input logic clk, rst,
 	   input logic v0, v1, v2,
 	   input logic start,
 	   input vector_t E, U, V, W,
-	   input float_t D, pw,
+	   input float_t pw,
 	   output logic rayReady, done,
 	   output ray_t prg_data);
 
