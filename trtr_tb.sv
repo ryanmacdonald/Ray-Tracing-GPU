@@ -50,6 +50,7 @@ module trtr_tb;
     logic [7:0] message [128];
 
     initial begin
+
         switches <= 18'b0;
         btns <= 4'b1111;
         rx_pin <= 1'b1;
