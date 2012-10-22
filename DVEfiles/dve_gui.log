@@ -1,196 +1,761 @@
 
 Chronologic VCS simulator copyright 1991-2012
 Contains Synopsys proprietary information.
-Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 20 21:46 2012
+Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 21 22:24 2012
 VCD+ Writer F-2011.12-SP1 Copyright (c) 1991-2012 by Synopsys Inc.
-The file '/afs/ece.cmu.edu/usr/rgd/545/18-545/inter.vpd' was opened successfully.
+The file '/afs/ece.cmu.edu/usr/rmacdona/18-545/inter.vpd' was opened successfully.
+1
+dve> run
+220model.v, 1 : //-------------------------------------------------------------------------
+                   0 
+ray_t(0) rayID =      x
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                   5 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                  25 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                  35 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                  45 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                  95 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                 105 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                 125 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                 135 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                 185 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 1120403456.000000
+                 295 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 3278897152.000000
+data.dir.z = 1120403456.000000
+                 315 
+ray_t(0) rayID =      0
+data.dir.x = 3282042880.000000
+data.dir.y = 3278897152.000000
+data.dir.z = 1120403456.000000
+                 415 
+ray_t(0) rayID =      0
+data.dir.x = 3282042880.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 445 
+ray_t(1) rayID =      0
+data.dir.x = 3282042880.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 455 
+ray_t(0) rayID =      1
+data.dir.x = 3282042880.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 465 
+ray_t(0) rayID =      1
+data.dir.x = 3282010112.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 475 
+ray_t(1) rayID =      1
+data.dir.x = 3282010112.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 485 
+ray_t(0) rayID =      2
+data.dir.x = 3282010112.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 495 
+ray_t(0) rayID =      2
+data.dir.x = 3281977344.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 505 
+ray_t(1) rayID =      2
+data.dir.x = 3281977344.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 515 
+ray_t(0) rayID =      3
+data.dir.x = 3281977344.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 525 
+ray_t(0) rayID =      3
+data.dir.x = 3281944576.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 535 
+ray_t(1) rayID =      3
+data.dir.x = 3281944576.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 545 
+ray_t(0) rayID =      4
+data.dir.x = 3281944576.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 555 
+ray_t(0) rayID =      4
+data.dir.x = 3281911808.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 565 
+ray_t(1) rayID =      4
+data.dir.x = 3281911808.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 575 
+ray_t(0) rayID =      5
+data.dir.x = 3281911808.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 585 
+ray_t(0) rayID =      5
+data.dir.x = 3281879040.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 595 
+ray_t(1) rayID =      5
+data.dir.x = 3281879040.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 605 
+ray_t(0) rayID =      6
+data.dir.x = 3281879040.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 615 
+ray_t(0) rayID =      6
+data.dir.x = 3281846272.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 625 
+ray_t(1) rayID =      6
+data.dir.x = 3281846272.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 635 
+ray_t(0) rayID =      7
+data.dir.x = 3281846272.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 645 
+ray_t(0) rayID =      7
+data.dir.x = 3281813504.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 655 
+ray_t(1) rayID =      7
+data.dir.x = 3281813504.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 665 
+ray_t(0) rayID =      8
+data.dir.x = 3281813504.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 675 
+ray_t(0) rayID =      8
+data.dir.x = 3281780736.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 685 
+ray_t(1) rayID =      8
+data.dir.x = 3281780736.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 695 
+ray_t(0) rayID =      9
+data.dir.x = 3281780736.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 705 
+ray_t(0) rayID =      9
+data.dir.x = 3281747968.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 715 
+ray_t(1) rayID =      9
+data.dir.x = 3281747968.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 725 
+ray_t(0) rayID =     10
+data.dir.x = 3281747968.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 735 
+ray_t(0) rayID =     10
+data.dir.x = 3281715200.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 745 
+ray_t(1) rayID =     10
+data.dir.x = 3281715200.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 755 
+ray_t(0) rayID =     11
+data.dir.x = 3281715200.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 765 
+ray_t(0) rayID =     11
+data.dir.x = 3281682432.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 775 
+ray_t(1) rayID =     11
+data.dir.x = 3281682432.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 785 
+ray_t(0) rayID =     12
+data.dir.x = 3281682432.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 795 
+ray_t(0) rayID =     12
+data.dir.x = 3281649664.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 805 
+ray_t(1) rayID =     12
+data.dir.x = 3281649664.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 815 
+ray_t(0) rayID =     13
+data.dir.x = 3281649664.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 825 
+ray_t(0) rayID =     13
+data.dir.x = 3281616896.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 835 
+ray_t(1) rayID =     13
+data.dir.x = 3281616896.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 845 
+ray_t(0) rayID =     14
+data.dir.x = 3281616896.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 855 
+ray_t(0) rayID =     14
+data.dir.x = 3281584128.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 865 
+ray_t(1) rayID =     14
+data.dir.x = 3281584128.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 875 
+ray_t(0) rayID =     15
+data.dir.x = 3281584128.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 885 
+ray_t(0) rayID =     15
+data.dir.x = 3281551360.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 895 
+ray_t(1) rayID =     15
+data.dir.x = 3281551360.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 905 
+ray_t(0) rayID =     16
+data.dir.x = 3281551360.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 915 
+ray_t(0) rayID =     16
+data.dir.x = 3281518592.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 925 
+ray_t(1) rayID =     16
+data.dir.x = 3281518592.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 935 
+ray_t(0) rayID =     17
+data.dir.x = 3281518592.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 945 
+ray_t(0) rayID =     17
+data.dir.x = 3281485824.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 955 
+ray_t(1) rayID =     17
+data.dir.x = 3281485824.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 965 
+ray_t(0) rayID =     18
+data.dir.x = 3281485824.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 975 
+ray_t(0) rayID =     18
+data.dir.x = 3281453056.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 985 
+ray_t(1) rayID =     18
+data.dir.x = 3281453056.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 995 
+ray_t(0) rayID =     19
+data.dir.x = 3281453056.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                1005 
+ray_t(0) rayID =     19
+data.dir.x = 3281420288.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                1015 
+ray_t(1) rayID =     19
+data.dir.x = 3281420288.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                1025 
+ray_t(0) rayID =     20
+data.dir.x = 3281420288.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+$finish called from file "PRG/tb_prg.sv", line 47.
+$finish at simulation time                 1035
+Simulation complete, time is 1035 ps.
            V C S   S i m u l a t i o n   R e p o r t 
-Time: 0 ps
-CPU Time:      0.090 seconds;       Data structure size:   1.4Mb
-Sat Oct 20 21:49:01 2012
+Time: 1035 ps
+CPU Time:      0.120 seconds;       Data structure size:   0.3Mb
+Sun Oct 21 22:25:16 2012
+dve> restart
 Chronologic VCS simulator copyright 1991-2012
 Contains Synopsys proprietary information.
-Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 20 21:49 2012
+Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 21 22:27 2012
 VCD+ Writer F-2011.12-SP1 Copyright (c) 1991-2012 by Synopsys Inc.
-The file '/afs/ece.cmu.edu/usr/rgd/545/18-545/inter.vpd' was opened successfully.
-dve> dump -add / -depth 0
+The file '/afs/ece.cmu.edu/usr/rmacdona/18-545/inter.vpd' was opened successfully.
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 0 ps
+CPU Time:      0.080 seconds;       Data structure size:   0.3Mb
+Sun Oct 21 22:27:22 2012
+Chronologic VCS simulator copyright 1991-2012
+Contains Synopsys proprietary information.
+Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 21 22:27 2012
+VCD+ Writer F-2011.12-SP1 Copyright (c) 1991-2012 by Synopsys Inc.
+The file '/afs/ece.cmu.edu/usr/rmacdona/18-545/inter.vpd' was opened successfully.
 2
 dve> run
-sqrt(144.000000) = 12.000000
-sqrt(100.000000) = 10.000000
- 
-RAY   0 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (1.195122,-0.365854)
- 
-RAY   0 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (0.902439,-0.317073)
- 
-RAY   1 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (0.609756,-0.268293)
- 
-RAY   2 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (0.317073,-0.219512)
- 
-RAY   3 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (0.024390,-0.170732)
- 
-RAY   4 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (-0.268293,-0.121951)
- 
-RAY   5 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (1.146341,-0.024390)
- 
-RAY   6 was a HIT!!
-         hit tri1 at t=2.000000
-         bary = (0.853658,0.024390)
- 
-RAY   7 was a HIT!!
-         hit tri1 at t=2.000000
-         bary = (0.560976,0.073171)
- 
-RAY   8 was a HIT!!
-         hit tri1 at t=2.000000
-         bary = (0.268293,0.121951)
- 
-RAY   9 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (-0.024390,0.170732)
- 
-RAY  10 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (-0.317073,0.219512)
- 
-RAY  11 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (1.097561,0.317073)
- 
-RAY  12 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (0.804878,0.365854)
- 
-RAY  13 was a HIT!!
-         hit tri1 at t=2.000000
-         bary = (0.512195,0.414634)
- 
-RAY  14 was a HIT!!
-         hit tri1 at t=2.000000
-         bary = (0.219512,0.463415)
- 
-RAY  15 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (-0.073171,0.512195)
- 
-RAY  16 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (-0.365854,0.560975)
- 
-RAY  17 was a HIT!!
-         hit tri0 at t=4.000000
-         bary = (0.812500,0.062500)
- 
-RAY  18 was a HIT!!
-         hit tri0 at t=4.000000
-         bary = (0.437500,0.187500)
- 
-RAY  19 was a HIT!!
-         hit tri0 at t=4.000000
-         bary = (0.062500,0.312500)
- 
-RAY  20 was a HIT!!
-         hit tri1 at t=2.000000
-         bary = (0.170732,0.804878)
- 
-RAY  21 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (-0.121951,0.853658)
- 
-RAY  22 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (-0.414634,0.902439)
- 
-RAY  23 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (1.000000,1.000000)
- 
-RAY  24 was a HIT!!
-         hit tri0 at t=4.000000
-         bary = (0.479167,0.395833)
- 
-RAY  25 was a HIT!!
-         hit tri0 at t=4.000000
-         bary = (0.104167,0.520833)
- 
-RAY  26 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (0.121951,1.146341)
- 
-RAY  27 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (-0.170732,1.195122)
- 
-RAY  28 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (-0.463415,1.243902)
- 
-RAY  29 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (0.951219,1.341463)
- 
-RAY  30 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (0.658536,1.390244)
- 
-RAY  31 was a HIT!!
-         hit tri0 at t=4.000000
-         bary = (0.145833,0.729167)
- 
-RAY  32 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (0.073171,1.487805)
- 
-RAY  33 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (-0.219512,1.536585)
- 
-RAY  34 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (-0.512195,1.585366)
- 
-RAY  35 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (0.902439,1.682927)
- 
-RAY  36 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (0.609756,1.731707)
- 
-RAY  37 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (0.317073,1.780488)
- 
 220model.v, 1 : //-------------------------------------------------------------------------
-RAY  38 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (0.024390,1.829268)
- 
-RAY  39 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (-0.268293,1.878049)
- 
-RAY  40 was a  MISS
-         hit tri1 at t=2.000000
-         bary = (-0.560976,1.926829)
-$finish called from file "RAYTRACER/int/TBs/tb_int_math.sv", line 99.
-$finish at simulation time                 1770
-Simulation complete, time is 1770 ps.
+                   0 
+ray_t(0) rayID =      x
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                   5 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                  25 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                  35 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                  45 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                  95 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                 105 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                 125 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                 135 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 0.000000
+                 185 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 0.000000
+data.dir.z = 1120403456.000000
+                 295 
+ray_t(0) rayID =      0
+data.dir.x = 0.000000
+data.dir.y = 3278897152.000000
+data.dir.z = 1120403456.000000
+                 315 
+ray_t(0) rayID =      0
+data.dir.x = 3282042880.000000
+data.dir.y = 3278897152.000000
+data.dir.z = 1120403456.000000
+                 415 
+ray_t(0) rayID =      0
+data.dir.x = 3282042880.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 445 
+ray_t(1) rayID =      0
+data.dir.x = 3282042880.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 455 
+ray_t(0) rayID =      1
+data.dir.x = 3282042880.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 465 
+ray_t(0) rayID =      1
+data.dir.x = 3282010112.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 475 
+ray_t(1) rayID =      1
+data.dir.x = 3282010112.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 485 
+ray_t(0) rayID =      2
+data.dir.x = 3282010112.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 495 
+ray_t(0) rayID =      2
+data.dir.x = 3281977344.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 505 
+ray_t(1) rayID =      2
+data.dir.x = 3281977344.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 515 
+ray_t(0) rayID =      3
+data.dir.x = 3281977344.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 525 
+ray_t(0) rayID =      3
+data.dir.x = 3281944576.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 535 
+ray_t(1) rayID =      3
+data.dir.x = 3281944576.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 545 
+ray_t(0) rayID =      4
+data.dir.x = 3281944576.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 555 
+ray_t(0) rayID =      4
+data.dir.x = 3281911808.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 565 
+ray_t(1) rayID =      4
+data.dir.x = 3281911808.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 575 
+ray_t(0) rayID =      5
+data.dir.x = 3281911808.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 585 
+ray_t(0) rayID =      5
+data.dir.x = 3281879040.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 595 
+ray_t(1) rayID =      5
+data.dir.x = 3281879040.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 605 
+ray_t(0) rayID =      6
+data.dir.x = 3281879040.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 615 
+ray_t(0) rayID =      6
+data.dir.x = 3281846272.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 625 
+ray_t(1) rayID =      6
+data.dir.x = 3281846272.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 635 
+ray_t(0) rayID =      7
+data.dir.x = 3281846272.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 645 
+ray_t(0) rayID =      7
+data.dir.x = 3281813504.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 655 
+ray_t(1) rayID =      7
+data.dir.x = 3281813504.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 665 
+ray_t(0) rayID =      8
+data.dir.x = 3281813504.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 675 
+ray_t(0) rayID =      8
+data.dir.x = 3281780736.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 685 
+ray_t(1) rayID =      8
+data.dir.x = 3281780736.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 695 
+ray_t(0) rayID =      9
+data.dir.x = 3281780736.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 705 
+ray_t(0) rayID =      9
+data.dir.x = 3281747968.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 715 
+ray_t(1) rayID =      9
+data.dir.x = 3281747968.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 725 
+ray_t(0) rayID =     10
+data.dir.x = 3281747968.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 735 
+ray_t(0) rayID =     10
+data.dir.x = 3281715200.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 745 
+ray_t(1) rayID =     10
+data.dir.x = 3281715200.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 755 
+ray_t(0) rayID =     11
+data.dir.x = 3281715200.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 765 
+ray_t(0) rayID =     11
+data.dir.x = 3281682432.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 775 
+ray_t(1) rayID =     11
+data.dir.x = 3281682432.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 785 
+ray_t(0) rayID =     12
+data.dir.x = 3281682432.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 795 
+ray_t(0) rayID =     12
+data.dir.x = 3281649664.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 805 
+ray_t(1) rayID =     12
+data.dir.x = 3281649664.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 815 
+ray_t(0) rayID =     13
+data.dir.x = 3281649664.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 825 
+ray_t(0) rayID =     13
+data.dir.x = 3281616896.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 835 
+ray_t(1) rayID =     13
+data.dir.x = 3281616896.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 845 
+ray_t(0) rayID =     14
+data.dir.x = 3281616896.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 855 
+ray_t(0) rayID =     14
+data.dir.x = 3281584128.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 865 
+ray_t(1) rayID =     14
+data.dir.x = 3281584128.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 875 
+ray_t(0) rayID =     15
+data.dir.x = 3281584128.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 885 
+ray_t(0) rayID =     15
+data.dir.x = 3281551360.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 895 
+ray_t(1) rayID =     15
+data.dir.x = 3281551360.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 905 
+ray_t(0) rayID =     16
+data.dir.x = 3281551360.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 915 
+ray_t(0) rayID =     16
+data.dir.x = 3281518592.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 925 
+ray_t(1) rayID =     16
+data.dir.x = 3281518592.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 935 
+ray_t(0) rayID =     17
+data.dir.x = 3281518592.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 945 
+ray_t(0) rayID =     17
+data.dir.x = 3281485824.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 955 
+ray_t(1) rayID =     17
+data.dir.x = 3281485824.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 965 
+ray_t(0) rayID =     18
+data.dir.x = 3281485824.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 975 
+ray_t(0) rayID =     18
+data.dir.x = 3281453056.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 985 
+ray_t(1) rayID =     18
+data.dir.x = 3281453056.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                 995 
+ray_t(0) rayID =     19
+data.dir.x = 3281453056.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                1005 
+ray_t(0) rayID =     19
+data.dir.x = 3281420288.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                1015 
+ray_t(1) rayID =     19
+data.dir.x = 3281420288.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+                1025 
+ray_t(0) rayID =     20
+data.dir.x = 3281420288.000000
+data.dir.y = 1131347968.000000
+data.dir.z = 1120403456.000000
+$finish called from file "PRG/tb_prg.sv", line 47.
+$finish at simulation time                 1035
+Simulation complete, time is 1035 ps.
            V C S   S i m u l a t i o n   R e p o r t 
-Time: 1770 ps
-CPU Time:      0.360 seconds;       Data structure size:   1.4Mb
-Sat Oct 20 21:49:09 2012
+Time: 1035 ps
+CPU Time:      0.120 seconds;       Data structure size:   0.3Mb
+Sun Oct 21 22:27:28 2012

@@ -20,6 +20,8 @@ t_comp:
 int_math: 
 	$(CC) $(FLAGS) -top tb_int_math COMMON/*v COMMON/sim_lib/altera_mf.v COMMON/altfp*/*.v RAYTRACER/int/*.sv RAYTRACER/int/TBs/tb_int_math.sv
 
+prg:
+	$(CC) $(FLAGS) -top tb_prg COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v PRG/*.sv
 
 
 clean:
