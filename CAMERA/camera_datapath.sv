@@ -1,7 +1,7 @@
 
 
-`define FP_0 32'h00000000
-`define FP_1 32'h3F800000
+//`define FP_0 32'h00000000
+//`define FP_1 32'h3F800000
 
 `define INIT_CAM_X 32'h40800000
 `define INIT_CAM_Y 32'h40400000
@@ -50,7 +50,7 @@ module camera_datapath (input logic clk, rst,
 	logic mult_1_underflow, mult_1_overflow, mult_1_zero, mult_1_nan;
 	logic[31:0] mult_1_result;
 	assign mult_1_dataa = conv_result;
-	assign mult_1_datab = move_scale; 
+	assign mult_1_datab = `move_scale; 
 	altfp_mult  mult_1(.dataa(mult_1_dataa),.datab(mult_1_datab),
 			   .underflow(mult_1_underflow),.overflow(mult_1_overflow),
 			   .nan(mult_1_nan),.zero(mult_1_zero),
@@ -58,18 +58,18 @@ module camera_datapath (input logic clk, rst,
 			   .clk,.aclr(rst));
 
 	logic[31:0] mult_2_dataa, mult_2_datab;
-	logic underflow, overflow, zero, nan;
+	logic mult_2_underflow, mult_2_overflow, mult_2_zero, mult_2_nan;
 	logic[31:0] mult_2_result;
 	assign mult_2_dataa = v2 ? mult_1_result : move_val;
 	// mult_2_datab combinationally assigned in case 
 	altfp_mult  mult_2(.dataa(mult_2_dataa),.datab(mult_2_datab),
 			   .underflow(mult_2_underflow),.overflow(mult_2_overflow),
 			   .nan(mult_2_nan),.zero(mult_2_zero),
-			   .result(mult_2_result)
+			   .result(mult_2_result),
 			   .clk,.aclr(rst));
 
 	logic[31:0] add_1_dataa, add_1_datab;
-	logic underflow, overflow, zero, nan;
+	logic add_1_underflow, add_1_overflow, add_1_zero, add_1_nan;
 	logic[31:0] add_1_result;
 	assign add_1_dataa = mult_2_result;
 	assign add_1_datab = v1 ? E.x : (v2 ? E.y : E.z);
@@ -103,9 +103,12 @@ module camera_datapath (input logic clk, rst,
 		end
 
 		case(key)
-			UPOS or UNEG: vector_sel = U;
-			VPOS or VNEG: vector_sel = V;
-			WPOS or WNEG: vector_sel = W;
+			`UPOS: vector_sel = U;
+			`UNEG: vector_sel = U;
+			`VPOS: vector_sel = V;
+			`VNEG: vector_sel = V;
+			`WPOS: vector_sel = W;
+			`WNEG: vector_sel = W;
 		default: vector_sel = 32'b0;
 		endcase
 

@@ -5,10 +5,10 @@ module camera_controller(
   input clk, rst,
   input v0, v1, v2,
 
-  input keys_t keys; // Keys packet from 
+  input keys_t keys, // Keys packet from 
   
-  input rendering_done;
-  output logic render_frame;
+  input rendering_done,
+  output logic render_frame
 
 
   );
@@ -25,16 +25,15 @@ module camera_controller(
   // in = W_key     4
   // out = S_key    5
   
-  logic render_frame;
+
+  enum logic[1:0] {NOT_PRESSED, PRESSED, RENDERING} CS0, NS0;
 
   logic rendering, rendering_n;
-  logic pressed, released; 
+  logic pressed, released, ld_key_val, key_val_n, key_val; 
   
   assign rendering_n = rendering_done ? 1'b0 : (render_frame ? 1'b1 : rendering);
   assign pressed = (CS0 == PRESSED);
   assign released = ~pressed;
-  
-  typedef enum[1:0] {NOT_PRESSED, PRESSED, RENDERING} CS0, NS0;
 
   always_comb begin
     ld_key_val = 1'b0;
@@ -67,7 +66,7 @@ module camera_controller(
     end 
   end
   
-  ff_ar #(3,'h0) ff(.q(key_val), .d(key_val_n), .clk, .rst);
+  ff_ar #(3,'h0) ff0(.q(key_val), .d(key_val_n), .clk, .rst);
 
   
   logic [31:0] mv_cnt, mv_cnt_n;
@@ -76,7 +75,7 @@ module camera_controller(
 
   assign is_counting_n = stop_cnt ? 1'b0 : (start_cnt0 | start_cnt25 ? 1'b1 : is_counting);
   
-  ff_ar #(1,1'b0) ff(.q(is_counting), .d(is_counting_n), .clk, .rst);
+  ff_ar #(1,1'b0) ff1(.q(is_counting), .d(is_counting_n), .clk, .rst);
   
   // TODO might be sketchy, check this shit
   always_comb begin
@@ -89,7 +88,7 @@ module camera_controller(
     endcase
   end
 
-  ff_ar #(32,'h0) ff(.q(mv_cnt), .d(mv_cnt_n), .clk, .rst);
+  ff_ar #(32,'h0) ff2(.q(mv_cnt), .d(mv_cnt_n), .clk, .rst);
 
   logic [1:0] CS1, NS1 ;
   
@@ -123,7 +122,7 @@ module camera_controller(
     endcase
   end
   
-  ff_ar #(2,2'b00) ff(.q(CS1), .d(NS1), .clk, .rst);
+  ff_ar #(2,2'b00) ff3(.q(CS1), .d(NS1), .clk, .rst);
 
 
 
