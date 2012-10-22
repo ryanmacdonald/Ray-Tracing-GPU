@@ -1,25 +1,9 @@
 Chronologic VCS simulator copyright 1991-2012
 Contains Synopsys proprietary information.
-Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 22 02:17 2012
+Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 22 02:03 2012
 sqrt(144.000000) = 12.000000
--0.375000 0.041667 0.354167 -0.354167
-
-0.125000 0.208333 -0.229167 0.229167
-
-0.000000 0.000000 -0.333333 1.333333
-
-0.000000 0.000000 0.000000 1.000000
-
 c = bec000003d2aaaab3eb555553e0000003e555555be6aaaab0000000000000000beaaaaabbeb555553e6aaaab3faaaaab,         384 (size)
 sqrt(100.000000) = 10.000000
--0.292683 -0.048780 1.487805 -1.487805
-
-0.048780 0.341463 -0.414634 0.414634
-
-0.000000 0.000000 -1.000000 2.000000
-
-0.000000 0.000000 0.000000 1.000000
-
 c = be95da89bd47ce0c3fbe70633d47ce0c3eaed44abed44aed0000000000000000bf7fffffbfbe70633ed44aed3fffffff,         384 (size)
 
 RAY      0 was a  MISS
@@ -222,4 +206,4 @@ $finish at simulation time                 1980
            V C S   S i m u l a t i o n   R e p o r t 
 Time: 1980 ps
 CPU Time:      0.310 seconds;       Data structure size:   1.4Mb
-Mon Oct 22 02:17:56 2012
+Mon Oct 22 02:03:08 2012

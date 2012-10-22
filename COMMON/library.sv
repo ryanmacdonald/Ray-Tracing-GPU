@@ -147,7 +147,7 @@ module sync_to_v
         synced_signal = 1'b1;
       end
       2'b10 : begin
-        NS = 2'b10;
+        NS = 2'b01;
       end
     endcase
   end
@@ -155,4 +155,54 @@ module sync_to_v
   ff_ar #(2,2'b00) ff(.q(CS), .d(NS), .clk, .rst);
 
 endmodule
+
+// depth 2^k
+module fifo(clk, rst,
+            data_in, we, re, full, empty, data_out);
+  parameter WIDTH = 32;
+  parameter K = 2;
+  input clk, rst;
+  input [WIDTH-1:0] data_in;
+  input we;
+  input re;
+  output full;
+  output empty;
+  output [WIDTH-1:0] data_out ;
+
+  logic write_allowed, read_allowed;
+
+  logic [K:0] rPtr, rPtr_n;
+  logic [K:0] wPtr, wPtr_n;
+
+
+  // actual queue
+  logic [(1<<K) - 1:0][WIDTH-1:0] queue;
+  logic [(1<<K) - 1:0][WIDTH-1:0] queue_n;
+
+  //output assigns
+  assign data_out = queue[rPtr[K-1:0]];
+  assign empty = (rPtr == wPtr) ;
+  assign full = (rPtr == {~wPtr[K],wPtr[K-1:0]} );
+
+  assign write_allowed = we & ~full ;
+  assign read_allowed = re & ~empty ;
+
+  always_comb begin
+    queue_n = queue ;
+    if(write_allowed) queue_n[wPtr[K-1:0]] = data_in;
+    if(read_allowed) queue_n[rPtr[K-1:0]] = 'h0;
+  end
+ 
+  assign rPtr_n = read_allowed ? rPtr + 1'b1 : rPtr ;
+  assign wPtr_n = write_allowed ? wPtr + 1'b1 : wPtr ;
+
+  ff_ar #(K+1,'h0) ff_r(.q(rPtr), .d(rPtr_n), .clk, .rst);
+  ff_ar #(K+1,'h0) ff_w(.q(wPtr), .d(wPtr_n), .clk, .rst);
+  ff_ar #((1<<K)*WIDTH,'h0) ff_q(.q(queue), .d(queue_n), .clk, .rst); 
+
+endmodule
+
+
+
+
 `endif

@@ -1,5 +1,6 @@
 # Begin_DVE_Session_Save_Info
 # DVE restart session
+<<<<<<< HEAD
 # Saved on Mon Oct 22 05:48:28 2012
 # Designs open: 1
 #   Sim: /afs/ece.cmu.edu/usr/rmacdona/18-545/simv
@@ -10,6 +11,15 @@
 #   Wave.1: 24 signals
 #   Group count = 1
 #   Group Group1 signal count = 24
+=======
+# Saved on Mon Oct 22 02:10:24 2012
+# Designs open: 1
+#   Sim: /afs/ece.cmu.edu/usr/rgd/545/18-545/simv
+# Toplevel windows open: 1
+# 	TopLevel.1
+#   Source.1: _vcs_unit__2517179603
+#   Group count = 0
+>>>>>>> 189d61623783ae9c6afde7b1e60a6119938efb16
 # End_DVE_Session_Save_Info
 
 # DVE version: F-2011.12-SP1
@@ -38,13 +48,14 @@ set TopLevel.1 TopLevel.1
 # Docked window settings
 set HSPane.1 HSPane.1
 set Hier.1 Hier.1
-set DLPane.1 DLPane.1
-set Data.1 Data.1
 set Console.1 Console.1
 set DriverLoad.1 DriverLoad.1
 gui_sync_global -id ${TopLevel.1} -option true
 
 # MDI window settings
+set DLPane.1 DLPane.1
+set Data.1 Data.1
+gui_update_layout -id ${DLPane.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_data_colvariable 370} {child_data_colvalue 248} {child_data_coltype 281} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
 set Source.1 Source.1
 gui_update_layout -id ${Source.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false}}
 
@@ -69,9 +80,12 @@ gui_update_layout -id ${Wave.1} {{show_state maximized} {dock_state undocked} {d
 
 #<Database>
 
+<<<<<<< HEAD
 dump -add { tb_camera } -depth 0 -scope "."
 dump -add { tb_camera } -depth 0 -scope "."
 
+=======
+>>>>>>> 189d61623783ae9c6afde7b1e60a6119938efb16
 #</Database>
 
 # DVE Global setting session: 
@@ -89,16 +103,23 @@ dump -add { tb_camera } -depth 0 -scope "."
 
 # Global: Signal Groups
 
+<<<<<<< HEAD
 set Group1 Group1
 gui_sg_create ${Group1}
 gui_sg_addsignal -group ${Group1} { tb_camera.cc.clk tb_camera.cc.rst tb_camera.cc.v0 tb_camera.cc.v1 tb_camera.cc.v2 tb_camera.cc.keys tb_camera.cc.rendering_done tb_camera.cc.render_frame tb_camera.cc.E tb_camera.cc.rendering tb_camera.cc.pressed tb_camera.cc.ld_key_val tb_camera.cc.mv_cnt tb_camera.cc.stop_cnt tb_camera.cc.start_cnt0 tb_camera.cc.start_cnt25 tb_camera.cc.clr_cnt tb_camera.cc.cd.nc_x tb_camera.cc.cd.nc_y tb_camera.cc.cd.nc_z tb_camera.cc.cd.nextCam tb_camera.cc.CS1 tb_camera.cc.NS1 tb_camera.cc.mv_cnt_n }
+=======
+>>>>>>> 189d61623783ae9c6afde7b1e60a6119938efb16
 
 # Global: Highlighting
 
 # Post database loading setting...
 
 # Restore C1 time
+<<<<<<< HEAD
 gui_set_time -C1_only 12010
+=======
+gui_set_time -C1_only 30570
+>>>>>>> 189d61623783ae9c6afde7b1e60a6119938efb16
 
 
 
@@ -122,14 +143,20 @@ gui_show_window -window ${Hier.1}
 gui_list_set_filter -id ${Hier.1} -list { {Package 1} {All 0} {Process 1} {UnnamedProcess 1} {Function 1} {Block 1} {OVA Unit 1} {LeafScCell 1} {LeafVlgCell 1} {Interface 1} {PowSwitch 0} {LeafVhdCell 1} {$unit 1} {NamedBlock 1} {Task 1} {VlgPackage 1} {IsoCell 0} {ClassDef 1} }
 gui_list_set_filter -id ${Hier.1} -text {*}
 gui_change_design -id ${Hier.1} -design Sim
+<<<<<<< HEAD
 catch {gui_list_select -id ${Hier.1} {tb_camera}}
+=======
+>>>>>>> 189d61623783ae9c6afde7b1e60a6119938efb16
 gui_view_scroll -id ${Hier.1} -vertical -set 0
 gui_view_scroll -id ${Hier.1} -horizontal -set 0
 
 # Data 'Data.1'
 gui_list_set_filter -id ${Data.1} -list { {Buffer 1} {Input 1} {Others 1} {Linkage 1} {Output 1} {Parameter 1} {All 1} {Aggregate 1} {Event 1} {Assertion 1} {Constant 1} {Interface 1} {Signal 1} {$unit 1} {Inout 1} {Variable 1} }
 gui_list_set_filter -id ${Data.1} -text {*}
+<<<<<<< HEAD
 gui_list_show_data -id ${Data.1} {tb_camera}
+=======
+>>>>>>> 189d61623783ae9c6afde7b1e60a6119938efb16
 gui_view_scroll -id ${Data.1} -vertical -set 0
 gui_view_scroll -id ${Data.1} -horizontal -set 0
 gui_view_scroll -id ${Hier.1} -vertical -set 0
@@ -138,7 +165,11 @@ gui_view_scroll -id ${Hier.1} -horizontal -set 0
 # Source 'Source.1'
 gui_src_value_annotate -id ${Source.1} -switch false
 gui_set_env TOGGLE::VALUEANNOTATE 0
+<<<<<<< HEAD
 gui_open_source -id ${Source.1}  -replace -active _vcs_unit__237527400 /afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/220model.v
+=======
+gui_open_source -id ${Source.1}  -replace -active _vcs_unit__2517179603 /afs/ece.cmu.edu/usr/rgd/545/18-545/COMMON/220model.v
+>>>>>>> 189d61623783ae9c6afde7b1e60a6119938efb16
 gui_view_scroll -id ${Source.1} -vertical -set 0
 gui_src_set_reusable -id ${Source.1}
 

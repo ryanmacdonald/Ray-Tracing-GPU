@@ -27,7 +27,7 @@ module int_math(
   output logic EM_miss      // 1 if miss, 0 if hit
   
   );
-/*
+
   //debugshit
   shortreal originp_pc1_f;
   shortreal dirp_pc1_f;
@@ -50,7 +50,7 @@ module int_math(
   u1_f = $bitstoshortreal(uv_tuv1.u);
   v1_f = $bitstoshortreal(uv_tuv1.v);
   end
-  */
+  
   
   
   // prime_calc0 

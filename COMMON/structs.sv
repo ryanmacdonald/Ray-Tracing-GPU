@@ -32,11 +32,17 @@ typedef struct packed {
   vector_t dir;
 } ray_t;
 
-typedef struct packed{
-  logic[7:0] R;
-  logic[7:0] G;
-  logic[7:0] B;
-} color_t;
+typedef struct packed {
+  logic [7:0] red;
+  logic [7:0] green;
+  logic [7:0] blue;
+
+} color_t ;
+
+typedef struct packed {
+  color_t color;
+  rayID_t rayID;
+} pixel_buffer_entry_t;
 
 typedef struct packed {
   float_t u;

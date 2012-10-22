@@ -5,12 +5,12 @@
 `define screen_height 480 
 `define num_rays 307200
 
-// defines for -w/2 and -h/2
-`define half_screen_width  32'hC3A00000
-`define half_screen_height 32'hC3700000
+// defines for -w/2 and -h/2 //half width = -4, half height = -3
+`define half_screen_width  $shortrealtobits(-4.0)
+`define half_screen_height $shortrealtobits(-3.0)
 
 // D = 6 for now
-`define D		   32'h40C00000
+`define D $shortrealtobits(4)
 
 
 // -frame_done asserted from FBH
@@ -115,7 +115,7 @@ module prg(input logic clk, rst,
 	logic mult_4_overflow, mult_4_underflow;
 	logic[31:0] mult_4_result;
 	assign mult_4_dataa = v0 ? W.x : (v1 ? W.y : W.z);
-	assign mult_4_datab = D;
+	assign mult_4_datab = `D;
 	altfp_mult mult_4(.aclr(rst),.clock(clk),
 			  .dataa(mult_4_dataa),.datab(mult_4_datab),
 			  .nan(mult_4_nan),.overflow(mult_4_overflow),
