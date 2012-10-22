@@ -1,7 +1,0 @@
-rmapats_mop.o: rmapats.m
-	@/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/bin/cgmop1 -gen_obj rmapats.m rmapats_mop.o
-
-rmapats.o: rmapats.c
-	@$(CC) $(CFLAGS) -c  -o rmapats.o rmapats.c
-
-HSOPT_OBJS=rmapats_mop.o rmapats.o

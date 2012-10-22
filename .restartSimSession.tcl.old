@@ -1,12 +1,16 @@
 # Begin_DVE_Session_Save_Info
 # DVE restart session
-# Saved on Mon Oct 22 02:10:24 2012
+# Saved on Mon Oct 22 05:59:21 2012
 # Designs open: 1
 #   Sim: /afs/ece.cmu.edu/usr/rgd/545/18-545/simv
 # Toplevel windows open: 1
 # 	TopLevel.1
-#   Source.1: _vcs_unit__2517179603
-#   Group count = 0
+#   Source.1: _vcs_unit__416007944
+#   Group count = 4
+#   Group fbh signal count = 25
+#   Group reader signal count = 34
+#   Group writer signal count = 17
+#   Group pb_fifo signal count = 18
 # End_DVE_Session_Save_Info
 
 # DVE version: F-2011.12-SP1
@@ -41,7 +45,7 @@ gui_sync_global -id ${TopLevel.1} -option true
 # MDI window settings
 set DLPane.1 DLPane.1
 set Data.1 Data.1
-gui_update_layout -id ${DLPane.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_data_colvariable 370} {child_data_colvalue 248} {child_data_coltype 281} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
+gui_update_layout -id ${DLPane.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_data_colvariable 370} {child_data_colvalue 248} {child_data_coltype 280} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
 set Source.1 Source.1
 gui_update_layout -id ${Source.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false}}
 
@@ -51,6 +55,8 @@ gui_update_layout -id ${Source.1} {{show_state maximized} {dock_state undocked} 
 #</WindowLayout>
 
 #<Database>
+
+dump -add { trtr_tb } -depth 0 -scope "."
 
 #</Database>
 
@@ -69,19 +75,36 @@ gui_update_layout -id ${Source.1} {{show_state maximized} {dock_state undocked} 
 
 # Global: Signal Groups
 
+set fbh fbh
+gui_sg_create ${fbh}
+gui_sg_addsignal -group ${fbh} { trtr_tb.tr.fbh.VGA_blank trtr_tb.tr.fbh.sram_re trtr_tb.tr.fbh.pb_re trtr_tb.tr.fbh.writer_ub trtr_tb.tr.fbh.reader_lb trtr_tb.tr.fbh.pb_empty trtr_tb.tr.fbh.sram_lb trtr_tb.tr.fbh.reader_ub trtr_tb.tr.fbh.sram_addr trtr_tb.tr.fbh.reader_data trtr_tb.tr.fbh.writer_data trtr_tb.tr.fbh.HS trtr_tb.tr.fbh.reader_addr trtr_tb.tr.fbh.sram_ub trtr_tb.tr.fbh.clk trtr_tb.tr.fbh.writer_addr trtr_tb.tr.fbh.pb_data trtr_tb.tr.fbh.VGA_RGB trtr_tb.tr.fbh.writer_lb trtr_tb.tr.fbh.VS trtr_tb.tr.fbh.stripes_sel trtr_tb.tr.fbh.sram_io trtr_tb.tr.fbh.sram_we trtr_tb.tr.fbh.rst trtr_tb.tr.fbh.VGA_clk }
+set reader reader
+gui_sg_create ${reader}
+gui_sg_addsignal -group ${reader} { trtr_tb.tr.fbh.reader.addr_cnt_clr trtr_tb.tr.fbh.reader.sram_re trtr_tb.tr.fbh.reader.VGA_blank trtr_tb.tr.fbh.reader.clk_25M trtr_tb.tr.fbh.reader.fbh_active trtr_tb.tr.fbh.reader.pixel_reg_d trtr_tb.tr.fbh.reader.flip_pixel_mux_sel trtr_tb.tr.fbh.reader.a_en trtr_tb.tr.fbh.reader.clk_50M trtr_tb.tr.fbh.reader.b_en trtr_tb.tr.fbh.reader.pixel_mux_sel trtr_tb.tr.fbh.reader.reader_data trtr_tb.tr.fbh.reader.flip_active_off trtr_tb.tr.fbh.reader.addr_cnt_inc trtr_tb.tr.fbh.reader.a_q trtr_tb.tr.fbh.reader.abc_sr_q trtr_tb.tr.fbh.reader.HS trtr_tb.tr.fbh.reader.c_en trtr_tb.tr.fbh.reader.reader_addr trtr_tb.tr.fbh.reader.clk trtr_tb.tr.fbh.reader.pixel_reg_q trtr_tb.tr.fbh.reader.vga_col trtr_tb.tr.fbh.reader.stripes_color trtr_tb.tr.fbh.reader.b_q trtr_tb.tr.fbh.reader.display_done trtr_tb.tr.fbh.reader.VGA_RGB trtr_tb.tr.fbh.reader.VS trtr_tb.tr.fbh.reader.row_on_screen trtr_tb.tr.fbh.reader.flip_active_on trtr_tb.tr.fbh.reader.vga_row trtr_tb.tr.fbh.reader.stripes_sel trtr_tb.tr.fbh.reader.c_q trtr_tb.tr.fbh.reader.rst trtr_tb.tr.fbh.reader.VGA_clk }
+set writer writer
+gui_sg_create ${writer}
+gui_sg_addsignal -group ${writer} { trtr_tb.tr.fbh.writer.sram_re trtr_tb.tr.fbh.writer.pb_re trtr_tb.tr.fbh.writer.pb_pixel trtr_tb.tr.fbh.writer.writer_ub trtr_tb.tr.fbh.writer.second_write trtr_tb.tr.fbh.writer.pb_empty trtr_tb.tr.fbh.writer.pb_PID trtr_tb.tr.fbh.writer.first_write trtr_tb.tr.fbh.writer.writer_data trtr_tb.tr.fbh.writer.clk trtr_tb.tr.fbh.writer.writer_addr trtr_tb.tr.fbh.writer.pb_data trtr_tb.tr.fbh.writer.writer_lb trtr_tb.tr.fbh.writer.PID_addr0 trtr_tb.tr.fbh.writer.PID_addr1 trtr_tb.tr.fbh.writer.sram_we trtr_tb.tr.fbh.writer.rst }
+set pb_fifo pb_fifo
+gui_sg_create ${pb_fifo}
+gui_sg_addsignal -group ${pb_fifo} { trtr_tb.tr.pb_fifo.queue trtr_tb.tr.pb_fifo.we trtr_tb.tr.pb_fifo.wPtr_n trtr_tb.tr.pb_fifo.read_allowed trtr_tb.tr.pb_fifo.re trtr_tb.tr.pb_fifo.K trtr_tb.tr.pb_fifo.data_in trtr_tb.tr.pb_fifo.empty trtr_tb.tr.pb_fifo.wPtr trtr_tb.tr.pb_fifo.data_out trtr_tb.tr.pb_fifo.full trtr_tb.tr.pb_fifo.clk trtr_tb.tr.pb_fifo.WIDTH trtr_tb.tr.pb_fifo.queue_n trtr_tb.tr.pb_fifo.write_allowed trtr_tb.tr.pb_fifo.rPtr_n trtr_tb.tr.pb_fifo.rst trtr_tb.tr.pb_fifo.rPtr }
+gui_set_radix -radix {decimal} -signals {Sim:trtr_tb.tr.pb_fifo.K}
+gui_set_radix -radix {twosComplement} -signals {Sim:trtr_tb.tr.pb_fifo.K}
+gui_set_radix -radix {decimal} -signals {Sim:trtr_tb.tr.pb_fifo.WIDTH}
+gui_set_radix -radix {twosComplement} -signals {Sim:trtr_tb.tr.pb_fifo.WIDTH}
 
 # Global: Highlighting
 
 # Post database loading setting...
 
 # Restore C1 time
-gui_set_time -C1_only 30570
+gui_set_time -C1_only 40252
 
 
 
 # Save global setting...
 
 # Wave/List view global setting
+gui_list_create_group_when_add -wave -enable
 gui_cov_show_value -switch false
 
 # Close all empty TopLevel windows
@@ -99,12 +122,16 @@ gui_show_window -window ${Hier.1}
 gui_list_set_filter -id ${Hier.1} -list { {Package 1} {All 0} {Process 1} {UnnamedProcess 1} {Function 1} {Block 1} {OVA Unit 1} {LeafScCell 1} {LeafVlgCell 1} {Interface 1} {PowSwitch 0} {LeafVhdCell 1} {$unit 1} {NamedBlock 1} {Task 1} {VlgPackage 1} {IsoCell 0} {ClassDef 1} }
 gui_list_set_filter -id ${Hier.1} -text {*}
 gui_change_design -id ${Hier.1} -design Sim
+catch {gui_list_expand -id ${Hier.1} trtr_tb}
+catch {gui_list_expand -id ${Hier.1} trtr_tb.tr}
+catch {gui_list_select -id ${Hier.1} {trtr_tb.tr.pb_fifo}}
 gui_view_scroll -id ${Hier.1} -vertical -set 0
 gui_view_scroll -id ${Hier.1} -horizontal -set 0
 
 # Data 'Data.1'
 gui_list_set_filter -id ${Data.1} -list { {Buffer 1} {Input 1} {Others 1} {Linkage 1} {Output 1} {Parameter 1} {All 1} {Aggregate 1} {Event 1} {Assertion 1} {Constant 1} {Interface 1} {Signal 1} {$unit 1} {Inout 1} {Variable 1} }
 gui_list_set_filter -id ${Data.1} -text {*}
+gui_list_show_data -id ${Data.1} {trtr_tb.tr.pb_fifo}
 gui_view_scroll -id ${Data.1} -vertical -set 0
 gui_view_scroll -id ${Data.1} -horizontal -set 0
 gui_view_scroll -id ${Hier.1} -vertical -set 0
@@ -113,7 +140,7 @@ gui_view_scroll -id ${Hier.1} -horizontal -set 0
 # Source 'Source.1'
 gui_src_value_annotate -id ${Source.1} -switch false
 gui_set_env TOGGLE::VALUEANNOTATE 0
-gui_open_source -id ${Source.1}  -replace -active _vcs_unit__2517179603 /afs/ece.cmu.edu/usr/rgd/545/18-545/COMMON/220model.v
+gui_open_source -id ${Source.1}  -replace -active _vcs_unit__416007944 /afs/ece.cmu.edu/usr/rgd/545/18-545/COMMON/220model.v
 gui_view_scroll -id ${Source.1} -vertical -set 0
 gui_src_set_reusable -id ${Source.1}
 # Restore toplevel window zorder
@@ -121,7 +148,7 @@ gui_src_set_reusable -id ${Source.1}
 if {[gui_exist_window -window ${TopLevel.1}]} {
 	gui_set_active_window -window ${TopLevel.1}
 	gui_set_active_window -window ${Source.1}
-	gui_set_active_window -window ${Console.1}
+	gui_set_active_window -window ${HSPane.1}
 }
 #</Session>
 

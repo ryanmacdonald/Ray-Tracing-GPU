@@ -69,11 +69,13 @@ module trtr(
 	// FBH to pixel buffer
 	logic pb_re;
 	logic pb_empty;
-	logic [$bits(pixel_buffer_entry_t)] pb_data;
+  pixel_buffer_entry_t pb_data;
+
+  logic pb_we; // from int_wrap
+  logic pb_full;
 
 	vector_t E, U, V, W;
 
-	logic v0, v1, v2;
 	logic start, rayReady, done;
 	float_t pw;
 	ray_t prg_data;
@@ -85,9 +87,24 @@ module trtr(
 
 	assign pw = 32'h3C4CCCCD;
 
+  
+  logic [1:0] cnt, cnt_n;
+	logic v0, v1, v2;
+  
+  assign cnt_n = (cnt == 2'b10) ? 2'b0 : cnt + 1'b1 ;
+  ff_ar #(2,0) cnt3(.q(cnt), .d(cnt_n), .clk, .rst);
+  
+  assign v0 = (cnt == 2'b00);
+  assign v1 = (cnt == 2'b01);
+  assign v2 = (cnt == 2'b10);
+
+  negedge_detector start_ned(.ed(start), .in(start_btn), .clk, .rst);
+
+  pixel_buffer_entry_t pb_data_in;
+
 	prg prg_inst(.clk, .rst,
-	   .v0(), .v1(), .v2(),
-	   start,
+	   .v0, .v1, .v2,
+	   .start,
 	   .E, .U, .V, .W,
 	   .pw,
 	   .rayReady, .done,
@@ -96,18 +113,17 @@ module trtr(
 	int_wrap int_wrap_inst(
   .clk,
   .rst,
-  .valid_in(),
+  .valid_in(rayReady),
   .ray_in(prg_data),
-  .v0(), .v1(), .v2(),
-  .we(),
-  .full(),
-  .rayID(),
-  .color_out()
+  .v0(v1), .v1(v2), .v2(v0),
+  .we(pb_we),
+  .full(pb_full),
+  .pixel_entry_out(pb_data_in)
   );
 
 
-	fifo #(.K(7), .WIDTH($bits(pixel_buffer_entry_t))
-		pb_fifo(.clk, .rst, .data_in(), .we(), .re(pb_re), .full(), .empty(pb_empty), .data_out(pb_data));
+	fifo #(.K(7), .WIDTH($bits(pixel_buffer_entry_t)))
+		pb_fifo(.clk, .rst, .data_in(pb_data_in), .we(pb_we), .re(pb_re), .full(pb_full), .empty(pb_empty), .data_out(pb_data));
 
 /*    xmodem               xm(.*);
     scene_loader         sl(.*); */

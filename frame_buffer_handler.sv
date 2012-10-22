@@ -4,7 +4,7 @@ module frame_buffer_handler(
 	// interface with pixel buffer
 	output logic pb_re,
 	input logic pb_empty,
-	input logic [42:0] pb_data,
+	input pixel_buffer_entry_t pb_data,
 	// sram interface
 	output logic sram_re,
 	output logic sram_we,
@@ -45,7 +45,7 @@ module fbh_writer(
 	// pixel buffer
 	output logic pb_re,
 	input logic pb_empty,
-	input logic [42:0] pb_data,
+	input pixel_buffer_entry_t pb_data,
 	// SRAM
 	output logic sram_we,
 	output logic [19:0] writer_addr,
@@ -62,11 +62,11 @@ module fbh_writer(
 	assign sram_we = ~sram_re & ~pb_empty;
 	assign pb_re = second_write & sram_we;
 
-	logic [23:0] pb_pixel;
-	logic [18:0] pb_PID;
+  color_t pb_pixel;
+  rayID_t pb_PID;
 	logic [18:0] PID_addr0, PID_addr1;
-	assign pb_pixel = pb_data[23:0];
-	assign pb_PID = pb_data[42:24];
+	assign pb_pixel = pb_data.color;
+	assign pb_PID = pb_data.rayID;
 
     assign PID_addr0 = pb_PID + (pb_PID >> 1'b1);
     assign PID_addr1 = PID_addr0+1'b1;
@@ -106,10 +106,15 @@ module fbh_reader(
 	vga vc(.*);	
 
 	// fbh_active
+  logic row_on_screen;
 	logic fbh_active, flip_active_on, flip_active_off;
-	assign flip_active_on = (vga_col == 10'h3fe);
+	assign flip_active_on = (vga_col == 10'h3fe & row_on_screen);
 	assign flip_active_off = (vga_col == 10'h27e);
 	ff_ar_en #(1,1'b0) fbh_active_ff(.q(fbh_active), .d(flip_active_on), .en(flip_active_on | flip_active_off), .clk, .rst);
+
+  range_check #(.W(10)) row_rc(
+    .is_between(row_on_screen),
+    .val(vga_row), .low(10'd0), .high(10'd479));
 
 	logic [3:0] abc_sr_q;
 	logic [15:0] a_q, b_q, c_q;
@@ -128,7 +133,7 @@ module fbh_reader(
 	assign a_en = abc_sr_q[2];
 	assign b_en = abc_sr_q[1];
 	assign c_en = abc_sr_q[0];
-	assign sram_re = a_en | b_en | c_en;
+	assign sram_re = (a_en | b_en | c_en) & fbh_active;
 
 	ff_ar_en #(16,16'd0) a_reg(.q(a_q), .d(reader_data), .en(a_en), .clk, .rst); // first two bytes of first pixel
 	ff_ar_en #(16,16'd0) b_reg(.q(b_q), .d(reader_data), .en(b_en), .clk, .rst); // third byte of first and first byte of second

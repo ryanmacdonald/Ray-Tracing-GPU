@@ -1,6 +1,6 @@
 `default_nettype none
 
-`define CLK_PERIOD 20
+`define CLK_PRD 20
 
 module trtr_tb;
 
@@ -43,7 +43,7 @@ module trtr_tb;
         btns[3] <= 1'b0;
         #1;
         btns[3] <= 1'b1;
-        forever #(`CLK_PERIOD/2) clk = ~clk;
+        forever #(`CLK_PRD/2) clk = ~clk;
     end
 
     integer j;
@@ -60,6 +60,9 @@ module trtr_tb;
         repeat(100) @(posedge clk);
         btns[0] <= 1'b1;
 
+        repeat(100000) @(posedge clk);
+
+/*
         repeat(10) @(posedge clk);
 
         for(j=0; j<128; j++)
@@ -92,6 +95,8 @@ module trtr_tb;
         btns[1] <= 1'b1;
 
         repeat(1000000) @(posedge clk);
+
+        */
 
         $finish;
     end
