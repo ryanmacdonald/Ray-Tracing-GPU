@@ -1,5 +1,5 @@
 0 
-40
+47
 +cli+4
 +itf+/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/vcsd.tab
 +memcbk
@@ -30,32 +30,37 @@
 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/bin/vcs1
 COMMON/220model.v
 COMMON/altfp_add/altfp_add.v
+COMMON/altfp_compare/altfp_compare.v
 COMMON/altfp_convert/altfp_convert.v
 COMMON/altfp_div
-COMMON/altfp_mult/altfp_mula.v
+COMMON/altfp_div/altfp_div.v
 COMMON/altfp_mult/altfp_mult.v
 COMMON/buf_t.sv
 COMMON/library.sv
+COMMON/sim_lib/altera_mf.v
 COMMON/structs.sv
-PRG/primary_ray_generator.sv
-PRG/tb_prg.sv
-tb_prg
-99
-sysc_uni_pwd=/afs/ece.cmu.edu/usr/rmacdona/18-545
+RAYTRACER/int/int_math.sv
+RAYTRACER/int/int_wrap.sv
+RAYTRACER/int/int_wrap.sv
+RAYTRACER/int/p_calc.sv
+RAYTRACER/int/prime_calc.sv
+RAYTRACER/int/t_comp.sv
+RAYTRACER/int/tuv_calc.sv
+int_wrap
+95
+sysc_uni_pwd=/afs/ece/usr/rgd/545/18-545
 mc=() {  . /usr/share/mc/mc-wrapper.sh
 }
 XSESSION_IS_UP=yes
 XNLSPATH=/usr/share/X11/nls
 XMODIFIERS=@im=local
 XKEYSYMDB=/usr/X11R6/lib/X11/XKeysymDB
-XILINXD_LICENSE_FILE=2101@dmv.ece.cmu.edu
-XILINX=/usr/local/xilinx/13.2/ISE_DS/ISE
 XDM_MANAGED=method=classic
-XDG_SESSION_COOKIE=74818f640994b2d881c6504f00001c9e-1350871174.337600-398853219
+XDG_SESSION_COOKIE=74818f640994b2d881c6504f00001c9e-1350782499.107625-181390746
 XDG_DATA_DIRS=/usr/share
 XDG_CONFIG_DIRS=/etc/xdg
 XCURSOR_THEME=Oxygen_White
-XAUTHLOCALHOSTNAME=columbus
+XAUTHLOCALHOSTNAME=crystal
 WINDOWPATH=7
 WINDOWMANAGER=/usr/bin/startkde
 VMR_MODE_FLAG=32
@@ -72,17 +77,17 @@ UNAME=/bin/uname
 TOOL_HOME=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32
 SYN_DIR=/usr/local/synopsys/synopsys-2007.03-SP5
 SYNOPSYS=/usr/local/synopsys
-SSH_AUTH_SOCK=/tmp/ssh-HClfERRA4543/agent.4543
+SSH_AUTH_SOCK=/tmp/ssh-XaTrDPW21856/agent.21856
 SSH_ASKPASS=/usr/lib/ssh/ssh-askpass
-SSH_AGENT_PID=4598
-SHELL_SESSION_ID=9dfb7987a7d940008651c90465fd3369
-SESSION_MANAGER=local/columbus:@/tmp/.ICE-unix/4690,unix/columbus:/tmp/.ICE-unix/4690
+SSH_AGENT_PID=21908
+SHELL_SESSION_ID=d86f225eba2540008f18b74b83d1b252
+SESSION_MANAGER=local/crystal:@/tmp/.ICE-unix/22000,unix/crystal:/tmp/.ICE-unix/22000
 SDL_AUDIODRIVER=pulse
 SDK_HOME=/usr/lib64/jvm/java
 SCRNAME=vcs
 SCRIPT_NAME=vcs
 QT_SYSTEM_DIR=/usr/share/desktop-data
-QT_PLUGIN_PATH=/afs/ece.cmu.edu/usr/rmacdona/.kde4/lib64/kde4/plugins/:/usr/lib64/kde4/plugins/
+QT_PLUGIN_PATH=/afs/ece.cmu.edu/usr/rgd/.kde4/lib64/kde4/plugins/:/usr/lib64/kde4/plugins/
 QT_IM_SWITCHER=imsw-multi
 QT_IM_MODULE=xim
 PYTHONSTARTUP=/etc/pythonstart
@@ -103,11 +108,11 @@ LESSOPEN=lessopen.sh %s
 LESSKEY=/etc/lesskey.bin
 LESSCLOSE=lessclose.sh %s %s
 LESS=-M -I -R
-KRB5CCNAME=FILE:/var/tmp/krb5cc_rmacdona_TYWh6B
+KRB5CCNAME=FILE:/var/tmp/krb5cc_rgd_N4xS24
 KONSOLE_DBUS_SESSION=/Sessions/2
-KONSOLE_DBUS_SERVICE=:1.74
+KONSOLE_DBUS_SERVICE=:1.108
 KDE_SESSION_VERSION=4
-KDE_SESSION_UID=19595
+KDE_SESSION_UID=24865
 KDE_NETWORKMANAGER_DISABLED=1
 KDE_MULTIHEAD=false
 KDE_FULL_SESSION=true
@@ -118,46 +123,51 @@ JAVA_HOME=/usr/lib64/jvm/java
 JAVA_BINDIR=/usr/lib64/jvm/java/bin
 INPUTRC=/etc/inputrc
 HOSTTYPE=x86_64
-HOSTNAME=columbus
-HOST=columbus
-HOPE_MAN=/afs/ece/class/ee765/tools/hope/src
+HOSTNAME=crystal
+HOST=crystal
 G_FILENAME_ENCODING=@locale,UTF-8,ISO-8859-15,CP1252
 G_BROKEN_FILENAMES=1
-GTK_RC_FILES=/etc/gtk/gtkrc:/afs/ece/usr/rmacdona/.gtkrc:/afs/ece.cmu.edu/usr/rmacdona/.kde4/share/config/gtkrc
+GTK_RC_FILES=/etc/gtk/gtkrc:/afs/ece/usr/rgd/.gtkrc:/afs/ece.cmu.edu/usr/rgd/.kde4/share/config/gtkrc
 GTK_IM_MODULE=cedilla
-GTK2_RC_FILES=/etc/gtk-2.0/gtkrc:/afs/ece/usr/rmacdona/.gtkrc-2.0-kde4:/afs/ece/usr/rmacdona/.gtkrc-2.0-qtengine:/afs/ece/usr/rmacdona/.gtkrc-2.0:/afs/ece.cmu.edu/usr/rmacdona/.kde4/share/config/gtkrc-2.0
-GS_LIB=/afs/ece/usr/rmacdona/.fonts
-GPG_TTY=/dev/pts/1
+GTK2_RC_FILES=/etc/gtk-2.0/gtkrc:/afs/ece/usr/rgd/.gtkrc-2.0-kde4:/afs/ece/usr/rgd/.gtkrc-2.0-qtengine:/afs/ece/usr/rgd/.gtkrc-2.0:/afs/ece.cmu.edu/usr/rgd/.kde4/share/config/gtkrc-2.0
+GS_LIB=/afs/ece/usr/rgd/.fonts
+GPG_TTY=/dev/pts/2
 FROM_HEADER=
 DM_CONTROL=/var/run/xdmctl
 DESKTOP_SESSION=default
 DC_HOME=/usr/local/synopsys/synopsys-2007.03-SP5/linux/syn
-DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-5EjOrfIWq1,guid=24be52c7b0afc17ff753258d0000008b
+DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-EL7cAqhI2u,guid=f4fc07b51a66c90d913aebc400083886
 CVS_RSH=ssh
 CSHEDIT=emacs
 CPU=x86_64
 CONFIG_SITE=/usr/share/site/x86_64-unknown-linux-gnu
 COLORTERM=1
 COLORFGBG=15;0
-ATALANTA_MAN=/afs/ece/class/ee765/tools/atalanta/src
 ALSA_CONFIG_PATH=/etc/alsa-pulse.conf
 0
-12
-1350872671 PRG/tb_prg.sv
-1350872651 PRG/primary_ray_generator.sv
-1350864542 COMMON/altfp_add/altfp_add.v
-1350864542 COMMON/altfp_mult/altfp_mult.v
-1350864542 COMMON/altfp_mult/altfp_mula.v
-1350864542 COMMON/altfp_convert/altfp_convert.v
-1350865147 COMMON/structs.sv
-1350864542 COMMON/library.sv
-1350864542 COMMON/buf_t.sv
-1350864542 COMMON/altfp_div
-1350864540 COMMON/220model.v
+19
+1350880750 RAYTRACER/int/int_wrap.sv
+1350784919 RAYTRACER/int/tuv_calc.sv
+1350784917 RAYTRACER/int/t_comp.sv
+1350784916 RAYTRACER/int/prime_calc.sv
+1350756951 RAYTRACER/int/p_calc.sv
+1350880750 RAYTRACER/int/int_wrap.sv
+1350786428 RAYTRACER/int/int_math.sv
+1350266127 COMMON/altfp_mult/altfp_mult.v
+1350337668 COMMON/altfp_div/altfp_div.v
+1350766143 COMMON/altfp_convert/altfp_convert.v
+1350766139 COMMON/altfp_compare/altfp_compare.v
+1350269508 COMMON/altfp_add/altfp_add.v
+1350786330 COMMON/sim_lib/altera_mf.v
+1350878705 COMMON/structs.sv
+1350852987 COMMON/library.sv
+1350275607 COMMON/buf_t.sv
+1350682338 COMMON/altfp_div
+1338527599 COMMON/220model.v
 1338174308 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/vcsd.tab
 4
 0 
 1338179553 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libvirsim.so
 1338176222 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/librterrorinf.so
 1338176038 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libsnpsmalloc.so
-1350872695 simv.daidir
+1350880761 simv.daidir

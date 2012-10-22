@@ -5,10 +5,10 @@ module camera_controller(
   input clk, rst,
   input v0, v1, v2,
 
-  input keys_t keys; // Keys packet from 
+  input keys_t keys, // Keys packet from 
   
-  input rendering_done;
-  output logic render_frame;
+  input rendering_done,
+  output logic render_frame
 
 
   );

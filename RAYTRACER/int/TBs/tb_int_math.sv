@@ -232,6 +232,7 @@ module tb_int_math();
     c.translate.y = $shortrealtobits(b24);
     c.translate.z = $shortrealtobits(b34);
     
+    $display("c = %x, %d (size)", c, $bits(int_cacheline_t));
 
     return c;
   endfunction
