@@ -3,23 +3,25 @@
 	<head>
 		<title>VCS dump file for DVE debugging</title>
 		<vcsVersion>F-2011.12-SP1</vcsVersion>
-		<dateCreated>Sun Oct 21 22:24:54 2012</dateCreated>
+		<dateCreated>Mon Oct 22 05:48:29 2012</dateCreated>
 	</head>
 	<body>
 		<!-- VCS compile options -->
-		<vcsCompileOptions text="/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/bin/vcs1 -Mcc=gcc -Mcplusplus=g++ -Masflags=--32 -Mcfl= -pipe -m32 -O -I/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/include  -Mldflags= -melf_i386 -m32  -Mout=simv -Mamsrun= -Mvcsaceobjs= -Mobjects= /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libvirsim.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/librterrorinf.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libsnpsmalloc.so  -Msaverestoreobj=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/vcs_save_restore_new.o -Mcrt0= -Mcrtn= -Mcsrc= -Msyslibs=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/ctype-stubs_32.a -ldl -lm  -Xcbug=0x1 -debug_all -top tb_prg +cli+4 +vcsd +itf+/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/vcsd.tab +vpi -line -debug=4 +memcbk -sverilog +vpi -gen_obj COMMON/220model.v COMMON/altfp_div COMMON/buf_t.sv COMMON/library.sv COMMON/structs.sv COMMON/altfp_convert/altfp_convert.v COMMON/altfp_mult/altfp_mula.v COMMON/altfp_mult/altfp_mult.v COMMON/altfp_add/altfp_add.v PRG/primary_ray_generator.sv PRG/tb_prg.sv "/>
+		<vcsCompileOptions text="/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/bin/vcs1 -Mcc=gcc -Mcplusplus=g++ -Masflags=--32 -Mcfl= -pipe -m32 -O -I/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/include  -Mldflags= -melf_i386 -m32  -Mout=simv -Mamsrun= -Mvcsaceobjs= -Mobjects= /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libvirsim.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/librterrorinf.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libsnpsmalloc.so  -Msaverestoreobj=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/vcs_save_restore_new.o -Mcrt0= -Mcrtn= -Mcsrc= -Msyslibs=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/ctype-stubs_32.a -ldl -lm  -Xcbug=0x1 -debug_all -top tb_camera +cli+4 +vcsd +itf+/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/vcsd.tab +vpi -line -debug=4 +memcbk -sverilog +vpi -gen_obj COMMON/220model.v COMMON/altfp_div COMMON/buf_t.sv COMMON/library.sv COMMON/structs.sv COMMON/altfp_convert/altfp_convert.v COMMON/altfp_mult/altfp_mula.v COMMON/altfp_mult/altfp_mult.v COMMON/altfp_add/altfp_add.v CAMERA/camera_controller.sv CAMERA/camera_datapath.sv CAMERA/tb_camera.sv CAMERA/tb_cdp.sv "/>
 		<!-- File list for the whole design -->
 		<fileList>
 			<file fid="0" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/220model.v" />
-			<file fid="1" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/altfp_add/altfp_add.v" />
-			<file fid="2" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/structs.sv" />
-			<file fid="4" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/PRG/primary_ray_generator.sv" />
-			<file fid="3" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/library.sv" />
-			<file fid="5" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/PRG/tb_prg.sv" />
-			<file fid="6" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/buf_t.sv" />
-			<file fid="7" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/altfp_convert/altfp_convert.v" />
-			<file fid="8" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/altfp_mult/altfp_mult.v" />
-			<file fid="9" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/altfp_mult/altfp_mula.v" />
+			<file fid="1" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/CAMERA/camera_controller.sv" />
+			<file fid="2" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/altfp_add/altfp_add.v" />
+			<file fid="3" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/structs.sv" />
+			<file fid="4" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/library.sv" />
+			<file fid="5" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/CAMERA/camera_datapath.sv" />
+			<file fid="6" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/CAMERA/tb_cdp.sv" />
+			<file fid="7" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/buf_t.sv" />
+			<file fid="8" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/altfp_convert/altfp_convert.v" />
+			<file fid="9" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/altfp_mult/altfp_mult.v" />
+			<file fid="10" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/altfp_mult/altfp_mula.v" />
+			<file fid="11" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/CAMERA/tb_camera.sv" />
 		</fileList>
 		<!-- Include file list for the whole design -->
 		<includeFileList>
@@ -32,7 +34,7 @@
 		</inactiveCodesList>
 		<!-- Compile options UUM based -->
 		<langKeywords>
-			<svFiles fid="0-9" />
+			<svFiles fid="0-11" />
 		</langKeywords>
 		<!--  Case insensitive file list -->
 		<caseInsensitiveFiles fid="" />
@@ -241,57 +243,65 @@
 			<macro name="LPM_MAX_NAME_SZ" module="convert_to_ver_file" sourceID="0" lineno="1216" defID="0" defLine="55" value="1"  vip="false"/>
 			<macro name="LPM_MAX_NAME_SZ" module="convert_to_ver_file" sourceID="0" lineno="1217" defID="0" defLine="55" value="1"  vip="false"/>
 			<macro name="LPM_MAX_NAME_SZ" module="convert_to_ver_file" sourceID="0" lineno="1218" defID="0" defLine="55" value="1"  vip="false"/>
-			<macro name="screen_width" module="prg" sourceID="4" lineno="40" defID="4" defLine="4" value="24"  vip="false"/>
-			<macro name="screen_height" module="prg" sourceID="4" lineno="41" defID="4" defLine="5" value="25"  vip="false"/>
-			<macro name="num_rays" module="prg" sourceID="4" lineno="44" defID="4" defLine="6" value="26"  vip="false"/>
-			<macro name="half_screen_width" module="prg" sourceID="4" lineno="74" defID="4" defLine="8" value="27"  vip="false"/>
-			<macro name="half_screen_height" module="prg" sourceID="4" lineno="74" defID="4" defLine="9" value="28"  vip="false"/>
-			<macro name="num_rays" module="unnamed$$_2" sourceID="4" lineno="169" defID="4" defLine="6" value="26"  vip="false"/>
-			<macro name="FP_0" module="unnamed$$_0" sourceID="5" lineno="29" defID="2" defLine="7" value="29"  vip="false"/>
-			<macro name="FP_0" module="unnamed$$_0" sourceID="5" lineno="29" defID="2" defLine="7" value="29"  vip="false"/>
-			<macro name="FP_0" module="unnamed$$_0" sourceID="5" lineno="29" defID="2" defLine="7" value="29"  vip="false"/>
-			<macro name="FP_1" module="unnamed$$_0" sourceID="5" lineno="30" defID="2" defLine="6" value="30"  vip="false"/>
-			<macro name="FP_0" module="unnamed$$_0" sourceID="5" lineno="30" defID="2" defLine="7" value="29"  vip="false"/>
-			<macro name="FP_0" module="unnamed$$_0" sourceID="5" lineno="30" defID="2" defLine="7" value="29"  vip="false"/>
-			<macro name="FP_0" module="unnamed$$_0" sourceID="5" lineno="31" defID="2" defLine="7" value="29"  vip="false"/>
-			<macro name="FP_1" module="unnamed$$_0" sourceID="5" lineno="31" defID="2" defLine="6" value="30"  vip="false"/>
-			<macro name="FP_0" module="unnamed$$_0" sourceID="5" lineno="31" defID="2" defLine="7" value="29"  vip="false"/>
-			<macro name="FP_0" module="unnamed$$_0" sourceID="5" lineno="32" defID="2" defLine="7" value="29"  vip="false"/>
-			<macro name="FP_0" module="unnamed$$_0" sourceID="5" lineno="32" defID="2" defLine="7" value="29"  vip="false"/>
-			<macro name="FP_1" module="unnamed$$_0" sourceID="5" lineno="32" defID="2" defLine="6" value="30"  vip="false"/>
-			<macro name="FP_1" module="unnamed$$_0" sourceID="5" lineno="35" defID="2" defLine="6" value="30"  vip="false"/>
+			<macro name="move_scale" module="camera_datapath" sourceID="5" lineno="59" defID="5" defLine="11" value="24"  vip="false"/>
+			<macro name="UPOS" module="unnamed$$_0" sourceID="5" lineno="121" defID="5" defLine="14" value="25"  vip="false"/>
+			<macro name="UNEG" module="unnamed$$_0" sourceID="5" lineno="122" defID="5" defLine="13" value="26"  vip="false"/>
+			<macro name="VPOS" module="unnamed$$_0" sourceID="5" lineno="123" defID="5" defLine="17" value="27"  vip="false"/>
+			<macro name="VNEG" module="unnamed$$_0" sourceID="5" lineno="124" defID="5" defLine="16" value="28"  vip="false"/>
+			<macro name="WPOS" module="unnamed$$_0" sourceID="5" lineno="125" defID="5" defLine="20" value="29"  vip="false"/>
+			<macro name="WNEG" module="unnamed$$_0" sourceID="5" lineno="126" defID="5" defLine="19" value="30"  vip="false"/>
+			<macro name="INIT_CAM_X" module="unnamed$$_5" sourceID="5" lineno="138" defID="5" defLine="6" value="31"  vip="false"/>
+			<macro name="INIT_CAM_Y" module="unnamed$$_5" sourceID="5" lineno="138" defID="5" defLine="7" value="32"  vip="false"/>
+			<macro name="INIT_CAM_Z" module="unnamed$$_5" sourceID="5" lineno="138" defID="5" defLine="8" value="33"  vip="false"/>
+			<macro name="FP_1" module="unnamed$$_5" sourceID="5" lineno="139" defID="3" defLine="5" value="34"  vip="false"/>
+			<macro name="FP_0" module="unnamed$$_5" sourceID="5" lineno="139" defID="3" defLine="6" value="35"  vip="false"/>
+			<macro name="FP_0" module="unnamed$$_5" sourceID="5" lineno="139" defID="3" defLine="6" value="35"  vip="false"/>
+			<macro name="FP_0" module="unnamed$$_5" sourceID="5" lineno="140" defID="3" defLine="6" value="35"  vip="false"/>
+			<macro name="FP_1" module="unnamed$$_5" sourceID="5" lineno="140" defID="3" defLine="5" value="34"  vip="false"/>
+			<macro name="FP_0" module="unnamed$$_5" sourceID="5" lineno="140" defID="3" defLine="6" value="35"  vip="false"/>
+			<macro name="FP_0" module="unnamed$$_5" sourceID="5" lineno="141" defID="3" defLine="6" value="35"  vip="false"/>
+			<macro name="FP_0" module="unnamed$$_5" sourceID="5" lineno="141" defID="3" defLine="6" value="35"  vip="false"/>
+			<macro name="FP_1" module="unnamed$$_5" sourceID="5" lineno="141" defID="3" defLine="5" value="34"  vip="false"/>
+			<macro name="FP_0" module="unnamed$$_5" sourceID="5" lineno="142" defID="3" defLine="6" value="35"  vip="false"/>
+			<macro name="FP_0" module="unnamed$$_5" sourceID="5" lineno="142" defID="3" defLine="6" value="35"  vip="false"/>
+			<macro name="FP_0" module="unnamed$$_5" sourceID="5" lineno="142" defID="3" defLine="6" value="35"  vip="false"/>
 		</macroDefinitionList>
 		<!-- Macro value list for the whole design --> 
 		<macroValueList>
 			<mv i="2" n="256" />
 			<mv i="8" n="&quot;\n&quot;" />
-			<mv i="28" n="32&apos;hC3700000" />
-			<mv i="26" n="307200" />
 			<mv i="11" n="&quot;\t&quot;" />
 			<mv i="17" n="&quot;[&quot;" />
 			<mv i="18" n="&quot;]&quot;" />
 			<mv i="15" n="&quot;:&quot;" />
 			<mv i="1" n="128" />
-			<mv i="24" n="640" />
+			<mv i="25" n="3&apos;b000" />
 			<mv i="12" n="&quot;%&quot;" />
+			<mv i="26" n="3&apos;b001" />
 			<mv i="5" n="1 " />
-			<mv i="27" n="32&apos;hC3A00000" />
 			<mv i="13" n="&quot;-&quot;" />
 			<mv i="23" n="32&apos;h000000FF" />
 			<mv i="4" n="0" />
+			<mv i="29" n="3&apos;b100" />
+			<mv i="30" n="3&apos;b101" />
+			<mv i="32" n="32&apos;h40400000" />
 			<mv i="21" n="8&apos;h10" />
 			<mv i="6" n="&quot;ver&quot;" />
 			<mv i="19" n="&quot;;&quot;" />
-			<mv i="29" n="32&apos;h0" />
+			<mv i="35" n="32&apos;h0" />
 			<mv i="14" n="&quot;=&quot;" />
 			<mv i="10" n="&quot; &quot;" />
+			<mv i="31" n="32&apos;h40800000" />
 			<mv i="7" n="-1" />
 			<mv i="20" n="8" />
 			<mv i="9" n="8&apos;h0D" />
 			<mv i="3" n="0 " />
-			<mv i="30" n="32&apos;h3F80_0000" />
+			<mv i="27" n="3&apos;b010" />
+			<mv i="24" n="32&apos;h3F800000" />
+			<mv i="28" n="3&apos;b011" />
+			<mv i="33" n="32&apos;hC1200000" />
+			<mv i="34" n="32&apos;h3F80_0000" />
 			<mv i="22" n="20&apos;h10000" />
-			<mv i="25" n="480 " />
 			<mv i="16" n="&quot;.&quot;" />
 		</macroValueList>
 	</body>

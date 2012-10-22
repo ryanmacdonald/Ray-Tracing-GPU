@@ -27,10 +27,16 @@ module camera_datapath (input logic clk, rst,
 			input logic[31:0] cnt,
 			output vector_t E, U, V, W);
 
-	
+	shortreal nc_x,nc_y,nc_z;
+	assign nc_x = $bitstoshortreal(nextCam.x);
+	assign nc_y = $bitstoshortreal(nextCam.y);
+	assign nc_z = $bitstoshortreal(nextCam.z);	
+
+
 	logic[31:0] move_val, move_val_n;
 	logic update_cam;
 	vector_t E_n,U_n,V_n,W_n;
+	vector_t nextCam,nextCam_n;
 
 	
 	// Synchronizer
@@ -44,7 +50,7 @@ module camera_datapath (input logic clk, rst,
 	logic[31:0] conv_dataa, conv_result;
 	assign conv_dataa = cnt;
 	altfp_convert conv(.dataa(conv_dataa),.result(conv_result),
-			   .clk,.aclr(rst));
+			   .clock(clk),.aclr(rst));
 
 	logic[31:0] mult_1_dataa, mult_1_datab;
 	logic mult_1_underflow, mult_1_overflow, mult_1_zero, mult_1_nan;
@@ -55,7 +61,7 @@ module camera_datapath (input logic clk, rst,
 			   .underflow(mult_1_underflow),.overflow(mult_1_overflow),
 			   .nan(mult_1_nan),.zero(mult_1_zero),
 			   .result(mult_1_result),
-			   .clk,.aclr(rst));
+			   .clock(clk),.aclr(rst));
 
 	logic[31:0] mult_2_dataa, mult_2_datab;
 	logic mult_2_underflow, mult_2_overflow, mult_2_zero, mult_2_nan;
@@ -66,7 +72,7 @@ module camera_datapath (input logic clk, rst,
 			   .underflow(mult_2_underflow),.overflow(mult_2_overflow),
 			   .nan(mult_2_nan),.zero(mult_2_zero),
 			   .result(mult_2_result),
-			   .clk,.aclr(rst));
+			   .clock(clk),.aclr(rst));
 
 	logic[31:0] add_1_dataa, add_1_datab;
 	logic add_1_underflow, add_1_overflow, add_1_zero, add_1_nan;
@@ -77,7 +83,7 @@ module camera_datapath (input logic clk, rst,
 			   .underflow(add_1_underflow),.overflow(add_1_overflow),
 			   .nan(add_1_nan),.zero(add_1_zero),
 			   .result(add_1_result),
-			   .clk,.aclr(rst));
+			   .clock(clk),.aclr(rst));
 
 	
 	////// FF INSTANTIATIONS FOR CAMERA REGS //////
@@ -97,9 +103,18 @@ module camera_datapath (input logic clk, rst,
 		V_n = V;
 		W_n = W;
 		E_n = E;
-	
-		if(update_cam) begin
-			E_n = add_1_result;
+		nextCam_n = nextCam;
+		move_val_n = move_val;	
+
+		if(v2) begin
+			move_val_n = mult_1_result;
+			nextCam_n.x = add_1_result;
+		end
+		else if(v0) begin
+			nextCam_n.y = add_1_result;
+		end
+		else if(v1) begin
+			nextCam_n.z = add_1_result;
 		end
 
 		case(key)
@@ -123,13 +138,16 @@ module camera_datapath (input logic clk, rst,
 			E <= {`INIT_CAM_X,`INIT_CAM_Y,`INIT_CAM_Z};
 			U <= {`FP_1,`FP_0,`FP_0};
 			V <= {`FP_0,`FP_1,`FP_0};
-			W <= {`FP_0,`FP_0,`FP_1};	
+			W <= {`FP_0,`FP_0,`FP_1};
+			nextCam <= {`FP_0,`FP_0,`FP_0};	
 		end
 		else begin
-			E <= E_n;
+			if(update_cam) E <= nextCam_n;
+			else E <= E_n;
 			U <= U_n;
 			V <= V_n;
 			W <= W_n;
+			nextCam <= nextCam_n;
 		end
 	end
 

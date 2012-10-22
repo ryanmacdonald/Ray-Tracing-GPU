@@ -5,11 +5,11 @@ module camera_controller(
   input clk, rst,
   input v0, v1, v2,
 
-  input keys_t keys, // Keys packet from 
+  input keys_t keys, // Keys packet from PS/2 
   
   input rendering_done,
-  output logic render_frame
-
+  output logic render_frame,
+  output vector_t E, U, V, W
 
   );
 
@@ -29,11 +29,16 @@ module camera_controller(
   enum logic[1:0] {NOT_PRESSED, PRESSED, RENDERING} CS0, NS0;
 
   logic rendering, rendering_n;
-  logic pressed, released, ld_key_val, key_val_n, key_val; 
+  logic pressed, released, ld_key_val;
+  logic[2:0] key_val_n, key_val; 
   
   assign rendering_n = rendering_done ? 1'b0 : (render_frame ? 1'b1 : rendering);
   assign pressed = (CS0 == PRESSED);
   assign released = ~pressed;
+
+
+  ff_ar #(1,'h0) ffrend(.q(rendering), .d(rendering_n), .clk, .rst);
+
 
   always_comb begin
     ld_key_val = 1'b0;
@@ -46,7 +51,7 @@ module camera_controller(
         NS0 = keys.released ? RENDERING : PRESSED ;
       end
       RENDERING : begin
-        NS0 = rendering ? RENDERING : ~RENDERING ;
+        NS0 = rendering ? RENDERING : NOT_PRESSED ;
       end
     endcase
   end
@@ -54,6 +59,7 @@ module camera_controller(
   ff_ar #(2,2'b00) ff(.q(CS0), .d(NS0), .clk, .rst);
 
   always_comb begin
+    key_val_n = 'h0;
     if(ld_key_val) begin
       case({keys.d[0],keys.a[0],keys.e[0],keys.q[0],keys.w[0],keys.s[0]})
         6'b10_00_00 : key_val_n = 'h0;
@@ -76,7 +82,7 @@ module camera_controller(
   assign is_counting_n = stop_cnt ? 1'b0 : (start_cnt0 | start_cnt25 ? 1'b1 : is_counting);
   
   ff_ar #(1,1'b0) ff1(.q(is_counting), .d(is_counting_n), .clk, .rst);
-  
+  /*
   // TODO might be sketchy, check this shit
   always_comb begin
     mv_cnt_n = mv_cnt ;
@@ -87,6 +93,11 @@ module camera_controller(
       4'b0001 : mv_cnt_n = mv_cnt + 3'h3 ;
     endcase
   end
+*/
+	assign mv_cnt_n = clr_cnt|start_cnt0 ? 'h0 :
+		( start_cnt25 ? 'd25 :
+		( stop_cnt ? mv_cnt :
+		( v2 & is_counting ? mv_cnt+3'h3 : mv_cnt ) ) );
 
   ff_ar #(32,'h0) ff2(.q(mv_cnt), .d(mv_cnt_n), .clk, .rst);
 
@@ -98,6 +109,7 @@ module camera_controller(
     start_cnt25 = 1'b0;
     clr_cnt = 1'b0;
     render_frame = 1'b0;
+    stop_cnt = 1'b0;
     case(CS1)
       2'b00 : begin
         NS1 = pressed ? 2'b01 : 2'b00 ;
@@ -105,7 +117,7 @@ module camera_controller(
         render_frame = pressed & ~rendering;
       end
       2'b01 : begin
-        NS1 = released ? 2'b10 : 1'b01 ;
+        NS1 = released ? 2'b10 : 2'b01 ;
         stop_cnt = released ;
         render_frame = pressed & ~rendering;
         start_cnt25 = pressed & ~rendering;
@@ -117,6 +129,7 @@ module camera_controller(
       2'b11 : begin
         NS1 = pressed ? 2'b01 : (rendering ? 2'b11 : 2'b00 ) ;
         start_cnt0 = pressed;
+	clr_cnt = ~pressed & ~rendering;
         render_frame = pressed & ~rendering;
       end
     endcase
@@ -124,6 +137,11 @@ module camera_controller(
   
   ff_ar #(2,2'b00) ff3(.q(CS1), .d(NS1), .clk, .rst);
 
+
+	camera_datapath cd(.clk(clk),.rst(rst),.v0,.v1,.v2,.ld_curr_camera(render_frame),
+			   .key(key_val),.cnt(mv_cnt),.E(E),.U(U),.V(V),.W(W));
+
+	
 
 
 endmodule

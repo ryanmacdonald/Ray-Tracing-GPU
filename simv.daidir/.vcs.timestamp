@@ -1,5 +1,5 @@
 0 
-40
+42
 +cli+4
 +itf+/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/vcsd.tab
 +memcbk
@@ -28,6 +28,10 @@
 -sverilog
 -top
 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/bin/vcs1
+CAMERA/camera_controller.sv
+CAMERA/camera_datapath.sv
+CAMERA/tb_camera.sv
+CAMERA/tb_cdp.sv
 COMMON/220model.v
 COMMON/altfp_add/altfp_add.v
 COMMON/altfp_convert/altfp_convert.v
@@ -37,16 +41,14 @@ COMMON/altfp_mult/altfp_mult.v
 COMMON/buf_t.sv
 COMMON/library.sv
 COMMON/structs.sv
-PRG/primary_ray_generator.sv
-PRG/tb_prg.sv
-tb_prg
-99
-sysc_uni_pwd=/afs/ece.cmu.edu/usr/rmacdona/18-545
+tb_camera
+106
+sysc_uni_pwd=/afs/ece/usr/rmacdona/18-545
 mc=() {  . /usr/share/mc/mc-wrapper.sh
 }
+binpath=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/gui/dve/linux/bin
 XSESSION_IS_UP=yes
 XNLSPATH=/usr/share/X11/nls
-XMODIFIERS=@im=local
 XKEYSYMDB=/usr/X11R6/lib/X11/XKeysymDB
 XILINXD_LICENSE_FILE=2101@dmv.ece.cmu.edu
 XILINX=/usr/local/xilinx/13.2/ISE_DS/ISE
@@ -59,6 +61,7 @@ XAUTHLOCALHOSTNAME=columbus
 WINDOWPATH=7
 WINDOWMANAGER=/usr/bin/startkde
 VMR_MODE_FLAG=32
+VCS_PATHMAP_PRELOAD_DONE=1
 VCS_MX_HOME_INTERNAL=1
 VCS_LIC_EXPIRE_WARNING=0
 VCS_HOME=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1
@@ -70,12 +73,14 @@ VCS_ARCH=suse32
 USE_FAM=
 UNAME=/bin/uname
 TOOL_HOME=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32
+TCLLIBPATH=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/gui/dve/auxx/tcllib/lib/tcl8.4 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/gui/dve/auxx/tcllib/snps_tcl
 SYN_DIR=/usr/local/synopsys/synopsys-2007.03-SP5
 SYNOPSYS=/usr/local/synopsys
 SSH_AUTH_SOCK=/tmp/ssh-HClfERRA4543/agent.4543
 SSH_ASKPASS=/usr/lib/ssh/ssh-askpass
 SSH_AGENT_PID=4598
-SHELL_SESSION_ID=9dfb7987a7d940008651c90465fd3369
+SPECMAN_OUTPUT_TO_TTY=1
+SHELL_SESSION_ID=02944cbe28e640009a205c32cdd92433
 SESSION_MANAGER=local/columbus:@/tmp/.ICE-unix/4690,unix/columbus:/tmp/.ICE-unix/4690
 SDL_AUDIODRIVER=pulse
 SDK_HOME=/usr/lib64/jvm/java
@@ -94,9 +99,8 @@ OSTYPE=linux
 NNTPSERVER=news
 MORE=-sl
 MINICOM=-c on
-MFLAGS=
-MAKELEVEL=1
-MAKEFLAGS=
+MDB_SIM_ARGS=-simwarn
+MARCH=linux
 LS_OPTIONS=-N --color=tty -T 0
 LESS_ADVANCED_PREPROCESSOR=no
 LESSOPEN=lessopen.sh %s
@@ -104,7 +108,7 @@ LESSKEY=/etc/lesskey.bin
 LESSCLOSE=lessclose.sh %s %s
 LESS=-M -I -R
 KRB5CCNAME=FILE:/var/tmp/krb5cc_rmacdona_TYWh6B
-KONSOLE_DBUS_SESSION=/Sessions/2
+KONSOLE_DBUS_SESSION=/Sessions/1
 KONSOLE_DBUS_SERVICE=:1.74
 KDE_SESSION_VERSION=4
 KDE_SESSION_UID=19595
@@ -127,8 +131,12 @@ GTK_RC_FILES=/etc/gtk/gtkrc:/afs/ece/usr/rmacdona/.gtkrc:/afs/ece.cmu.edu/usr/rm
 GTK_IM_MODULE=cedilla
 GTK2_RC_FILES=/etc/gtk-2.0/gtkrc:/afs/ece/usr/rmacdona/.gtkrc-2.0-kde4:/afs/ece/usr/rmacdona/.gtkrc-2.0-qtengine:/afs/ece/usr/rmacdona/.gtkrc-2.0:/afs/ece.cmu.edu/usr/rmacdona/.kde4/share/config/gtkrc-2.0
 GS_LIB=/afs/ece/usr/rmacdona/.fonts
-GPG_TTY=/dev/pts/1
+GPG_TTY=/dev/pts/0
 FROM_HEADER=
+DVE_SIM_SELECT_LOOP=on
+DVE_PSTACK=/usr/bin/gstack
+DVE_AUXX_GUI=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/gui/dve/auxx/gui
+DVE=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/gui/dve
 DM_CONTROL=/var/run/xdmctl
 DESKTOP_SESSION=default
 DC_HOME=/usr/local/synopsys/synopsys-2007.03-SP5/linux/syn
@@ -139,17 +147,20 @@ CPU=x86_64
 CONFIG_SITE=/usr/share/site/x86_64-unknown-linux-gnu
 COLORTERM=1
 COLORFGBG=15;0
+CMD=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/gui/dve/linux/bin/dve.exe
 ATALANTA_MAN=/afs/ece/class/ee765/tools/atalanta/src
 ALSA_CONFIG_PATH=/etc/alsa-pulse.conf
 0
-12
-1350872671 PRG/tb_prg.sv
-1350872651 PRG/primary_ray_generator.sv
+14
+1350879614 CAMERA/tb_cdp.sv
+1350899303 CAMERA/tb_camera.sv
+1350897836 CAMERA/camera_datapath.sv
+1350899135 CAMERA/camera_controller.sv
 1350864542 COMMON/altfp_add/altfp_add.v
 1350864542 COMMON/altfp_mult/altfp_mult.v
 1350864542 COMMON/altfp_mult/altfp_mula.v
 1350864542 COMMON/altfp_convert/altfp_convert.v
-1350865147 COMMON/structs.sv
+1350880914 COMMON/structs.sv
 1350864542 COMMON/library.sv
 1350864542 COMMON/buf_t.sv
 1350864542 COMMON/altfp_div
@@ -160,4 +171,4 @@ ALSA_CONFIG_PATH=/etc/alsa-pulse.conf
 1338179553 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libvirsim.so
 1338176222 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/librterrorinf.so
 1338176038 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libsnpsmalloc.so
-1350872695 simv.daidir
+1350899309 simv.daidir

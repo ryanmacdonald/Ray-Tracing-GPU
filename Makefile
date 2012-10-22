@@ -27,6 +27,10 @@ camera_dp:
 	$(CC) $(FLAGS) -top tb_cdp COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v CAMERA/*.sv
 
 
+camera:
+	$(CC) $(FLAGS) -top tb_camera COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v CAMERA/*.sv
+
+
 clean:
 	rm -rf simv
 	rm -rf simv.daidir

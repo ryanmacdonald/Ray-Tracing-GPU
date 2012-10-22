@@ -1,761 +1,166 @@
 
 Chronologic VCS simulator copyright 1991-2012
 Contains Synopsys proprietary information.
-Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 21 22:24 2012
+Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 22 05:35 2012
 VCD+ Writer F-2011.12-SP1 Copyright (c) 1991-2012 by Synopsys Inc.
 The file '/afs/ece.cmu.edu/usr/rmacdona/18-545/inter.vpd' was opened successfully.
 1
 dve> run
 220model.v, 1 : //-------------------------------------------------------------------------
-                   0 
-ray_t(0) rayID =      x
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                   5 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                  25 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                  35 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                  45 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                  95 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                 105 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                 125 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                 135 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                 185 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 1120403456.000000
-                 295 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 3278897152.000000
-data.dir.z = 1120403456.000000
-                 315 
-ray_t(0) rayID =      0
-data.dir.x = 3282042880.000000
-data.dir.y = 3278897152.000000
-data.dir.z = 1120403456.000000
-                 415 
-ray_t(0) rayID =      0
-data.dir.x = 3282042880.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 445 
-ray_t(1) rayID =      0
-data.dir.x = 3282042880.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 455 
-ray_t(0) rayID =      1
-data.dir.x = 3282042880.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 465 
-ray_t(0) rayID =      1
-data.dir.x = 3282010112.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 475 
-ray_t(1) rayID =      1
-data.dir.x = 3282010112.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 485 
-ray_t(0) rayID =      2
-data.dir.x = 3282010112.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 495 
-ray_t(0) rayID =      2
-data.dir.x = 3281977344.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 505 
-ray_t(1) rayID =      2
-data.dir.x = 3281977344.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 515 
-ray_t(0) rayID =      3
-data.dir.x = 3281977344.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 525 
-ray_t(0) rayID =      3
-data.dir.x = 3281944576.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 535 
-ray_t(1) rayID =      3
-data.dir.x = 3281944576.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 545 
-ray_t(0) rayID =      4
-data.dir.x = 3281944576.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 555 
-ray_t(0) rayID =      4
-data.dir.x = 3281911808.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 565 
-ray_t(1) rayID =      4
-data.dir.x = 3281911808.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 575 
-ray_t(0) rayID =      5
-data.dir.x = 3281911808.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 585 
-ray_t(0) rayID =      5
-data.dir.x = 3281879040.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 595 
-ray_t(1) rayID =      5
-data.dir.x = 3281879040.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 605 
-ray_t(0) rayID =      6
-data.dir.x = 3281879040.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 615 
-ray_t(0) rayID =      6
-data.dir.x = 3281846272.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 625 
-ray_t(1) rayID =      6
-data.dir.x = 3281846272.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 635 
-ray_t(0) rayID =      7
-data.dir.x = 3281846272.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 645 
-ray_t(0) rayID =      7
-data.dir.x = 3281813504.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 655 
-ray_t(1) rayID =      7
-data.dir.x = 3281813504.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 665 
-ray_t(0) rayID =      8
-data.dir.x = 3281813504.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 675 
-ray_t(0) rayID =      8
-data.dir.x = 3281780736.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 685 
-ray_t(1) rayID =      8
-data.dir.x = 3281780736.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 695 
-ray_t(0) rayID =      9
-data.dir.x = 3281780736.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 705 
-ray_t(0) rayID =      9
-data.dir.x = 3281747968.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 715 
-ray_t(1) rayID =      9
-data.dir.x = 3281747968.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 725 
-ray_t(0) rayID =     10
-data.dir.x = 3281747968.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 735 
-ray_t(0) rayID =     10
-data.dir.x = 3281715200.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 745 
-ray_t(1) rayID =     10
-data.dir.x = 3281715200.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 755 
-ray_t(0) rayID =     11
-data.dir.x = 3281715200.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 765 
-ray_t(0) rayID =     11
-data.dir.x = 3281682432.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 775 
-ray_t(1) rayID =     11
-data.dir.x = 3281682432.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 785 
-ray_t(0) rayID =     12
-data.dir.x = 3281682432.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 795 
-ray_t(0) rayID =     12
-data.dir.x = 3281649664.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 805 
-ray_t(1) rayID =     12
-data.dir.x = 3281649664.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 815 
-ray_t(0) rayID =     13
-data.dir.x = 3281649664.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 825 
-ray_t(0) rayID =     13
-data.dir.x = 3281616896.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 835 
-ray_t(1) rayID =     13
-data.dir.x = 3281616896.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 845 
-ray_t(0) rayID =     14
-data.dir.x = 3281616896.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 855 
-ray_t(0) rayID =     14
-data.dir.x = 3281584128.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 865 
-ray_t(1) rayID =     14
-data.dir.x = 3281584128.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 875 
-ray_t(0) rayID =     15
-data.dir.x = 3281584128.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 885 
-ray_t(0) rayID =     15
-data.dir.x = 3281551360.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 895 
-ray_t(1) rayID =     15
-data.dir.x = 3281551360.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 905 
-ray_t(0) rayID =     16
-data.dir.x = 3281551360.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 915 
-ray_t(0) rayID =     16
-data.dir.x = 3281518592.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 925 
-ray_t(1) rayID =     16
-data.dir.x = 3281518592.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 935 
-ray_t(0) rayID =     17
-data.dir.x = 3281518592.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 945 
-ray_t(0) rayID =     17
-data.dir.x = 3281485824.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 955 
-ray_t(1) rayID =     17
-data.dir.x = 3281485824.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 965 
-ray_t(0) rayID =     18
-data.dir.x = 3281485824.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 975 
-ray_t(0) rayID =     18
-data.dir.x = 3281453056.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 985 
-ray_t(1) rayID =     18
-data.dir.x = 3281453056.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 995 
-ray_t(0) rayID =     19
-data.dir.x = 3281453056.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                1005 
-ray_t(0) rayID =     19
-data.dir.x = 3281420288.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                1015 
-ray_t(1) rayID =     19
-data.dir.x = 3281420288.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                1025 
-ray_t(0) rayID =     20
-data.dir.x = 3281420288.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-$finish called from file "PRG/tb_prg.sv", line 47.
-$finish at simulation time                 1035
-Simulation complete, time is 1035 ps.
+$finish called from file "CAMERA/tb_camera.sv", line 39.
+$finish at simulation time                12010
+Simulation complete, time is 12010 ps.
            V C S   S i m u l a t i o n   R e p o r t 
-Time: 1035 ps
-CPU Time:      0.120 seconds;       Data structure size:   0.3Mb
-Sun Oct 21 22:25:16 2012
-dve> restart
+Time: 12010 ps
+CPU Time:      0.200 seconds;       Data structure size:   0.1Mb
+Mon Oct 22 05:35:53 2012
+Loading db file '/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/gui/dve/libraries/syn/generic.sdb'
+2 drivers (1 active statement) found for signal: tb_camera.cc.mv_cnt[31:0]
+                         Chronologic VCS (TM)
+          Version F-2011.12-SP1 -- Mon Oct 22 05:44:30 2012
+               Copyright (c) 1991-2012 by Synopsys Inc.
+                         ALL RIGHTS RESERVED
+This program is proprietary and confidential information of Synopsys Inc.
+and may be used and disclosed only as authorized in a license agreement
+controlling such use and disclosure.
+Parsing design file 'COMMON/220model.v'
+Parsing design file 'COMMON/buf_t.sv'
+Parsing design file 'COMMON/library.sv'
+Parsing design file 'COMMON/structs.sv'
+Parsing design file 'COMMON/altfp_convert/altfp_convert.v'
+Parsing design file 'COMMON/altfp_mult/altfp_mula.v'
+Parsing design file 'COMMON/altfp_mult/altfp_mult.v'
+Parsing design file 'COMMON/altfp_add/altfp_add.v'
+Parsing design file 'CAMERA/camera_controller.sv'
+Parsing design file 'CAMERA/camera_datapath.sv'
+Parsing design file 'CAMERA/tb_camera.sv'
+Parsing design file 'CAMERA/tb_cdp.sv'
+Top Level Modules:
+       tb_camera
+TimeScale is 1 ps / 1 ps
+Notice: Ports coerced to inout, use -notice for details
+Starting vcs inline pass...
+17 modules and 0 UDP read.
+        However, due to incremental compilation, only 1 module needs to be compiled.
+recompiling module tb_camera because:
+        This module or some inlined child module(s) has/have been modified.
+ld -r -m elf_i386 -o pre_vcsobj_0_1.o --whole-archive pre_vcsobj_0_1.a --no-whole-archive
+if [ -x ../simv ]; then chmod -x ../simv; fi
+g++  -o ../simv -melf_i386 -m32    -Wl,-whole-archive    -Wl,-no-whole-archive  _vcsobj_1_1.o  5NrI_d.o 5NrIB_d.o SIM_l.o    pre_vcsobj_0_1.o  rmapats_mop.o rmapats.o      /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libvirsim.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/librterrorinf.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libsnpsmalloc.so     /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libvcsnew.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libuclinative.so         /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/vcs_save_restore_new.o /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/ctype-stubs_32.a -ldl -lm  -lc -lpthread -ldl 
+../simv up to date
+CPU time: .330 seconds to compile + .015 seconds to elab + .113 seconds to link
+Finished rebuilding the design.
 Chronologic VCS simulator copyright 1991-2012
 Contains Synopsys proprietary information.
-Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 21 22:27 2012
+Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 22 05:44 2012
 VCD+ Writer F-2011.12-SP1 Copyright (c) 1991-2012 by Synopsys Inc.
 The file '/afs/ece.cmu.edu/usr/rmacdona/18-545/inter.vpd' was opened successfully.
+dve> dump -add / -depth 0
+2
+dve> run
+220model.v, 1 : //-------------------------------------------------------------------------
+$finish called from file "CAMERA/tb_camera.sv", line 39.
+$finish at simulation time                12010
+Simulation complete, time is 12010 ps.
            V C S   S i m u l a t i o n   R e p o r t 
-Time: 0 ps
-CPU Time:      0.080 seconds;       Data structure size:   0.3Mb
-Sun Oct 21 22:27:22 2012
+Time: 12010 ps
+CPU Time:      0.170 seconds;       Data structure size:   0.1Mb
+Mon Oct 22 05:44:41 2012
+                         Chronologic VCS (TM)
+          Version F-2011.12-SP1 -- Mon Oct 22 05:45:58 2012
+               Copyright (c) 1991-2012 by Synopsys Inc.
+                         ALL RIGHTS RESERVED
+This program is proprietary and confidential information of Synopsys Inc.
+and may be used and disclosed only as authorized in a license agreement
+controlling such use and disclosure.
+Parsing design file 'COMMON/220model.v'
+Parsing design file 'COMMON/buf_t.sv'
+Parsing design file 'COMMON/library.sv'
+Parsing design file 'COMMON/structs.sv'
+Parsing design file 'COMMON/altfp_convert/altfp_convert.v'
+Parsing design file 'COMMON/altfp_mult/altfp_mula.v'
+Parsing design file 'COMMON/altfp_mult/altfp_mult.v'
+Parsing design file 'COMMON/altfp_add/altfp_add.v'
+Parsing design file 'CAMERA/camera_controller.sv'
+Parsing design file 'CAMERA/camera_datapath.sv'
+Parsing design file 'CAMERA/tb_camera.sv'
+Parsing design file 'CAMERA/tb_cdp.sv'
+Top Level Modules:
+       tb_camera
+TimeScale is 1 ps / 1 ps
+Notice: Ports coerced to inout, use -notice for details
+Starting vcs inline pass...
+17 modules and 0 UDP read.
+        However, due to incremental compilation, only 1 module needs to be compiled.
+recompiling module tb_camera because:
+        This module or some inlined child module(s) has/have been modified.
+ld -r -m elf_i386 -o pre_vcsobj_1_1.o --whole-archive pre_vcsobj_1_1.a --no-whole-archive
+if [ -x ../simv ]; then chmod -x ../simv; fi
+g++  -o ../simv -melf_i386 -m32    -Wl,-whole-archive    -Wl,-no-whole-archive  _vcsobj_1_1.o  5NrI_d.o 5NrIB_d.o SIM_l.o    pre_vcsobj_1_1.o  rmapats_mop.o rmapats.o      /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libvirsim.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/librterrorinf.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libsnpsmalloc.so     /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libvcsnew.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libuclinative.so         /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/vcs_save_restore_new.o /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/ctype-stubs_32.a -ldl -lm  -lc -lpthread -ldl 
+../simv up to date
+CPU time: .327 seconds to compile + .015 seconds to elab + .107 seconds to link
+Finished rebuilding the design.
 Chronologic VCS simulator copyright 1991-2012
 Contains Synopsys proprietary information.
-Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 21 22:27 2012
+Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 22 05:45 2012
 VCD+ Writer F-2011.12-SP1 Copyright (c) 1991-2012 by Synopsys Inc.
 The file '/afs/ece.cmu.edu/usr/rmacdona/18-545/inter.vpd' was opened successfully.
 2
 dve> run
 220model.v, 1 : //-------------------------------------------------------------------------
-                   0 
-ray_t(0) rayID =      x
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                   5 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                  25 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                  35 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                  45 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                  95 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                 105 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                 125 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                 135 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 0.000000
-                 185 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 0.000000
-data.dir.z = 1120403456.000000
-                 295 
-ray_t(0) rayID =      0
-data.dir.x = 0.000000
-data.dir.y = 3278897152.000000
-data.dir.z = 1120403456.000000
-                 315 
-ray_t(0) rayID =      0
-data.dir.x = 3282042880.000000
-data.dir.y = 3278897152.000000
-data.dir.z = 1120403456.000000
-                 415 
-ray_t(0) rayID =      0
-data.dir.x = 3282042880.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 445 
-ray_t(1) rayID =      0
-data.dir.x = 3282042880.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 455 
-ray_t(0) rayID =      1
-data.dir.x = 3282042880.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 465 
-ray_t(0) rayID =      1
-data.dir.x = 3282010112.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 475 
-ray_t(1) rayID =      1
-data.dir.x = 3282010112.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 485 
-ray_t(0) rayID =      2
-data.dir.x = 3282010112.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 495 
-ray_t(0) rayID =      2
-data.dir.x = 3281977344.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 505 
-ray_t(1) rayID =      2
-data.dir.x = 3281977344.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 515 
-ray_t(0) rayID =      3
-data.dir.x = 3281977344.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 525 
-ray_t(0) rayID =      3
-data.dir.x = 3281944576.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 535 
-ray_t(1) rayID =      3
-data.dir.x = 3281944576.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 545 
-ray_t(0) rayID =      4
-data.dir.x = 3281944576.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 555 
-ray_t(0) rayID =      4
-data.dir.x = 3281911808.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 565 
-ray_t(1) rayID =      4
-data.dir.x = 3281911808.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 575 
-ray_t(0) rayID =      5
-data.dir.x = 3281911808.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 585 
-ray_t(0) rayID =      5
-data.dir.x = 3281879040.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 595 
-ray_t(1) rayID =      5
-data.dir.x = 3281879040.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 605 
-ray_t(0) rayID =      6
-data.dir.x = 3281879040.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 615 
-ray_t(0) rayID =      6
-data.dir.x = 3281846272.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 625 
-ray_t(1) rayID =      6
-data.dir.x = 3281846272.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 635 
-ray_t(0) rayID =      7
-data.dir.x = 3281846272.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 645 
-ray_t(0) rayID =      7
-data.dir.x = 3281813504.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 655 
-ray_t(1) rayID =      7
-data.dir.x = 3281813504.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 665 
-ray_t(0) rayID =      8
-data.dir.x = 3281813504.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 675 
-ray_t(0) rayID =      8
-data.dir.x = 3281780736.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 685 
-ray_t(1) rayID =      8
-data.dir.x = 3281780736.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 695 
-ray_t(0) rayID =      9
-data.dir.x = 3281780736.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 705 
-ray_t(0) rayID =      9
-data.dir.x = 3281747968.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 715 
-ray_t(1) rayID =      9
-data.dir.x = 3281747968.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 725 
-ray_t(0) rayID =     10
-data.dir.x = 3281747968.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 735 
-ray_t(0) rayID =     10
-data.dir.x = 3281715200.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 745 
-ray_t(1) rayID =     10
-data.dir.x = 3281715200.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 755 
-ray_t(0) rayID =     11
-data.dir.x = 3281715200.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 765 
-ray_t(0) rayID =     11
-data.dir.x = 3281682432.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 775 
-ray_t(1) rayID =     11
-data.dir.x = 3281682432.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 785 
-ray_t(0) rayID =     12
-data.dir.x = 3281682432.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 795 
-ray_t(0) rayID =     12
-data.dir.x = 3281649664.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 805 
-ray_t(1) rayID =     12
-data.dir.x = 3281649664.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 815 
-ray_t(0) rayID =     13
-data.dir.x = 3281649664.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 825 
-ray_t(0) rayID =     13
-data.dir.x = 3281616896.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 835 
-ray_t(1) rayID =     13
-data.dir.x = 3281616896.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 845 
-ray_t(0) rayID =     14
-data.dir.x = 3281616896.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 855 
-ray_t(0) rayID =     14
-data.dir.x = 3281584128.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 865 
-ray_t(1) rayID =     14
-data.dir.x = 3281584128.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 875 
-ray_t(0) rayID =     15
-data.dir.x = 3281584128.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 885 
-ray_t(0) rayID =     15
-data.dir.x = 3281551360.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 895 
-ray_t(1) rayID =     15
-data.dir.x = 3281551360.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 905 
-ray_t(0) rayID =     16
-data.dir.x = 3281551360.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 915 
-ray_t(0) rayID =     16
-data.dir.x = 3281518592.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 925 
-ray_t(1) rayID =     16
-data.dir.x = 3281518592.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 935 
-ray_t(0) rayID =     17
-data.dir.x = 3281518592.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 945 
-ray_t(0) rayID =     17
-data.dir.x = 3281485824.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 955 
-ray_t(1) rayID =     17
-data.dir.x = 3281485824.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 965 
-ray_t(0) rayID =     18
-data.dir.x = 3281485824.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 975 
-ray_t(0) rayID =     18
-data.dir.x = 3281453056.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 985 
-ray_t(1) rayID =     18
-data.dir.x = 3281453056.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                 995 
-ray_t(0) rayID =     19
-data.dir.x = 3281453056.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                1005 
-ray_t(0) rayID =     19
-data.dir.x = 3281420288.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                1015 
-ray_t(1) rayID =     19
-data.dir.x = 3281420288.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-                1025 
-ray_t(0) rayID =     20
-data.dir.x = 3281420288.000000
-data.dir.y = 1131347968.000000
-data.dir.z = 1120403456.000000
-$finish called from file "PRG/tb_prg.sv", line 47.
-$finish at simulation time                 1035
-Simulation complete, time is 1035 ps.
+$finish called from file "CAMERA/tb_camera.sv", line 39.
+$finish at simulation time                12010
+Simulation complete, time is 12010 ps.
            V C S   S i m u l a t i o n   R e p o r t 
-Time: 1035 ps
-CPU Time:      0.120 seconds;       Data structure size:   0.3Mb
-Sun Oct 21 22:27:28 2012
+Time: 12010 ps
+CPU Time:      0.240 seconds;       Data structure size:   0.1Mb
+Mon Oct 22 05:46:09 2012
+                         Chronologic VCS (TM)
+          Version F-2011.12-SP1 -- Mon Oct 22 05:48:28 2012
+               Copyright (c) 1991-2012 by Synopsys Inc.
+                         ALL RIGHTS RESERVED
+This program is proprietary and confidential information of Synopsys Inc.
+and may be used and disclosed only as authorized in a license agreement
+controlling such use and disclosure.
+Parsing design file 'COMMON/220model.v'
+Parsing design file 'COMMON/buf_t.sv'
+Parsing design file 'COMMON/library.sv'
+Parsing design file 'COMMON/structs.sv'
+Parsing design file 'COMMON/altfp_convert/altfp_convert.v'
+Parsing design file 'COMMON/altfp_mult/altfp_mula.v'
+Parsing design file 'COMMON/altfp_mult/altfp_mult.v'
+Parsing design file 'COMMON/altfp_add/altfp_add.v'
+Parsing design file 'CAMERA/camera_controller.sv'
+Parsing design file 'CAMERA/camera_datapath.sv'
+Parsing design file 'CAMERA/tb_camera.sv'
+Parsing design file 'CAMERA/tb_cdp.sv'
+Top Level Modules:
+       tb_camera
+TimeScale is 1 ps / 1 ps
+Notice: Ports coerced to inout, use -notice for details
+Starting vcs inline pass...
+17 modules and 0 UDP read.
+        However, due to incremental compilation, only 1 module needs to be compiled.
+recompiling module tb_camera because:
+        This module or some inlined child module(s) has/have been modified.
+ld -r -m elf_i386 -o pre_vcsobj_1_1.o --whole-archive pre_vcsobj_1_1.a --no-whole-archive
+if [ -x ../simv ]; then chmod -x ../simv; fi
+g++  -o ../simv -melf_i386 -m32    -Wl,-whole-archive    -Wl,-no-whole-archive  _vcsobj_1_1.o  5NrI_d.o 5NrIB_d.o SIM_l.o    pre_vcsobj_1_1.o  rmapats_mop.o rmapats.o      /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libvirsim.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/librterrorinf.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libsnpsmalloc.so     /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libvcsnew.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libuclinative.so         /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/vcs_save_restore_new.o /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/ctype-stubs_32.a -ldl -lm  -lc -lpthread -ldl 
+../simv up to date
+CPU time: .325 seconds to compile + .013 seconds to elab + .097 seconds to link
+Finished rebuilding the design.
+Chronologic VCS simulator copyright 1991-2012
+Contains Synopsys proprietary information.
+Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 22 05:48 2012
+VCD+ Writer F-2011.12-SP1 Copyright (c) 1991-2012 by Synopsys Inc.
+The file '/afs/ece.cmu.edu/usr/rmacdona/18-545/inter.vpd' was opened successfully.
+3
+dve> run
+220model.v, 1 : //-------------------------------------------------------------------------
+$finish called from file "CAMERA/tb_camera.sv", line 40.
+$finish at simulation time                12520
+Simulation complete, time is 12520 ps.
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 12520 ps
+CPU Time:      0.190 seconds;       Data structure size:   0.1Mb
+Mon Oct 22 05:48:38 2012
