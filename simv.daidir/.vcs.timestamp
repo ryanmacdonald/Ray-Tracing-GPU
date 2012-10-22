@@ -1,11 +1,5 @@
 0 
-47
-+cli+4
-+itf+/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/vcsd.tab
-+memcbk
-+vcsd
-+vpi
-+vpi
+18
 -Mamsrun=
 -Masflags=--32
 -Mcc=gcc
@@ -18,36 +12,13 @@
 -Mobjects= /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libvirsim.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/librterrorinf.so /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libsnpsmalloc.so
 -Mout=simv
 -Msaverestoreobj=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/vcs_save_restore_new.o
--Msyslibs=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/ctype-stubs_32.a -ldl -lm
+-Msyslibs=/afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/ctype-stubs_32.a -ldl
 -Mvcsaceobjs=
--Xcbug=0x1
--debug=4
--debug_all
 -gen_obj
--line
 -sverilog
--top
 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/bin/vcs1
-COMMON/220model.v
-COMMON/altfp_add/altfp_add.v
-COMMON/altfp_compare/altfp_compare.v
-COMMON/altfp_convert/altfp_convert.v
-COMMON/altfp_div
-COMMON/altfp_div/altfp_div.v
-COMMON/altfp_mult/altfp_mult.v
-COMMON/buf_t.sv
 COMMON/library.sv
-COMMON/sim_lib/altera_mf.v
-COMMON/structs.sv
-RAYTRACER/int/int_math.sv
-RAYTRACER/int/int_wrap.sv
-RAYTRACER/int/int_wrap.sv
-RAYTRACER/int/p_calc.sv
-RAYTRACER/int/prime_calc.sv
-RAYTRACER/int/t_comp.sv
-RAYTRACER/int/tuv_calc.sv
-int_wrap
-95
+92
 sysc_uni_pwd=/afs/ece/usr/rgd/545/18-545
 mc=() {  . /usr/share/mc/mc-wrapper.sh
 }
@@ -99,9 +70,6 @@ OSTYPE=linux
 NNTPSERVER=news
 MORE=-sl
 MINICOM=-c on
-MFLAGS=
-MAKELEVEL=1
-MAKEFLAGS=
 LS_OPTIONS=-N --color=tty -T 0
 LESS_ADVANCED_PREPROCESSOR=no
 LESSOPEN=lessopen.sh %s
@@ -145,29 +113,11 @@ COLORTERM=1
 COLORFGBG=15;0
 ALSA_CONFIG_PATH=/etc/alsa-pulse.conf
 0
-19
-1350880750 RAYTRACER/int/int_wrap.sv
-1350784919 RAYTRACER/int/tuv_calc.sv
-1350784917 RAYTRACER/int/t_comp.sv
-1350784916 RAYTRACER/int/prime_calc.sv
-1350756951 RAYTRACER/int/p_calc.sv
-1350880750 RAYTRACER/int/int_wrap.sv
-1350786428 RAYTRACER/int/int_math.sv
-1350266127 COMMON/altfp_mult/altfp_mult.v
-1350337668 COMMON/altfp_div/altfp_div.v
-1350766143 COMMON/altfp_convert/altfp_convert.v
-1350766139 COMMON/altfp_compare/altfp_compare.v
-1350269508 COMMON/altfp_add/altfp_add.v
-1350786330 COMMON/sim_lib/altera_mf.v
-1350878705 COMMON/structs.sv
-1350852987 COMMON/library.sv
-1350275607 COMMON/buf_t.sv
-1350682338 COMMON/altfp_div
-1338527599 COMMON/220model.v
-1338174308 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/vcsd.tab
+1
+1350890981 COMMON/library.sv
 4
 0 
 1338179553 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libvirsim.so
 1338176222 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/librterrorinf.so
 1338176038 /afs/ece.cmu.edu/support/synopsys/synopsys/share/image/usr/local/synopsys/vcs-mx_vF-2011.12-SP1/suse32/lib/libsnpsmalloc.so
-1350880761 simv.daidir
+1350890983 simv.daidir

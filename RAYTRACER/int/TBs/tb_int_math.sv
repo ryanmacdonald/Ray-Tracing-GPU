@@ -146,6 +146,7 @@ module tb_int_math();
 
 
   // Creates the cacheline based off of 3 triangle coordinates
+
   function int_cacheline_t create_int_cacheline(input vectorf_t A, input vectorf_t B, input vectorf_t C);
     shortreal a11, a12, a13, a14;
     shortreal a21, a22, a23, a24;
@@ -212,12 +213,12 @@ module tb_int_math();
     b42 = 0;
     b43 = 0;
     b44 = 1;
-/*
+
     $display("%f %f %f %f\n",b11,b12,b13,b14);
     $display("%f %f %f %f\n",b21,b22,b23,b24);
     $display("%f %f %f %f\n",b31,b32,b33,b34);
     $display("%f %f %f %f\n",b41,b42,b43,b44);
-  */
+  
 
     c.matrix.m11 = $shortrealtobits(b11);
     c.matrix.m12 = $shortrealtobits(b12);

@@ -32,12 +32,6 @@ typedef struct packed {
   vector_t dir;
 } ray_t;
 
-typedef struct packed{
-  logic[7:0] R;
-  logic[7:0] G;
-  logic[7:0] B;
-} color_t;
-
 typedef struct packed {
   logic [7:0] red;
   logic [7:0] green;

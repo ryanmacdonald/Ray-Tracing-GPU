@@ -1,20 +1,20 @@
 # Begin_DVE_Session_Save_Info
 # DVE full session
-# Saved on Sun Oct 21 22:27:46 2012
+# Saved on Mon Oct 22 03:07:40 2012
 # Designs open: 1
-#   Sim: /afs/ece.cmu.edu/usr/rmacdona/18-545/simv
+#   Sim: /afs/ece.cmu.edu/usr/rgd/545/18-545/simv
 # Toplevel windows open: 1
 # 	TopLevel.1
-#   Source.1: _vcs_unit__442759418
+#   Source.1: _vcs_unit__2517179603
 #   Group count = 1
-#   Group Group1 signal count = 11
+#   Group Group1 signal count = 6
 # End_DVE_Session_Save_Info
 
 # DVE version: F-2011.12-SP1
 # DVE build date: May 27 2012 20:57:07
 
 
-#<Session mode="Full" path="/afs/ece.cmu.edu/usr/rmacdona/18-545/DVEfiles/session.tcl" type="Debug">
+#<Session mode="Full" path="/afs/ece.cmu.edu/usr/rgd/545/18-545/DVEfiles/session.tcl" type="Debug">
 
 gui_set_loading_session_type Post
 gui_continuetime_set
@@ -66,7 +66,7 @@ if {![gui_exist_window -window TopLevel.1]} {
 } else { 
     set TopLevel.1 TopLevel.1
 }
-gui_show_window -window ${TopLevel.1} -show_state normal -rect {{8 110} {1234 1167}}
+gui_show_window -window ${TopLevel.1} -show_state normal -rect {{244 83} {1444 1157}}
 
 # ToolBar settings
 gui_set_toolbar_attributes -toolbar {TimeOperations} -dock_state top
@@ -112,23 +112,17 @@ gui_show_toolbar -toolbar {Grid}
 # End ToolBar settings
 
 # Docked window settings
-set HSPane.1 [gui_create_window -type HSPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 287]
+set HSPane.1 [gui_create_window -type HSPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 298]
 set Hier.1 [gui_share_window -id ${HSPane.1} -type Hier]
-gui_set_window_pref_key -window ${HSPane.1} -key dock_width -value_type integer -value 287
-gui_set_window_pref_key -window ${HSPane.1} -key dock_height -value_type integer -value -1
+gui_set_window_pref_key -window ${HSPane.1} -key dock_width -value_type integer -value 298
+gui_set_window_pref_key -window ${HSPane.1} -key dock_height -value_type integer -value 676
 gui_set_window_pref_key -window ${HSPane.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${HSPane.1} {{left 0} {top 0} {width 286} {height 774} {dock_state left} {dock_on_new_line true} {child_hier_colhier 205} {child_hier_coltype 100} {child_hier_col1 0} {child_hier_col2 1}}
-set DLPane.1 [gui_create_window -type DLPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 318]
-set Data.1 [gui_share_window -id ${DLPane.1} -type Data]
-gui_set_window_pref_key -window ${DLPane.1} -key dock_width -value_type integer -value 318
-gui_set_window_pref_key -window ${DLPane.1} -key dock_height -value_type integer -value 774
-gui_set_window_pref_key -window ${DLPane.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${DLPane.1} {{left 0} {top 0} {width 317} {height 774} {dock_state left} {dock_on_new_line true} {child_data_colvariable 151} {child_data_colvalue 49} {child_data_coltype 135} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
-set Console.1 [gui_create_window -type Console -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line true -dock_extent 151]
-gui_set_window_pref_key -window ${Console.1} -key dock_width -value_type integer -value 1228
-gui_set_window_pref_key -window ${Console.1} -key dock_height -value_type integer -value 151
+gui_update_layout -id ${HSPane.1} {{left 0} {top 0} {width 297} {height 676} {dock_state left} {dock_on_new_line true} {child_hier_colhier 247} {child_hier_coltype 80} {child_hier_col1 0} {child_hier_col2 1}}
+set Console.1 [gui_create_window -type Console -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line true -dock_extent 266]
+gui_set_window_pref_key -window ${Console.1} -key dock_width -value_type integer -value 1201
+gui_set_window_pref_key -window ${Console.1} -key dock_height -value_type integer -value 266
 gui_set_window_pref_key -window ${Console.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${Console.1} {{left 0} {top 0} {width 1226} {height 150} {dock_state bottom} {dock_on_new_line true}}
+gui_update_layout -id ${Console.1} {{left 0} {top 0} {width 1200} {height 265} {dock_state bottom} {dock_on_new_line true}}
 #### Start - Readjusting docked view's offset / size
 set dockAreaList { top left right bottom }
 foreach dockArea $dockAreaList {
@@ -150,6 +144,15 @@ foreach dockArea $dockAreaList {
 gui_sync_global -id ${TopLevel.1} -option true
 
 # MDI window settings
+set DLPane.1 [gui_create_window -type {DLPane}  -parent ${TopLevel.1}]
+if {[gui_get_shared_view -id ${DLPane.1} -type Data] == {}} {
+        set Data.1 [gui_share_window -id ${DLPane.1} -type Data]
+} else {
+        set Data.1  [gui_get_shared_view -id ${DLPane.1} -type Data]
+}
+
+gui_show_window -window ${DLPane.1} -show_state maximized
+gui_update_layout -id ${DLPane.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_data_colvariable 370} {child_data_colvalue 248} {child_data_coltype 281} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
 set Source.1 [gui_create_window -type {Source}  -parent ${TopLevel.1}]
 gui_show_window -window ${Source.1} -show_state maximized
 gui_update_layout -id ${Source.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false}}
@@ -172,11 +175,11 @@ gui_update_statusbar_target_frame ${TopLevel.1}
 # DVE Open design session: 
 
 if { [llength [lindex [gui_get_db -design Sim] 0]] == 0 } {
-gui_set_env SIMSETUP::SIMARGS {{ -ucligui}}
-gui_set_env SIMSETUP::SIMEXE {/afs/ece.cmu.edu/usr/rmacdona/18-545/simv}
+gui_set_env SIMSETUP::SIMARGS {{}}
+gui_set_env SIMSETUP::SIMEXE {./simv}
 gui_set_env SIMSETUP::ALLOW_POLL {0}
-if { ![gui_is_db_opened -db {/afs/ece.cmu.edu/usr/rmacdona/18-545/simv}] } {
-gui_sim_run Ucli -exe simv -args { -ucligui} -dir /afs/ece.cmu.edu/usr/rmacdona/18-545 -nosource
+if { ![gui_is_db_opened -db {/afs/ece.cmu.edu/usr/rgd/545/18-545/simv}] } {
+gui_sim_run Ucli -exe simv -args { -ucligui} -dir /afs/ece.cmu.edu/usr/rgd/545/18-545 -nosource
 }
 }
 if { ![gui_sim_state -check active] } {error "Simulator did not start correctly" error}
@@ -201,14 +204,14 @@ gui_set_time_units 1ps
 
 set Group1 Group1
 gui_sg_create ${Group1}
-gui_sg_addsignal -group ${Group1} { tb_prg.fuck.v0 tb_prg.fuck.v1 tb_prg.fuck.v2 tb_prg.fuck.start tb_prg.fuck.rayReady tb_prg.fuck.px tb_prg.fuck.py tb_prg.fuck.pz tb_prg.fuck.start_prg tb_prg.fuck.cnt tb_prg.fuck.rayID }
+gui_sg_addsignal -group ${Group1} { tb_int_prg.int_inst.int_math_inst.valid_out tb_int_prg.int_inst.int_math_inst.hit_out tb_int_prg.int_inst.int_math_inst.hit_tri0 tb_int_prg.int_inst.int_math_inst.hit_tri1 tb_int_prg.int_inst.int_math_inst.tri_hit tb_int_prg.fuck.py }
 
 # Global: Highlighting
 
 # Post database loading setting...
 
 # Restore C1 time
-gui_set_time -C1_only 1073
+gui_set_time -C1_only 6970
 
 
 
@@ -233,14 +236,17 @@ gui_list_set_filter -id ${Hier.1} -list { {Package 1} {All 0} {Process 1} {Unnam
 gui_list_set_filter -id ${Hier.1} -text {*}
 gui_hier_list_init -id ${Hier.1}
 gui_change_design -id ${Hier.1} -design Sim
-catch {gui_list_select -id ${Hier.1} {tb_prg}}
+catch {gui_list_expand -id ${Hier.1} tb_int_prg}
+catch {gui_list_select -id ${Hier.1} {tb_int_prg.fuck}}
 gui_view_scroll -id ${Hier.1} -vertical -set 0
 gui_view_scroll -id ${Hier.1} -horizontal -set 0
 
 # Data 'Data.1'
 gui_list_set_filter -id ${Data.1} -list { {Buffer 1} {Input 1} {Others 1} {Linkage 1} {Output 1} {Parameter 1} {All 1} {Aggregate 1} {Event 1} {Assertion 1} {Constant 1} {Interface 1} {Signal 1} {$unit 1} {Inout 1} {Variable 1} }
 gui_list_set_filter -id ${Data.1} -text {*}
-gui_list_show_data -id ${Data.1} {tb_prg}
+gui_list_show_data -id ${Data.1} {tb_int_prg.fuck}
+gui_show_window -window ${Data.1}
+catch { gui_list_select -id ${Data.1} {tb_int_prg.fuck.py }}
 gui_view_scroll -id ${Data.1} -vertical -set 0
 gui_view_scroll -id ${Data.1} -horizontal -set 0
 gui_view_scroll -id ${Hier.1} -vertical -set 0
@@ -249,15 +255,14 @@ gui_view_scroll -id ${Hier.1} -horizontal -set 0
 # Source 'Source.1'
 gui_src_value_annotate -id ${Source.1} -switch false
 gui_set_env TOGGLE::VALUEANNOTATE 0
-gui_open_source -id ${Source.1}  -replace -active _vcs_unit__442759418 /afs/ece.cmu.edu/usr/rmacdona/18-545/COMMON/220model.v
+gui_open_source -id ${Source.1}  -replace -active _vcs_unit__2517179603 /afs/ece.cmu.edu/usr/rgd/545/18-545/COMMON/220model.v
 gui_view_scroll -id ${Source.1} -vertical -set 0
 gui_src_set_reusable -id ${Source.1}
 # Restore toplevel window zorder
 # The toplevel window could be closed if it has no view/pane
 if {[gui_exist_window -window ${TopLevel.1}]} {
 	gui_set_active_window -window ${TopLevel.1}
-	gui_set_active_window -window ${Source.1}
-	gui_set_active_window -window ${Console.1}
+	gui_set_active_window -window ${DLPane.1}
 }
 #</Session>
 

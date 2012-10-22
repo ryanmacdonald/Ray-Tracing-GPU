@@ -1,0 +1,209 @@
+Chronologic VCS simulator copyright 1991-2012
+Contains Synopsys proprietary information.
+Compiler version F-2011.12-SP1; Runtime version F-2011.12-SP1;  Oct 22 02:03 2012
+sqrt(144.000000) = 12.000000
+c = bec000003d2aaaab3eb555553e0000003e555555be6aaaab0000000000000000beaaaaabbeb555553e6aaaab3faaaaab,         384 (size)
+sqrt(100.000000) = 10.000000
+c = be95da89bd47ce0c3fbe70633d47ce0c3eaed44abed44aed0000000000000000bf7fffffbfbe70633ed44aed3fffffff,         384 (size)
+
+RAY      0 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (1.487805,-0.414634)
+
+RAY      1 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (1.195122,-0.365854)
+
+RAY      2 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (0.902439,-0.317073)
+
+RAY      3 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (0.609756,-0.268293)
+
+RAY      4 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (0.317073,-0.219512)
+
+RAY      5 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (0.024390,-0.170732)
+
+RAY      6 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (-0.268293,-0.121951)
+
+RAY      7 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (1.439024,-0.073171)
+
+RAY      8 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (1.146341,-0.024390)
+
+RAY      9 was a HIT!!
+	 hit tri1 at t=2.000000
+	 bary = (0.853658,0.024390)
+
+RAY     10 was a HIT!!
+	 hit tri1 at t=2.000000
+	 bary = (0.560976,0.073171)
+
+RAY     11 was a HIT!!
+	 hit tri1 at t=2.000000
+	 bary = (0.268293,0.121951)
+
+RAY     12 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (-0.024390,0.170732)
+
+RAY     13 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (-0.317073,0.219512)
+
+RAY     14 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (1.390244,0.268293)
+
+RAY     15 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (1.097561,0.317073)
+
+RAY     16 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (0.804878,0.365854)
+
+RAY     17 was a HIT!!
+	 hit tri1 at t=2.000000
+	 bary = (0.512195,0.414634)
+
+RAY     18 was a HIT!!
+	 hit tri1 at t=2.000000
+	 bary = (0.219512,0.463415)
+
+RAY     19 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (-0.073171,0.512195)
+
+RAY     20 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (-0.365854,0.560975)
+
+RAY     21 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (1.341463,0.609756)
+
+RAY     22 was a HIT!!
+	 hit tri0 at t=4.000000
+	 bary = (0.812500,0.062500)
+
+RAY     23 was a HIT!!
+	 hit tri0 at t=4.000000
+	 bary = (0.437500,0.187500)
+
+RAY     24 was a HIT!!
+	 hit tri0 at t=4.000000
+	 bary = (0.062500,0.312500)
+
+RAY     25 was a HIT!!
+	 hit tri1 at t=2.000000
+	 bary = (0.170732,0.804878)
+
+RAY     26 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (-0.121951,0.853658)
+
+RAY     27 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (-0.414634,0.902439)
+
+RAY     28 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (1.292683,0.951219)
+
+RAY     29 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (1.000000,1.000000)
+
+RAY     30 was a HIT!!
+	 hit tri0 at t=4.000000
+	 bary = (0.479167,0.395833)
+
+RAY     31 was a HIT!!
+	 hit tri0 at t=4.000000
+	 bary = (0.104167,0.520833)
+
+RAY     32 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (0.121951,1.146341)
+
+RAY     33 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (-0.170732,1.195122)
+
+RAY     34 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (-0.463415,1.243902)
+
+RAY     35 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (1.243902,1.292683)
+
+RAY     36 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (0.951219,1.341463)
+
+RAY     37 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (0.658536,1.390244)
+
+RAY     38 was a HIT!!
+	 hit tri0 at t=4.000000
+	 bary = (0.145833,0.729167)
+
+RAY     39 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (0.073171,1.487805)
+
+RAY     40 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (-0.219512,1.536585)
+
+RAY     41 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (-0.512195,1.585366)
+
+RAY     42 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (1.195122,1.634146)
+
+RAY     43 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (0.902439,1.682927)
+
+RAY     44 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (0.609756,1.731707)
+
+RAY     45 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (0.317073,1.780488)
+
+RAY     46 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (0.024390,1.829268)
+
+RAY     47 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (-0.268293,1.878049)
+
+RAY     48 was a  MISS
+	 hit tri1 at t=2.000000
+	 bary = (-0.560976,1.926829)
+$finish called from file "RAYTRACER/int/TBs/tb_int_math.sv", line 99.
+$finish at simulation time                 1980
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 1980 ps
+CPU Time:      0.310 seconds;       Data structure size:   1.4Mb
+Mon Oct 22 02:03:08 2012
