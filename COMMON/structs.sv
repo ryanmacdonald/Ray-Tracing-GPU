@@ -40,6 +40,11 @@ typedef struct packed {
 } color_t ;
 
 typedef struct packed {
+  color_t color;
+  rayID_t rayID;
+} pixel_buffer_entry_t;
+
+typedef struct packed {
   float_t u;
   float_t v;
 } bari_uv_t;

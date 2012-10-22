@@ -68,25 +68,31 @@ module trtr(
 	// FBH to pixel buffer
 	logic pb_re;
 	logic pb_empty;
-	logic [42:0] pb_data; // 19 + 24 = 43. TODO: struct?
+	logic [$bits(pixel_buffer_entry_t)] pb_data;
 
-	// beginning of temporary pixel buffer code
-	// TODO: replace code below with FIFO
-	logic pb_btn;
-	logic [42:0] pb_data_next;
+	prg(clk, rst,
+	   v0, v1, v2,
+	   start,
+	   vector_t E, U, V, W,
+	   pw,
+	   rayReady, done,
+	   ray_t prg_data);
 
-	logic [7:0] pb_red, pb_green, pb_blue;
-	logic [18:0] pb_PID;
-	assign pb_PID = {6'b0, switches[17:5]};
-	assign pb_red = {8{switches[4]}};
-	assign pb_green = {8{switches[3]}};
-	assign pb_blue = {8{switches[2]}};
-	assign pb_data_next = {pb_PID, pb_red, pb_green, pb_blue};
-    negedge_detector pb_btn_ned(.ed(pb_btn), .in(btns[1]), .clk, .rst);
+	int_wrap(
+  clk,
+  rst,
+  valid_in,
+  ray_in,
+  v0, v1, v2,
+  we,
+  full,
+  rayID,
+  color_out
+  );
 
-	ff_ar_en #(1,1'b1) pb_empty_ff(.q(pb_empty), .d(~pb_btn), .en(pb_btn | pb_re), .clk, .rst);
-	ff_ar_en #(43,43'b0) pb_data_reg(.q(pb_data), .d(pb_data_next), .en(pb_btn), .clk, .rst);
-	// end of temporary pixel buffer code
+
+	fifo #(.K(7), .WIDTH($bits(pixel_buffer_entry_t))
+		pb_fifo(.clk, .rst, .data_in(), .we(), .re(pb_re), .full(), .empty(pb_empty), .data_out(pb_data));
 
     xmodem               xm(.*);
     scene_loader         sl(.*);
