@@ -16,12 +16,12 @@ module int_wrap(
   
   output we,
   input full,
-  output rayID_t rayID,
-  output color_t color_out
-  
+  output pixel_buffer_entry_t pixel_entry_out
   );
   
-  
+  rayID_t rayID;
+  color_t color_out;
+ 
   // int_math inputs
   int_cacheline_t tri0_cacheline;
   int_cacheline_t tri1_cacheline;
@@ -77,6 +77,10 @@ module int_wrap(
   assign rayID = valid_out ? ray_out.rayID : (EM_miss ? EM_ray_out.rayID : 'h0 );
   assign we = valid_out | EM_miss ;
   
+  always_comb begin
+    pixel_entry_out.color = color_out;
+    pixel_entry_out.rayID = rayID;
+  end
 
 endmodule
 
