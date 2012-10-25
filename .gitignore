@@ -1,0 +1,11 @@
+*.exe
+*.swp
+simv
+ucli.key
+inter.vpd
+simv.vdb
+session*
+
+DVEfiles/
+simv.daidir/
+csrc/

@@ -1,2 +1,0 @@
-altfp_add.v: COMMON/altfp_add/altfp_add.v
-altfp_mult.v: COMMON/altfp_add/altfp_mult.v
