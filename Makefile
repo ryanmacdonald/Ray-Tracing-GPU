@@ -8,7 +8,7 @@ default: trtr.sv
 	$(CC) $(FLAGS) trtr.sv
 
 trtr:
-	$(CC) $(FLAGS) -top trtr_tb COMMON/*v COMMON/sim_lib/altera_mf.v COMMON/altfp*/*.v RAYTRACER/int/* PRG/*v trtr_tb.sv trtr.sv sram.sv frame_buffer_handler.sv vga.sv
+	$(CC) $(FLAGS) -top trtr_tb COMMON/*v COMMON/altfp*/*.v RAYTRACER/int/* PRG/*v TBs/trtr_tb.sv PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv trtr.sv 
 
 prime_calc:
 	$(CC) $(FLAGS) -top tb_prime_calc COMMON/*v COMMON/altfp_mult/*.v COMMON/altfp_add/*.v RAYTRACER/int/prime_calc.sv RAYTRACER/int/TBs/tb_prim_calc.sv
