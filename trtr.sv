@@ -57,13 +57,7 @@ module trtr(
     logic [15:0] sl_io;
     logic sl_we;
 
-	// FBH
-	logic fbh_re;
-	logic fbh_we;
-	logic [19:0] fbh_addr;
-	wire [15:0] fbh_io;
 	logic stripes_sel;
-
 	assign stripes_sel = switches[0];
 
 	// FBH to pixel buffer

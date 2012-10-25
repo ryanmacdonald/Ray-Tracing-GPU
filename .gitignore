@@ -5,6 +5,8 @@ ucli.key
 inter.vpd
 simv.vdb
 session*
+.restartSimSession.tcl.old
+.synopsys_dve_rebuild.tcl
 
 DVEfiles/
 simv.daidir/
