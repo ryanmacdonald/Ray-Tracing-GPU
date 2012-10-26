@@ -39,12 +39,13 @@ module int_wrap(
 
   logic valid_out; // 47 lat
   logic hit_out;  // 1 if hit //0 if miss 
-  ray_t ray_out;
+  rayID_t rayID_out;
   intersection_t intersection_out;
+  ray_vec_t ray_vec_in;
   //output float_t tMax,
 
   // Early Miss outputs
-  ray_t EM_ray_out;   // Early Miss Ray 28 latency
+  rayID_t EM_rayID_out;   // Early Miss Ray 28 latency
   logic EM_miss;      // 1 if miss, 0 if hit
   
   always_comb begin
@@ -52,8 +53,11 @@ module int_wrap(
     int_pipe1_in.t_max = 32'h42480000;
     int_pipe1_in.tri0_ID = 2;
     int_pipe1_in.tri1_ID = 5;
-    int_pipe1_in.ray = ray_in;
+    int_pipe1_in.rayID = ray_in.rayID;
+    ray_vec_in.origin = ray_in.origin;
+    ray_vec_in.dir = ray_in.dir;
   end
+  
 
   
 
@@ -74,7 +78,7 @@ module int_wrap(
   assign EM_color = `COLOR0;
 
   assign color_out = valid_out ? norm_color : (EM_miss ? EM_color : `COLOR0);
-  assign rayID = valid_out ? ray_out.rayID : (EM_miss ? EM_ray_out.rayID : 'h0 );
+  assign rayID = valid_out ? rayID_out : (EM_miss ? EM_rayID_out : 'h0 );
   assign we = valid_out | EM_miss ;
   
   always_comb begin
