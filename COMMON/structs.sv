@@ -33,6 +33,12 @@ typedef struct packed {
 } ray_t;
 
 typedef struct packed {
+  vector_t origin;
+  vector_t dir;
+} ray_vec_t;
+
+
+typedef struct packed {
   logic [7:0] red;
   logic [7:0] green;
   logic [7:0] blue;
@@ -82,7 +88,7 @@ typedef struct packed {
   float_t t_max;
   triID_t tri0_ID;
   triID_t tri1_ID;
-  ray_t ray;
+  rayID_t rayID;
 } int_pipe1_t;
 
 
@@ -94,8 +100,7 @@ typedef struct packed {
   logic t_val1;
   triID_t tri0_ID;
   triID_t tri1_ID;
-  float_t t_max;
-  ray_t ray;
+  rayID_t rayID;
 } int_pipe2_t;
 
 

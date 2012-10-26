@@ -20,7 +20,7 @@ t_comp:
 	$(CC) $(FLAGS) -top tb_t_comp COMMON/*v COMMON/altfp_comp/altfp_comp.v RAYTRACER/int/p_calc.sv RAYTRACER/int/t_comp.sv RAYTRACER/int/TBs/tb_t_comp.sv
 
 int_math: 
-	$(CC) $(FLAGS) -top tb_int_math COMMON/*v COMMON/sim_lib/altera_mf.v COMMON/altfp*/*.v RAYTRACER/int/*.sv RAYTRACER/int/TBs/tb_int_math.sv
+	$(CC) $(FLAGS) -top tb_int_math COMMON/*v COMMON/altfp*/*.v RAYTRACER/int/*.sv RAYTRACER/int/TBs/tb_int_math.sv
 
 int_wrap: 
 	$(CC) $(FLAGS) -top int_wrap COMMON/*v COMMON/sim_lib/altera_mf.v COMMON/altfp*/*.v RAYTRACER/int/*.sv RAYTRACER/int/int_wrap.sv

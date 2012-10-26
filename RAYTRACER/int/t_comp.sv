@@ -17,10 +17,9 @@ module t_comp(
   input int_pipe1_t int_pipe1_in, // valid v1
 
   output logic EM_miss,
-  output ray_t EM_ray,
+  output rayID_t EM_rayID,
 
-  output int_pipe2_t int_pipe2_out,
-  output vector_t p_int
+  output int_pipe2_t int_pipe2_out
   );
 
 
@@ -49,7 +48,7 @@ module t_comp(
   triID_t tri1_ID_f1;
 
   float_t t_max_f1;
-  ray_t ray_f1;
+  rayID_t rayID_f1;
 
   int_pipe2_t in_buf19;
   int_pipe2_t out_buf19;
@@ -104,15 +103,15 @@ module t_comp(
   // t_max_f1
   ff_ar_en #($bits(float_t),'h0) t_max_f(.d(int_pipe1_in.t_max), .q(t_max_f1), .en(v1), .clk, .rst);
  
-  // ray_f
-  ff_ar_en #($bits(ray_t),'h0) ray_f(.d(int_pipe1_in.ray), .q(ray_f1), .en(v1), .clk, .rst);
+  // rayID_f
+  ff_ar_en #($bits(rayID_t),'h0) rayID_f(.d(int_pipe1_in.rayID), .q(rayID_f1), .en(v1), .clk, .rst);
 
   logic tri1_valid_f1_2;
   assign tri1_valid_f1_2 = tri1_valid_f1 & out_agb_comp_tmax ;
 
   // EM outputs
   assign EM_miss = ~tri1_valid_f1_2 & ~tri0_valid_f1 ;
-  assign EM_ray = ray_f1;
+  assign EM_rayID = rayID_f1;
 
   // pipe2 buf19
   assign in_buf19.t_int0 = t_int0_f0;
@@ -122,25 +121,9 @@ module t_comp(
   assign in_buf19.t_val0 = tri0_valid_f1;
   assign in_buf19.tri0_ID = tri0_ID_f1;
   assign in_buf19.tri1_ID = tri1_ID_f1;
-  assign in_buf19.t_max = t_max_f1;
-  assign in_buf19.ray = ray_f1;
+  assign in_buf19.rayID = rayID_f1;
   buf_t1 #(.LAT(19), .WIDTH($bits(int_pipe2_t)))
     int_pipe2_buf19(.data_in(in_buf19), .data_out(out_buf19), .v0(v2), .clk, .rst);
-
-
-  // P_calc inst
-  // TODO This module does not make sense unless you calculate both points of intersection
-  p_calc p_calc_inst(
-    .clk,
-    .rst,
-    .v0(v1),
-    .v1(v2),
-    .v2(v0),
-    .t_int(0),
-    .origin(int_pipe1_in.ray.origin),
-    .dir(int_pipe1_in.ray.dir),
-    .p_int );
- 
 
   // OUTPUTS
   assign int_pipe2_out = out_buf19;
