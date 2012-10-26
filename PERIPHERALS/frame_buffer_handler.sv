@@ -75,7 +75,16 @@ module fbh_writer(
     assign writer_ub = ~pb_PID[0] | second_write;
     assign writer_lb = pb_PID[0] | first_write;
 
-	assign writer_data = (first_write) ? pb_pixel[23:8] : pb_pixel[15:0];
+	always_comb begin
+		case({first_write,pb_PID[0]})
+			2'b00: writer_data = {pb_pixel[7:0],8'b0};
+			2'b01: writer_data = pb_pixel[15:0];
+			2'b10: writer_data = pb_pixel[23:8];
+			2'b11: writer_data = {8'b0,pb_pixel[23:16]};
+		endcase
+	end
+
+//	assign writer_data = (first_write) ? (() ? pb_pixel[23:8] : )  : pb_pixel[15:0];
 	assign writer_addr = (first_write) ? {1'b0, PID_addr0} : {1'b0, PID_addr1}; // TODO: MSB should be 
 
 	ff_ar_en #(1,1'b1) first_write_ff(.q(first_write), .d(~first_write), .en(sram_we), .clk, .rst);

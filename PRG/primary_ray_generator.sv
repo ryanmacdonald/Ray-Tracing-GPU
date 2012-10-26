@@ -6,12 +6,17 @@
 `define num_rays 307200
 
 // defines for -w/2 and -h/2 //half width = -4, half height = -3
-`define half_screen_width  $shortrealtobits(-4.0)
-`define half_screen_height $shortrealtobits(-3.0)
-
-// D = 6 for now
-`define D $shortrealtobits(4)
-
+`ifndef SYNTH
+	`define half_screen_width  $shortrealtobits(-4.0)
+	`define half_screen_height $shortrealtobits(-3.0)
+	// D = 6 for now
+	`define D $shortrealtobits(4)
+`else
+	`define half_screen_width  32'hC080_0000 // -4
+	`define half_screen_height 32'hC040_0000 // -3
+	// D = 6 for now
+	`define D 32'h40C0_0000 // 6
+`endif
 
 // -frame_done asserted from FBH
 // -output rayReady asserted every three cycles when
@@ -24,14 +29,15 @@ module prg(input logic clk, rst,
 	   output logic rayReady, done,
 	   output ray_t prg_data);
 
+`ifndef SYNTH
 	shortreal px,py,pz;
 	assign px = $bitstoshortreal(prg_data.dir.x);
 	assign py = $bitstoshortreal(prg_data.dir.y);
 	assign pz = $bitstoshortreal(prg_data.dir.z);
+`endif
 	logic start_prg;
 
 	sync_to_v #(2) sv(.synced_signal(start_prg),.clk,.rst,.v0,.v1,.v2,.signal_to_sync(start));	
-	
 
 	// counter to determine when to begin outputting rayReady
 	logic[5:0] cnt,nextCnt;
