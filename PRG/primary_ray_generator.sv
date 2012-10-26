@@ -15,7 +15,7 @@
 	`define half_screen_width  32'hC080_0000 // -4
 	`define half_screen_height 32'hC040_0000 // -3
 	// D = 6 for now
-	`define D 32'h40C0_0000 // 6
+	`define D 32'h4080_0000 // 4
 `endif
 
 // -frame_done asserted from FBH

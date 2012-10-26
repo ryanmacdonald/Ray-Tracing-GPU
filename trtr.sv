@@ -77,15 +77,15 @@ module trtr(
 	ray_t prg_data;
 	
 	`ifndef SYNTH
-	assign	E.x = $shortrealtobits(2.0), E.y = $shortrealtobits(0), E.z = $shortrealtobits(0),
+	assign	E.x = $shortrealtobits(4.0), E.y = $shortrealtobits(0), E.z = $shortrealtobits(0),
 			U.x = `FP_1, U.y = `FP_0, U.z = `FP_0,
 			V.x = `FP_0, V.y = `FP_1, V.z = `FP_0,
 			W.x = `FP_0, W.y = `FP_0, W.z = `FP_1;
 	`else
 	// TODO: try to figure out an automatic way to do this
-	assign	E.x = 32'h4040_0000, /* 3 */
+	assign	E.x = 32'h4080_0000, /* 4 */
 			E.y = 32'h0000_0000, /* 0 */
-			E.z = 32'hC0C0_0000, /* -6 */
+			E.z = 32'h0000_0000, /* 0 */
 			U.x = `FP_1, U.y = `FP_0, U.z = `FP_0,
 			V.x = `FP_0, V.y = `FP_1, V.z = `FP_0,
 			W.x = `FP_0, W.y = `FP_0, W.z = `FP_1;
