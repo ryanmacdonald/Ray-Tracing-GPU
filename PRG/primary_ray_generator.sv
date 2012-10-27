@@ -7,10 +7,10 @@
 
 // defines for -w/2 and -h/2 //half width = -4, half height = -3
 `ifndef SYNTH
-	`define half_screen_width  $shortrealtobits(-4.0)
-	`define half_screen_height $shortrealtobits(-3.0)
+	`define half_screen_width  $shortrealtobits(-320.0)
+	`define half_screen_height $shortrealtobits(-240.0)
 	// D = 6 for now
-	`define D $shortrealtobits(4)
+	`define D $shortrealtobits(100)
 `else
 	`define half_screen_width  32'hC080_0000 // -4
 	`define half_screen_height 32'hC040_0000 // -3
@@ -24,8 +24,11 @@
 module prg(input logic clk, rst,
 	   input logic v0, v1, v2,
 	   input logic start,
+	   input logic[$clog2(`screen_width)-1:0] x,
+	   input logic[$clog2(`screen_height)-1:0] y,
 	   input vector_t E, U, V, W,
 	   input float_t pw,
+	   input logic int_to_prg_stall,
 	   output logic rayReady, done,
 	   output ray_t prg_data);
 
@@ -46,10 +49,6 @@ module prg(input logic clk, rst,
 	float_t u_dist, v_dist, next_u_dist, next_v_dist;
 	// the primary ray's direction
 	vector_t prayD,wD;
-	
-	// coordinates of pixel
-	logic[$clog2(`screen_width)-1:0]  x,nextX;
-	logic[$clog2(`screen_height)-1:0] y,nextY;
 
 	// RayID
 	logic[$clog2(`num_rays)-1:0] rayID,nextrayID;
@@ -163,7 +162,7 @@ module prg(input logic clk, rst,
 
 
 	always_comb begin
-		nextX = x; nextY = y; nextrayID = rayID;
+		nextrayID = rayID;
 		nextCnt = cnt; rayReady = 0;
 		next_u_dist = u_dist; next_v_dist = v_dist;
 		done = 0;
@@ -196,11 +195,6 @@ module prg(input logic clk, rst,
 				end
 				else if(v2) begin
 					nextState = ACTIVE;
-					if(x == 10'd639) begin
-						nextX = 1'b0;
-						nextY = y - 1'b1;
-					end
-					else nextX = x + 1'b1;
 				end
 				else nextState = ACTIVE;
 			end
@@ -219,8 +213,6 @@ module prg(input logic clk, rst,
 	always_ff @(posedge clk, posedge rst) begin
 		if(rst) begin
 			state <= IDLE;
-			x <= 10'd0;
-			y <= 9'd479;
 		end
 		else begin	
 
@@ -238,9 +230,7 @@ module prg(input logic clk, rst,
 			end
 
 			state <= nextState;
-			x <= nextX;
-			y <= nextY;
-		end
+			end
 	end
 
 endmodule: prg

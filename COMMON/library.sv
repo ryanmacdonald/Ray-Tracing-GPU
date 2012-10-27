@@ -174,7 +174,6 @@ module fifo(clk, rst,
   logic [K:0] rPtr, rPtr_n;
   logic [K:0] wPtr, wPtr_n;
 
-
   // actual queue
   logic [(1<<K) - 1:0][WIDTH-1:0] queue;
   logic [(1<<K) - 1:0][WIDTH-1:0] queue_n;
