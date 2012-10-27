@@ -19,6 +19,8 @@ module prg_top(input logic clk, rst,
 
 	logic count_en;
 	logic rayReady;
+	logic x_y_valid;
+	logic idle;
 	logic rb_we,rb_re,rb_full,rb_empty;
 	logic[9:0] x, nextX;
 	logic[8:0] y, nextY;
@@ -41,9 +43,11 @@ module prg_top(input logic clk, rst,
 	assign count_en = ~int_to_prg_stall && v2;
 
 	assign rb_we = rayReady;
-	assign rb_re = ~rb_empty && ~int_to_prg_stall;
+	assign rb_re = ~rb_empty && ~int_to_prg_stall && v2;
 
-	assign ready = ~rb_empty;
+	assign ready = rb_re;
+
+	assign x_y_valid = ~int_to_prg_stall;
 
 
 endmodule: prg_top

@@ -43,15 +43,15 @@ module camera_controller(
   always_comb begin
     ld_key_val = 1'b0;
     case(CS0)
-      NOT_PRESSED : begin
-        NS0 = keys.pressed ? PRESSED : NOT_PRESSED ;
+      2'b00 : begin
+        NS0 = keys.pressed ? 2'b01 : 2'b00 ;
         ld_key_val = keys.pressed ;
       end
-      PRESSED : begin
-        NS0 = keys.released ? RENDERING : PRESSED ;
+      2'b01 : begin
+        NS0 = keys.released ? 2'b10 : 2'b01 ;
       end
-      RENDERING : begin
-        NS0 = rendering ? RENDERING : NOT_PRESSED ;
+      2'b10 : begin
+        NS0 = rendering ? 2'b10 : 2'b00 ;
       end
     endcase
   end

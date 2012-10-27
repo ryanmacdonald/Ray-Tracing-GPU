@@ -27,13 +27,15 @@ module camera_datapath (input logic clk, rst,
 			input logic[31:0] cnt,
 			output vector_t E, U, V, W);
 
+	`ifndef SYNTH
 	shortreal nc_x,nc_y,nc_z;
 	assign nc_x = $bitstoshortreal(nextCam.x);
 	assign nc_y = $bitstoshortreal(nextCam.y);
 	assign nc_z = $bitstoshortreal(nextCam.z);	
-
+	`endif
 
 	logic[31:0] move_val, move_val_n;
+	logic[2:0] last_key;
 	logic update_cam;
 	vector_t E_n,U_n,V_n,W_n;
 	vector_t nextCam,nextCam_n;
@@ -88,6 +90,7 @@ module camera_datapath (input logic clk, rst,
 	
 	////// FF INSTANTIATIONS FOR CAMERA REGS //////
 
+	ff_ar_en #(3,0)  kr(.q(last_key),.d(key),.en(ld_curr_camera),.clk,.rst);
 	ff_ar_en #(32,0) mv(.q(move_val),.d(move_val_n),.en(v2),.clk,.rst);
 	
 
@@ -117,7 +120,7 @@ module camera_datapath (input logic clk, rst,
 			nextCam_n.z = add_1_result;
 		end
 
-		case(key)
+		case(last_key)
 			`UPOS: vector_sel = U;
 			`UNEG: vector_sel = U;
 			`VPOS: vector_sel = V;

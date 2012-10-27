@@ -28,8 +28,8 @@ module prg(input logic clk, rst,
 	   input logic[$clog2(`screen_height)-1:0] y,
 	   input vector_t E, U, V, W,
 	   input float_t pw,
-	   input logic int_to_prg_stall,
-	   output logic rayReady, done,
+	   input logic x_y_valid,
+	   output logic idle, rayReady, done,
 	   output ray_t prg_data);
 
 `ifndef SYNTH
@@ -39,6 +39,7 @@ module prg(input logic clk, rst,
 	assign pz = $bitstoshortreal(prg_data.dir.z);
 `endif
 	logic start_prg;
+	logic[39:0] rayValid;
 
 	sync_to_v #(2) sv(.synced_signal(start_prg),.clk,.rst,.v0,.v1,.v2,.signal_to_sync(start));	
 
@@ -113,7 +114,6 @@ module prg(input logic clk, rst,
 			  .nan(mult_3_nan),.overflow(mult_3_overflow),
 			  .result(mult_3_result),.underflow(mult_3_underflow),
 			  .zero(mult_3_zero));
-
 	
 	logic[31:0] mult_4_dataa, mult_4_datab;
 	logic mult_4_nan,mult_4_zero;
@@ -126,7 +126,6 @@ module prg(input logic clk, rst,
 			  .nan(mult_4_nan),.overflow(mult_4_overflow),
 			  .result(mult_4_result),.underflow(mult_4_underflow),
 			  .zero(mult_4_zero));	
-
  	
 	logic[31:0] add_2_dataa,add_2_datab;
 	logic add_2_nan, add_2_overflow;
@@ -139,7 +138,6 @@ module prg(input logic clk, rst,
 			.nan(add_2_nan),.overflow(add_2_overflow),
 			.result(add_2_result),.underflow(add_2_underflow),
 			.zero(add_2_zero));
-
  	
 	logic[31:0] add_3_dataa,add_3_datab;
 	logic add_3_nan, add_3_overflow;
@@ -153,19 +151,22 @@ module prg(input logic clk, rst,
 			.result(add_3_result),.underflow(add_3_underflow),
 			.zero(add_3_zero));
 
+	
+	// Shift reg for valid bit
+
+	shifter #(39,39'd0) rv(.q(rayValid),.d(x_y_valid),.en(~idle),.clr(1'b0),.clk,.rst);
 
 
 	////// NEXTSTATE AND OUTPUT LOGIC //////
 
-	enum logic {IDLE,ACTIVE} state, nextState;
 
-
+	enum logic {IDLE,ACTIVE} state, nextState;	
 
 	always_comb begin
 		nextrayID = rayID;
 		nextCnt = cnt; rayReady = 0;
 		next_u_dist = u_dist; next_v_dist = v_dist;
-		done = 0;
+		done = 0; idle = 1;
 		case(state)
 			// In IDLE state, just wait for start
 			IDLE:begin
@@ -175,6 +176,7 @@ module prg(input logic clk, rst,
 			// In ACTIVE state, increment x, y, and rayID
 			// every 3 cycles until rayID = 307200
 			ACTIVE:begin
+				idle = 0;
 				nextCnt = cnt + 1'b1;
 				if(rayID == `num_rays) begin
 					done = 1;
@@ -187,7 +189,7 @@ module prg(input logic clk, rst,
 				else if(v1) begin
 					if(cnt >= 6'd39 || rayID > 0) begin
 						nextCnt = 0;
-						rayReady = 1;
+						if(rayValid[0]) rayReady = 1;
 						nextrayID = rayID + 1'b1;
 					end
 					next_v_dist = add_1_result;
@@ -206,8 +208,6 @@ module prg(input logic clk, rst,
 	ff_ar #(32,0) ud(.q(u_dist),.d(next_u_dist),.clk,.rst);
 	ff_ar #(32,0) vd(.q(v_dist),.d(next_v_dist),.clk,.rst);
 	ff_ar #( 6,0) ct(.q(cnt),.d(nextCnt),.clk,.rst);
-
-
 
 
 	always_ff @(posedge clk, posedge rst) begin
