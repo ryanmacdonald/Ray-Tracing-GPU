@@ -27,15 +27,16 @@ module tb_int_math();
    int_cacheline_t tri0_cacheline;
    int_cacheline_t tri1_cacheline;
    int_pipe1_t int_pipe1_in;
+   ray_vec_t ray_vec_in;
 
    logic valid_out;
    logic hit_out;  // 1 if hit
-   ray_t ray_out;
+   rayID_t rayID_out;
    intersection_t intersection_out;
   // float_t tMax;
 
   // Early Miss s
-   ray_t EM_ray_out;   // Early Miss Ray
+   rayID_t EM_rayID_out;   // Early Miss Ray
    logic EM_miss ;     // 1 if miss; 0 if hit
  
 
@@ -81,7 +82,7 @@ module tb_int_math();
     int_pipe1_in.t_max = $shortrealtobits(14);
     int_pipe1_in.tri0_ID = 0;
     int_pipe1_in.tri1_ID = 1;
-    int_pipe1_in.ray = 'h0;
+    int_pipe1_in.rayID = 'h0;
     @(posedge clk);
     
     for(shortreal r=0; r<=6; r +=1 ) begin
@@ -102,16 +103,19 @@ module tb_int_math();
   // assumes it is called during v0
   task automatic send_ray(ray_t ray);
     ray_t tmp_ray = ray;
-    int_pipe1_in.ray <= ray;
+    int_pipe1_in.rayID <= rayID;
+    ray_vec_in.origin <= ray.origin;
+    ray_vec_in.dir <= ray.dir;
     valid_in <= 1'b1;
     @(posedge clk);
-    int_pipe1_in.ray <= 'h0;
+    int_pipe1_in.rayID <= 'h0;
+    ray_vec_in <= 'h0 ;
     valid_in <= 1'b0;
   endtask
 
   always @(posedge valid_out) begin
     #1;
-    $display("\nRAY %d was a %s",ray_out.rayID, hit_out ? "HIT!!" : "MISS");
+    $display("\nRAY %d was a %s",rayID_out, hit_out ? "HIT!!" : "MISS");
     $display("\t hit tri%1b at t=%f",intersection_out.triID, t_int_f);
     $display("\t bary = (%f,%f)",bary_u_f,bary_v_f);
   end

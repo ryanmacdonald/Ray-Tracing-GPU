@@ -1,6 +1,6 @@
-
-`ifndef STRUCTS_SV
-`define STRUCTS_SV
+`default_nettype none
+// uncomment the following line when synthesizing to board
+// `define SYNTH
 
 `define FP_1 32'h3F80_0000
 `define FP_0 32'h0
@@ -10,6 +10,12 @@ typedef struct packed {
   logic [7:0] exp;
   logic [22:0] man;
 } float_t;
+
+typedef struct packed {
+  logic sign;
+  logic [7:0] exp;
+  logic [14:0] man;
+} float24_t;
 
 typedef struct packed {
   float_t x;
@@ -22,9 +28,14 @@ typedef struct packed {
   logic [19:0] ID;
 } triID_t;
 
+ // maximum of 512 rays at a time in the pipeline TODO ?? 
+typedef struct packed {
+  logic [8:0] ID;
+} rayID_t;
+
 typedef struct packed {
   logic [18:0] ID;
-} rayID_t;
+} nodeID_t;
 
 typedef struct packed {
   rayID_t rayID;
@@ -58,7 +69,6 @@ typedef struct packed {
 typedef struct packed {
   triID_t triID;
   float_t t_int; // time intersection
-  vector_t p_int; // Point of intersection
   bari_uv_t uv; // uv of baricentric coordinates
 
 } intersection_t;
@@ -116,8 +126,47 @@ typedef struct packed {
   logic released;
 } keys_t;
 
+typedef struct packed {
+  logic [1:0] node_type;
+  triID_t tri0_ID;
+  triID_t tri1_ID;
+  logic tri1_valid;
+  logic tri0_spec;
+  logic tri1_spec;
+  logic [2:0] reserve0;
 
-    
+} leaf_node_t;
 
+typedef struct packed {
+  logic [1:0] node_type;
+  float24_t split;
+  nodeID_t right_ID;
+  logic left_empty;
+  logic right_empty;
+  logic SAH_flip; 
 
-`endif
+} norm_node_t;
+
+typedef union packed {
+  leaf_node_t leaf_node;
+  norm_node_t norm_node;
+} tree_node_t;
+
+typedef struct packed {
+  ray_vec_t ray_vec;
+  float_t tMax;
+  float_t tMin;
+
+} raystore_t;
+
+typedef struct packed {
+  int_cacheline_t tri0_cacheline;
+  int_cacheline_t tri1_cacheline;
+  float_t t_max;
+  triID_t tri0_ID;
+  triID_t tri1_ID;
+  logic tri1_valid;
+  ray_vec_t ray_vec;
+
+} raystore_to_int_t;
+

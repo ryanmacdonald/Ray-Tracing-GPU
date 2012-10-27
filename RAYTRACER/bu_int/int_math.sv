@@ -15,19 +15,22 @@ module int_math(
   input int_cacheline_t tri0_cacheline,
   input int_cacheline_t tri1_cacheline,
   input int_pipe1_t int_pipe1_in,
+  input ray_vec_t ray_vec_in,
+
 
   output logic valid_out,
   output logic hit_out,  // 1 if hit //0 if miss
-  output ray_t ray_out,
+  output rayID_t rayID_out,
   output intersection_t intersection_out,
   //output float_t tMax,
 
   // Early Miss outputs
-  output ray_t EM_ray_out,   // Early Miss Ray
+  output rayID_t EM_rayID_out,   // Early Miss Ray
   output logic EM_miss      // 1 if miss, 0 if hit
   
   );
 
+/*
   //debugshit
   shortreal originp_pc1_f;
   shortreal dirp_pc1_f;
@@ -50,7 +53,7 @@ module int_math(
   u1_f = $bitstoshortreal(uv_tuv1.u);
   v1_f = $bitstoshortreal(uv_tuv1.v);
   end
-  
+  */
   
   
   // prime_calc0 
@@ -95,7 +98,7 @@ module int_math(
    float_t t_int1_tc;
    int_pipe1_t int_pipe1_in_tc;
    logic EM_miss_tc;
-   ray_t EM_ray_tc;
+   rayID_t EM_rayID_tc;
    int_pipe2_t int_pipe2_out_tc;
    vector_t p_int_tc;
 
@@ -113,8 +116,8 @@ module int_math(
 
 
   // prime_calc0 inst
-  assign origin_in_pc0 = int_pipe1_in.ray.origin;
-  assign dir_in_pc0 = int_pipe1_in.ray.dir;
+  assign origin_in_pc0 = ray_vec_in.origin;
+  assign dir_in_pc0 = ray_vec_in.dir;
   assign tri_info_in_pc0 = tri0_cacheline;
   prime_calc pc0(
   .clk,
@@ -130,8 +133,8 @@ module int_math(
   
 
   // prime_calc1 inst
-  assign origin_in_pc1 = int_pipe1_in.ray.origin;
-  assign dir_in_pc1 = int_pipe1_in.ray.dir;
+  assign origin_in_pc1 = ray_vec_in.origin;
+  assign dir_in_pc1 = ray_vec_in.dir;
   assign tri_info_in_pc1 = tri1_cacheline;
   prime_calc pc1(
   .clk,
@@ -198,9 +201,8 @@ module int_math(
   .t_int1(t_int1_tc),
   .int_pipe1_in(int_pipe1_in_tc),
   .EM_miss(EM_miss_tc),
-  .EM_ray(EM_ray_tc),
-  .int_pipe2_out(int_pipe2_out_tc),
-  .p_int(p_int_tc) );
+  .EM_rayID(EM_rayID_tc),
+  .int_pipe2_out(int_pipe2_out_tc) );
 
 
   // valid buf 28
@@ -217,7 +219,7 @@ module int_math(
 
   // Output logic
 
-  assign EM_ray_out = EM_ray_tc;
+  assign EM_rayID_out = EM_rayID_tc;
   assign EM_miss = EM_miss_tc & v1 & valid_buf28_out ;
   
   assign valid_out = valid_buf19_out & v2 & (int_pipe2_out_tc.t_val0 | int_pipe2_out_tc.t_val1) ; // if missed on t_comp, already early miss
@@ -230,7 +232,7 @@ module int_math(
   
   assign tri_hit = ~hit_tri0 | (int_pipe2_out_tc.t_sel & hit_tri1) ; // which triangle was hit
   
-  assign ray_out = int_pipe2_out_tc.ray;
+  assign rayID_out = int_pipe2_out_tc.rayID;
   assign intersection_out.triID = tri_hit ? int_pipe2_out_tc.tri1_ID : int_pipe2_out_tc.tri0_ID;
   assign intersection_out.t_int = tri_hit ? int_pipe2_out_tc.t_int1 :  int_pipe2_out_tc.t_int0 ;
   assign intersection_out.p_int = p_int_tc;

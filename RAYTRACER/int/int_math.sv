@@ -30,7 +30,8 @@ module int_math(
   
   );
 
-/*
+
+`ifndef SYNTH
   //debugshit
   shortreal originp_pc1_f;
   shortreal dirp_pc1_f;
@@ -53,7 +54,7 @@ module int_math(
   u1_f = $bitstoshortreal(uv_tuv1.u);
   v1_f = $bitstoshortreal(uv_tuv1.v);
   end
-  */
+`endif 
   
   
   // prime_calc0 
@@ -100,7 +101,6 @@ module int_math(
    logic EM_miss_tc;
    rayID_t EM_rayID_tc;
    int_pipe2_t int_pipe2_out_tc;
-   vector_t p_int_tc;
 
 
   // Vbuf28
@@ -235,7 +235,6 @@ module int_math(
   assign rayID_out = int_pipe2_out_tc.rayID;
   assign intersection_out.triID = tri_hit ? int_pipe2_out_tc.tri1_ID : int_pipe2_out_tc.tri0_ID;
   assign intersection_out.t_int = tri_hit ? int_pipe2_out_tc.t_int1 :  int_pipe2_out_tc.t_int0 ;
-  assign intersection_out.p_int = p_int_tc;
   assign intersection_out.uv = tri_hit ? uv_tuv1 : uv_tuv0 ;
 
 

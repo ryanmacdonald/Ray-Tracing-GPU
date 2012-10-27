@@ -13,6 +13,7 @@ module tb_int_prg;
 	logic full, we;
 	rayID_t rayID;
 	color_t color_out;
+  pixel_buffer_entry_t pixel_entry_out;
 
 	prg       fuck(.*);
 	int_wrap   int_inst(.valid_in(rayReady),.ray_in(prg_data),.v0(v1), .v1(v2), .v2(v0), .*);
