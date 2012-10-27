@@ -1,8 +1,3 @@
-
-`default_nettype none
-
-`ifndef LIBARAY_SV
-`define LIBRARY_SV
 module negedge_detector(
     output logic ed,
     input logic in, clk, rst);
@@ -202,6 +197,117 @@ module fifo(clk, rst,
 endmodule
 
 
+/* This has the 3 types of buffers  
+  t3: data 3/3 of clocks
+  t2: data 2/3 of clocks
+  t1: data 1/3 of clocks
+*/
+
+module buf_t1 #(parameter LAT = 10, WIDTH = 10) (
+  input logic clk,
+  input logic rst,
+  input logic v0,
+
+  input logic[WIDTH-1:0] data_in,
+  output logic[WIDTH-1:0] data_out
+  );
+
+  localparam NUMREGS = (LAT+2)/3; // CEILING of LAT/3
+
+  logic[NUMREGS-1:0][WIDTH-1:0] data_buf, data_buf_n;
+
+  assign data_out = data_buf[NUMREGS-1];
+
+  
+
+  always_ff @(posedge clk, posedge rst) begin
+    if(rst) data_buf <= 'h0;
+    else if(v0) data_buf <= {data_buf[NUMREGS-2:0], data_in} ;
+  end
+
+endmodule
 
 
-`endif
+module buf_t3 #(parameter LAT = 10, WIDTH = 10) (
+  input logic clk,
+  input logic rst,
+
+  input logic[WIDTH-1:0] data_in,
+  output logic[WIDTH-1:0] data_out
+  );
+
+  logic[LAT-1:0][WIDTH-1:0] data_buf;
+  assign data_out = data_buf[LAT-1];
+
+  always_ff @(posedge clk, posedge rst) begin
+    if(rst) data_buf <= 'h0;
+    else data_buf <= {data_buf[LAT-2:0],data_in};
+  end
+
+endmodule
+
+module VS_buf #(parameter WIDTH = 8) (
+  input logic clk, rst,
+  input logic valid_us,
+  input logic [WIDTH-1:0] data_us,
+  output logic stall_us,
+
+  output logic valid_ds,
+  output logic [WIDTH-1:0] data_ds,
+  input logic stall_ds );
+
+  logic stall;
+  logic tmp_valid, tmp_valid_n;
+  logic [7:0] tmp_data, tmp_data_n;
+
+  assign stall_us = stall ;
+  
+  `ifdef SYNTH
+  assign data_ds = stall_ds ? 'h0 : (stall ? tmp_data : data_us) ;
+  assign valid_ds = stall_ds ? 1'b0 : (stall ? tmp_valid : valid_us) ;
+  assign tmp_data_n = ~stall_ds ? 'h0 : (stall ? tmp_data : data_us ) ;
+  assign tmp_valid_n = ~stall_ds ? 1'b0 : (stall ? tmp_valid : valid_us) ;
+
+  `else
+  always_comb begin
+    case({stall_ds, stall})
+      2'b00 : data_ds = valid_us ? data_us : 'hX ;
+      2'b10 : data_ds = 'hX ;
+      2'b01 : data_ds = tmp_valid ? tmp_data : 'hX ;
+      2'b11 : data_ds = 'hX;
+    endcase
+    case({stall_ds, stall})
+      2'b00 : valid_ds = valid_us ? 1 : 0 ;
+      2'b10 : valid_ds = 0;
+      2'b01 : valid_ds = tmp_valid ? 1 : 0 ;
+      2'b11 : valid_ds = 0;
+    endcase
+    case({stall_ds, stall})
+      2'b00 : tmp_data_n = 'hX;
+      2'b10 : tmp_data_n = valid_us ? data_us : 'hX ;
+      2'b01 : tmp_data_n = 'hX ;
+      2'b11 : tmp_data_n = tmp_valid ? tmp_data  : 'hX ;
+    endcase
+    case({stall_ds, stall})
+      2'b00 : tmp_valid_n = 0;
+      2'b10 : tmp_valid_n = valid_us ? 1 : 0 ;
+      2'b01 : tmp_valid_n =  0 ;
+      2'b11 : tmp_valid_n = tmp_valid ? 1 : 0 ;
+    endcase
+  end
+  `endif
+
+  always_ff @(posedge clk, posedge rst) begin
+    if(rst) begin
+      stall <= 0;
+      tmp_valid <= 'h0;
+      tmp_data <= 0;
+    end
+    else begin
+      stall <= stall_ds;
+      tmp_valid <= tmp_valid_n;
+      tmp_data <= tmp_data_n;
+    end
+  end
+
+endmodule

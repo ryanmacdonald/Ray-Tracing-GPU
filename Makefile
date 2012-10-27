@@ -17,7 +17,7 @@ prime_calc:
 	$(CC) $(FLAGS) -top tb_prime_calc COMMON/*v COMMON/altfp_mult/*.v COMMON/altfp_add/*.v RAYTRACER/int/prime_calc.sv RAYTRACER/int/TBs/tb_prim_calc.sv
 
 tuv_calc: 
-	$(CC) $(FLAGS) -top tb_tuv_calc COMMON/*v COMMON/sim_lib/altera_mf.v COMMON/altfp*/*.v COMMON/altfp_comp/altfp_comp.v RAYTRACER/int/tuv_calc.sv RAYTRACER/int/TBs/tb_tuv_calc.sv
+	$(CC) $(FLAGS) -top tb_tuv_calc COMMON/*v  COMMON/altfp*/*.v COMMON/altfp_comp/altfp_comp.v RAYTRACER/int/tuv_calc.sv RAYTRACER/int/TBs/tb_tuv_calc.sv
 
 t_comp: 
 	$(CC) $(FLAGS) -top tb_t_comp COMMON/*v COMMON/altfp_comp/altfp_comp.v RAYTRACER/int/p_calc.sv RAYTRACER/int/t_comp.sv RAYTRACER/int/TBs/tb_t_comp.sv
@@ -26,10 +26,10 @@ int_math:
 	$(CC) $(FLAGS) -top tb_int_math COMMON/*v COMMON/altfp*/*.v RAYTRACER/int/*.sv RAYTRACER/int/TBs/tb_int_math.sv
 
 int_wrap: 
-	$(CC) $(FLAGS) -top int_wrap COMMON/*v COMMON/sim_lib/altera_mf.v COMMON/altfp*/*.v RAYTRACER/int/*.sv RAYTRACER/int/int_wrap.sv
+	$(CC) $(FLAGS) -top int_wrap COMMON/*v  COMMON/altfp*/*.v RAYTRACER/int/*.sv RAYTRACER/int/int_wrap.sv
 
 prg_int: 
-	$(CC) $(FLAGS) -top tb_int_prg COMMON/*v COMMON/sim_lib/altera_mf.v COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv tb_int_prg.sv
+	$(CC) $(FLAGS) -top tb_int_prg COMMON/*v  COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv TBs/tb_int_prg.sv
 
 prg:
 	$(CC) $(FLAGS) -top tb_prg COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v PRG/*.sv
