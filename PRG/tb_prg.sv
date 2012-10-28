@@ -5,6 +5,7 @@ module tb_prg;
 
 	logic clk, rst,v0,v1,v2, done,start, frame_done, ready, idle, rayReady;
 	logic[1:0] cntV,cnt_nV;
+	logic int_to_prg_stall;
 	vector_t E, U, V, W;
 	float_t D, pw;
 	ray_t prg_data;
@@ -19,7 +20,7 @@ module tb_prg;
 	assign v2 = (cntV == 2'b10);
 
 
-	prg fuck(.*);
+	prg_top fuck(.*);
 
 	initial begin
 
@@ -31,6 +32,7 @@ module tb_prg;
 		V.x <= `FP_0; V.y <= `FP_1; V.z <= `FP_0;
 		W.x <= `FP_0; W.y <= `FP_0; W.z <= `FP_1;
 		frame_done <= 1; start <= 0;
+		int_to_prg_stall <= 0;
 		D <= 32'h42C80000;
 		pw <= `FP_1;
 		@(posedge clk); 
@@ -41,6 +43,14 @@ module tb_prg;
 		start <= 1;
 		@(posedge clk);
 		start <= 0;
+
+		repeat(100) @(posedge clk);
+
+		int_to_prg_stall <= 1;
+
+		repeat(100) @(posedge clk);
+
+		int_to_prg_stall <= 0;
 
 		repeat(100) @(posedge clk);
 
