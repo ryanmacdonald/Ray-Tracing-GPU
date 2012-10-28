@@ -26,16 +26,18 @@ module camera_controller(
   // out = S_key    5
   
 
-  enum logic[1:0] {NOT_PRESSED, PRESSED, RENDERING} CS0, NS0;
+  logic[1:0] CS0, NS0;
 
   logic rendering, rendering_n;
+  logic valid_key_press, valid_key_release;
   logic pressed, released, ld_key_val;
   logic[2:0] key_val_n, key_val; 
   
   assign rendering_n = rendering_done ? 1'b0 : (render_frame ? 1'b1 : rendering);
-  assign pressed = (CS0 == PRESSED);
+  assign pressed = (CS0 == 2'b01);
   assign released = ~pressed;
-
+  assign valid_key_press = (|{keys.d[0],keys.a[0],keys.e[0],keys.q[0],keys.w[0],keys.s[0]});
+  assign valid_key_release = (|{keys.d[1],keys.a[1],keys.e[1],keys.q[1],keys.w[1],keys.s[1]});
 
   ff_ar #(1,'h0) ffrend(.q(rendering), .d(rendering_n), .clk, .rst);
 
@@ -44,15 +46,16 @@ module camera_controller(
     ld_key_val = 1'b0;
     case(CS0)
       2'b00 : begin
-        NS0 = keys.pressed ? 2'b01 : 2'b00 ;
-        ld_key_val = keys.pressed ;
+        NS0 = valid_key_press ? 2'b01 : 2'b00 ;
+        ld_key_val = valid_key_press ;
       end
       2'b01 : begin
-        NS0 = keys.released ? 2'b10 : 2'b01 ;
+        NS0 = valid_key_release ? 2'b10 : 2'b01 ;
       end
       2'b10 : begin
         NS0 = rendering ? 2'b10 : 2'b00 ;
       end
+		default: NS0 = 2'b00;
     endcase
   end
 

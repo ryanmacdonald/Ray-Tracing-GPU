@@ -7,8 +7,8 @@
 `define INIT_CAM_Y 32'h40400000
 `define INIT_CAM_Z 32'hC1200000
 
-// move_scale = `FP_1 for now
-`define move_scale 32'h3F800000
+// move_scale = 1/50Mhz
+`define move_scale 32'h32ABCC77
 
 `define UNEG 3'b001
 `define UPOS 3'b000
@@ -26,13 +26,13 @@ module camera_datapath (input logic clk, rst,
 			input logic[2:0] key,
 			input logic[31:0] cnt,
 			output vector_t E, U, V, W);
-
-	`ifndef SYNTH
+/*
+`ifndef SYNTH
 	shortreal nc_x,nc_y,nc_z;
 	assign nc_x = $bitstoshortreal(nextCam.x);
 	assign nc_y = $bitstoshortreal(nextCam.y);
 	assign nc_z = $bitstoshortreal(nextCam.z);	
-	`endif
+`endif*/
 
 	logic[31:0] move_val, move_val_n;
 	logic[2:0] last_key;
@@ -90,7 +90,6 @@ module camera_datapath (input logic clk, rst,
 	
 	////// FF INSTANTIATIONS FOR CAMERA REGS //////
 
-	ff_ar_en #(3,0)  kr(.q(last_key),.d(key),.en(ld_curr_camera),.clk,.rst);
 	ff_ar_en #(32,0) mv(.q(move_val),.d(move_val_n),.en(v2),.clk,.rst);
 	
 
@@ -135,6 +134,8 @@ module camera_datapath (input logic clk, rst,
 		mult_2_datab = key[0] ? {~comp_sel[31],comp_sel[30:0]} : comp_sel;
 
 	end	
+
+	ff_ar_en #(3,0) kreg(.q(last_key),.d(key),.en(ld_curr_camera),.clk,.rst);
 
 	always_ff @(posedge clk, posedge rst) begin
 		if(rst) begin

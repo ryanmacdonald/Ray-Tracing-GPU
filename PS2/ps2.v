@@ -40,15 +40,12 @@ module ps2(
            iSTART,   //press the button for transmitting instrucions to device;
            iRST_n,   //FSM reset signal;
            iCLK_50,  //clock source;
-           PS2_CLK,  //ps2_clock signal inout;
-           PS2_DAT,  //ps2_data  signal inout;
-           oLEFBUT,  //left button press display;
-           oRIGBUT,  //right button press display;
-           oMIDBUT,  //middle button press display;
-           oX_MOV1,  //lower SEG of mouse displacement display for X axis.
-           oX_MOV2,  //higher SEG of mouse displacement display for X axis.
-           oY_MOV1,  //lower SEG of mouse displacement display for Y axis.
-           oY_MOV2   //higher SEG of mouse displacement display for Y axis.
+           ps2_clk,  //ps2_clock signal inout;
+           ps2_data,  //ps2_data  signal inout;
+           ps2_clk_out,
+			  ps2_dat_out,
+			  ce, de,
+			  shift_reg, pkt_rec, cnt11
            ); 
            //interface;
 //=======================================================
@@ -59,42 +56,32 @@ input iSTART;
 input iRST_n;
 input iCLK_50;
 
-inout PS2_CLK;
-inout PS2_DAT;
+input ps2_clk;
+input ps2_data;
+output ps2_clk_out;
+output ps2_dat_out;
+output reg ce, de;
+output reg [32:0] shift_reg;
+output reg pkt_rec;
+output reg [3:0] cnt11;
 
-output oLEFBUT;
-output oRIGBUT;
-output oMIDBUT;
-output [6:0] oX_MOV1;
-output [6:0] oX_MOV2;
-output [6:0] oY_MOV1;
-output [6:0] oY_MOV2;
-
-//instantiation
-SEG7_LUT U1(.oSEG(oX_MOV1),.iDIG(x_latch[3:0]));
-SEG7_LUT U2(.oSEG(oX_MOV2),.iDIG(x_latch[7:4]));
-SEG7_LUT U3(.oSEG(oY_MOV1),.iDIG(y_latch[3:0]));
-SEG7_LUT U4(.oSEG(oY_MOV2),.iDIG(y_latch[7:4]));
-//instruction define, users can charge the instruction byte here for other purpose according to ps/2 mouse datasheet.
-//the MSB is of parity check bit, that's when there are odd number of 1's with data bits, it's value is '0',otherwise it's '1' instead.
-
-parameter enable_byte =9'b011110100;
+parameter enable_byte =9'b111111111;
 
 
 //=======================================================
 //  REG/WIRE declarations
 //=======================================================
 reg [1:0] cur_state,nex_state;
-reg ce,de;
 reg [3:0] byte_cnt,delay;
 reg [5:0] ct;
 reg [7:0] x_latch,y_latch,cnt;
 reg [8:0] clk_div;
 reg [9:0] dout_reg;
-reg [32:0] shift_reg;
 reg       leflatch,riglatch,midlatch;
 reg       ps2_clk_in,ps2_clk_syn1,ps2_dat_in,ps2_dat_syn1;
-wire      clk,ps2_dat_syn0,ps2_clk_syn0,ps2_dat_out,ps2_clk_out,flag;
+wire      clk,ps2_dat_syn0,ps2_clk_syn0,flag;
+
+
 
 //=======================================================
 //  PARAMETER declarations
@@ -116,17 +103,19 @@ always@(posedge iCLK_50)
 	end
 	
 assign clk = clk_div[8];
+wire clk_div5;
+reg ps2_clk_scew;
+assign clk_div5 = clk_div[4];
 //tristate output control for PS2_DAT and PS2_CLK;
-assign PS2_CLK = ce?ps2_clk_out:1'bZ;
-assign PS2_DAT = de?ps2_dat_out:1'bZ;
 assign ps2_clk_out = 1'b0;
 assign ps2_dat_out = dout_reg[0];
-assign ps2_clk_syn0 = ce?1'b1:PS2_CLK;
-assign ps2_dat_syn0 = de?1'b1:PS2_DAT;
+assign ps2_clk_syn0 = ps2_clk;
+assign ps2_dat_syn0 = ps2_data;
 //
-assign oLEFBUT = leflatch;
-assign oRIGBUT = riglatch;
-assign oMIDBUT = midlatch;
+always @(posedge clk_div5) begin
+  ps2_clk_scew <= ps2_clk_syn0;
+end
+
 //multi-clock region simple synchronization
 always@(posedge clk)
 	begin
@@ -140,7 +129,7 @@ always@(*)
 begin
    case(cur_state)
      listen  :begin
-              if ((!iSTART) && (cnt == 8'b11111111))
+              if ((iSTART) && (cnt == 8'b11111111))
                   nex_state = pullclk;
               else
                   nex_state = listen;
@@ -191,27 +180,7 @@ begin
   else
      ct <= ct+1;
 end
-//latch data from shift_reg;outputs is of 2's complement;
-//Please treat the cnt value here with caution, otherwise wrong data will be latched.
-always@(posedge clk,negedge iRST_n)
-begin
-   if (!iRST_n) 
-   begin
-      leflatch <= 1'b0;
-      riglatch <= 1'b0;
-      midlatch <= 1'b0;
-      x_latch  <= 8'd0;
-      y_latch  <= 8'd0;
-   end
-   else if (cnt == 8'b00011110 && (ct[5] == 1'b1 || ct[4] == 1'b1))
-   begin
-      leflatch <= shift_reg[1];
-      riglatch <= shift_reg[2];
-      midlatch <= shift_reg[3];
-      x_latch  <= x_latch+shift_reg[19 : 12];
-      y_latch  <= y_latch+shift_reg[30 : 23];
-   end
-end
+
 
 //pull ps2_clk low for 100us before transmit starts;
 always@(posedge clk)
@@ -243,6 +212,48 @@ begin
   if (cur_state == listen)
      shift_reg <= {ps2_dat_in,shift_reg[32:1]};
 end
+
+//reg [3:0] cnt11;
+reg clr_cnt11;
+
+always@(posedge ps2_clk_scew, negedge iRST_n)
+begin
+	if(~iRST_n) cnt11 <= 4'h0;
+	else if(clr_cnt11 | (cur_state!=listen)) cnt11 <= 4'h0;
+	else cnt11 <= cnt11 + 4'h1 ;
+end
+
+reg [2:0] cs, ns;
+always @(*) begin
+  pkt_rec = 1'b0;
+  clr_cnt11 = 1'b0;
+  ns = 2'b00;
+  case(cs)
+    3'b000: begin
+      ns = (cnt==1) ? 3'b001 : 3'b000 ;
+    end
+    3'b001: begin
+      ns = (cnt11==4'ha) ? 3'b010 : 3'b001 ;
+    end
+    3'b010: begin
+      ns = (ps2_clk_scew) ? 3'b010 : 3'b011;
+    end
+    3'b011: begin
+      ns = (ps2_clk_scew) ? 3'b100 : 3'b011;
+		clr_cnt11 = 1'b1;
+    end
+	 3'b100 : begin
+	   pkt_rec = 1'b1;
+	 end
+    default : ;
+  endcase
+end
+
+always@(posedge iCLK_50, negedge iRST_n) begin
+  if(~iRST_n) cs = 3'b000;
+  else cs = ns;
+end
+
 //FSM movement
 always@(posedge clk,negedge iRST_n)
 begin
