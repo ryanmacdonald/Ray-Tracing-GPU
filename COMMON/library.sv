@@ -259,43 +259,36 @@ module VS_buf #(parameter WIDTH = 8) (
 
   logic stall;
   logic tmp_valid, tmp_valid_n;
-  logic [7:0] tmp_data, tmp_data_n;
+  logic [WIDTH-1:0] tmp_data, tmp_data_n;
 
-  assign stall_us = stall ;
   
-  `ifdef SYNTH
-  assign data_ds = stall_ds ? 'h0 : (stall ? tmp_data : data_us) ;
-  assign valid_ds = stall_ds ? 1'b0 : (stall ? tmp_valid : valid_us) ;
-  assign tmp_data_n = ~stall_ds ? 'h0 : (stall ? tmp_data : data_us ) ;
-  assign tmp_valid_n = ~stall_ds ? 1'b0 : (stall ? tmp_valid : valid_us) ;
 
+
+  `ifdef SYNTH
+    assign data_ds = tmp_valid ? tmp_data : data_us ;
+    assign valid_ds = tmp_valid | valid_us ;
+    assign stall_us = stall & valid_us;
+    assign tmp_data_n = stall ? tmp_data : data_us ;
+    assign tmp_valid_n = stall_ds ? (stall ? tmp_valid : valid_us ) : 1'b0;
   `else
-  always_comb begin
-    case({stall_ds, stall})
-      2'b00 : data_ds = valid_us ? data_us : 'hX ;
-      2'b10 : data_ds = 'hX ;
-      2'b01 : data_ds = tmp_valid ? tmp_data : 'hX ;
-      2'b11 : data_ds = 'hX;
-    endcase
-    case({stall_ds, stall})
-      2'b00 : valid_ds = valid_us ? 1 : 0 ;
-      2'b10 : valid_ds = 0;
-      2'b01 : valid_ds = tmp_valid ? 1 : 0 ;
-      2'b11 : valid_ds = 0;
-    endcase
-    case({stall_ds, stall})
-      2'b00 : tmp_data_n = 'hX;
-      2'b10 : tmp_data_n = valid_us ? data_us : 'hX ;
-      2'b01 : tmp_data_n = 'hX ;
-      2'b11 : tmp_data_n = tmp_valid ? tmp_data  : 'hX ;
-    endcase
-    case({stall_ds, stall})
-      2'b00 : tmp_valid_n = 0;
-      2'b10 : tmp_valid_n = valid_us ? 1 : 0 ;
-      2'b01 : tmp_valid_n =  0 ;
-      2'b11 : tmp_valid_n = tmp_valid ? 1 : 0 ;
-    endcase
-  end
+    assign data_ds = tmp_valid ? tmp_data : (valid_us ? data_us : 'hX) ;
+    assign valid_ds = tmp_valid | valid_us ;
+    assign stall_us = stall & valid_us;
+
+    always_comb begin // stall_ds assumes that valid_ds is asserted
+      case({stall_ds, stall})
+        2'b00 : tmp_data_n = 'hX;
+        2'b10 : tmp_data_n = valid_ds ? data_us : 'hX ;
+        2'b01 : tmp_data_n = 'hX ;
+        2'b11 : tmp_data_n = tmp_valid ? tmp_data : 'hX ;
+      endcase
+      case({stall_ds, stall})
+        2'b00 : tmp_valid_n = 0;
+        2'b10 : tmp_valid_n = valid_us ? 1 : 0 ;
+        2'b01 : tmp_valid_n =  0 ;
+        2'b11 : tmp_valid_n = tmp_valid ? 1 : 0 ;
+      endcase
+    end
   `endif
 
   always_ff @(posedge clk, posedge rst) begin

@@ -152,8 +152,6 @@ module int_unit(
 
 
 
-
-
   logic [1:0] cnt_nV, cntV;
 
 	assign cnt_nV = ((cntV == 2'b10) ? 2'b00 : cntV + 1'b1);

@@ -126,14 +126,13 @@ typedef struct packed {
   logic released;
 } keys_t;
 
+
 typedef struct packed {
   logic [1:0] node_type;
   triID_t tri0_ID;
   triID_t tri1_ID;
   logic tri1_valid;
-  logic tri0_spec;
-  logic tri1_spec;
-  logic [2:0] reserve0;
+  logic [4:0] reserve0;
 
 } leaf_node_t;
 
@@ -147,17 +146,14 @@ typedef struct packed {
 
 } norm_node_t;
 
-typedef union packed {
-  leaf_node_t leaf_node;
-  norm_node_t norm_node;
-} tree_node_t;
-
+/*
 typedef struct packed {
   ray_vec_t ray_vec;
   float_t tMax;
   float_t tMin;
 
 } raystore_t;
+
 
 typedef struct packed {
   int_cacheline_t tri0_cacheline;
@@ -169,4 +165,137 @@ typedef struct packed {
   ray_vec_t ray_vec;
 
 } raystore_to_int_t;
+*/
+// ss == shortstack
+// rs = raystore
+// sint = scene intersecter
+
+/* shade_to_sint_t 
+typedef struct packed {
+
+} shade_to_sint_t;
+*/
+
+// sint_to_rs_t   (This will write ray_vec to raystore
+typedef struct packed {
+  rayID_t rayID;
+  ray_vec_t ray_vec;
+  float_t t_max_scene;
+} sint_to_rs_t ;
+
+
+// tarb_t // Traversal Arbiter
+typedef struct packed {
+  rayID_t rayID;
+  nodeID_t nodeID;
+  logic restnode_search; // set if still have not found restart node
+  float_t t_max;
+  float_t t_min;
+} tarb_t ;
+
+
+// tcache_to_trav_t
+typedef struct packed {
+  rayID_t rayID;
+  nodeID_t nodeID;
+  logic restnode_search;
+  float_t t_max;
+  float_t t_min;
+  union packed {
+    leaf_node_t leaf_node;
+    norm_node_t norm_node;
+  } tree_node;
+
+} tcache_to_trav_t ;
+
+
+// trav_to_rs_t
+typedef struct packed {
+  rayID_t rayID;
+  nodeID_t nodeID;
+  norm_node_t node;
+  logic restnode_search;
+  float_t t_max;
+  float_t t_min;
+
+} trav_to_rs_t ;
+
+
+// rs_to_trav_t  // DO not need to get the scene max since intersection path has got it covered
+typedef struct packed {
+  rayID_t rayID;
+  nodeID_t nodeID;
+  norm_node_t node;
+  logic restnode_search;
+  float_t t_max;
+  float_t t_min;
+  ray_vec_t ray_vec;
+} rs_to_trav_t ;
+
+
+// trav_to_ss_t   (This sends either a push request or an update request)
+typedef struct packed {
+  rayID_t rayID;
+  logic req; // 1 == push, 0 == update restnode
+  nodeID_t node;
+  float_t t_max;
+  float_t t_min;
+} trav_to_ss_t ;
+
+
+// iarb_t
+typedef struct packed {
+  rayID_t rayID;
+  float_t t_max;
+  triID_t tri0_ID;
+  triID_t tri1_ID;
+  logic tri1_valid;
+
+} iarb_t ;
+
+
+// rs_to_icache_t
+typedef struct packed {
+  rayID_t rayID;
+  float_t t_max;
+  triID_t tri0_ID;
+  triID_t tri1_ID;
+  logic tri1_valid;
+  logic last_leaf;  // Determine if last leaf by comparing t_max_scene to t_max
+  ray_vec_t ray_vec;
+
+} rs_to_icache_t ;
+
+
+// icache_to_int_t
+typedef struct packed {
+  rayID_t rayID;
+  float_t t_max;
+  triID_t tri0_ID;
+  triID_t tri1_ID;
+  logic tri1_valid;
+  logic last_leaf;
+  ray_vec_t ray_vec;
+  int_cacheline_t tri0_cacheline;
+  int_cacheline_t tri1_cacheline;
+
+} icache_to_int_t ;
+
+
+// int_to_ss_t
+typedef struct packed {
+  rayID_t rayID;
+  logic req; // 1 = clear, 0 = miss (pop)
+
+} int_to_ss_t ;
+
+
+// int_to_shade_t
+typedef struct packed {
+  rayID_t rayID;
+
+} int_to_shade_t ;
+
+
+
 
