@@ -95,10 +95,18 @@ module trav_unit(
   end
 
 
+  // 0 traverse only low
+  // 1 traverse only high
+  // 2 traverse low and push high
+  // 3 traverse high and push low
+  
+  logic [3:0] trav_case; 
 
   // rs to trav
   
-
+  // Update stack request
+  // only valid if restnode_search & (trav_case = 2 or 3)
+  
 
 
 endmodule

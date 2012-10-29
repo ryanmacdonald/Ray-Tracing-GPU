@@ -236,8 +236,10 @@ typedef struct packed {
 // trav_to_ss_t   (This sends either a push request or an update request)
 typedef struct packed {
   rayID_t rayID;
-  logic req; // 1 == push, 0 == update restnode
-  nodeID_t node;
+  logic push_req; // 1 == push, 0 == update restnode
+  nodeID_t push_node;
+  logic update_restnode_req;
+  nodeID_t rest_node;
   float_t t_max;
   float_t t_min;
 } trav_to_ss_t ;
