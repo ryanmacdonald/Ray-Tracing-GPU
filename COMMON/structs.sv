@@ -283,6 +283,11 @@ typedef struct packed {
 
 } icache_to_int_t ;
 
+//TODO: this needs to be finished
+typedef struct packed {
+	rayID_t rayID;
+} lcache_to_rs_t;
+
 
 // int_to_ss_t
 typedef struct packed {
