@@ -5,6 +5,9 @@
 `define FP_1 32'h3F80_0000
 `define FP_0 32'h0
 
+// Epsilon = 10^-20 for now?
+`define EPSILON 32'h1E3C_E508
+
 typedef struct packed {
   logic sign;
   logic [7:0] exp;
@@ -177,7 +180,7 @@ typedef struct packed {
 */
 
 // sint_to_rs_t   (This will write ray_vec to raystore
-typedef struct packed {
+typedef struct packed { // TODO make it go to both ss and rs
   rayID_t rayID;
   ray_vec_t ray_vec;
   float_t t_max_scene;

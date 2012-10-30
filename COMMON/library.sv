@@ -304,3 +304,43 @@ module VS_buf #(parameter WIDTH = 8) (
   end
 
 endmodule
+
+module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
+  input logic clk, rst,
+  input logic us_valid,
+  input logic [WIDTH-1:0] us_data,
+  output logic us_stall,
+
+  output logic ds_valid,
+  output logic [WIDTH-1:0] ds_data,
+  input logic ds_stall,
+
+  input logic [$clog2(DEPTH+2)-1:0] num_in_fifo
+
+  );
+
+  logic [DEPTH-1:0] valid_buf, valid_buf_n;
+  assign valid_buf_n = {~us_stall & us_valid,valid_buf[DEPTH-1:1]};
+  assign ds_valid = valid_buf[0];
+
+  ff_ar #(DEPTH,0) valid_inst(.d(valid_buf_n),.q(valid_buf),.clk,.rst);
+
+  buf_t3 #(.LAT(DEPTH), .WIDTH(WIDTH)) data_buf(.clk,.rst,.data_in(us_data),.data_out(ds_data));
+
+  logic [$clog2(DEPTH+2)-1:0] zero_cnt, zero_cnt_n;
+  always_comb begin
+    case({valid_buf_n[DEPTH-1],valid_buf[0]})
+      2'b00 : zero_cnt_n = zero_cnt;
+      2'b10 : zero_cnt_n = zero_cnt - 1;
+      2'b01 : zero_cnt_n = zero_cnt + 1;
+      2'b11 : zero_cnt_n = zero_cnt ;
+    endcase
+  end
+
+  ff_ar #($clog2(DEPTH+2),DEPTH) cnt_inst(.d(zero_cnt_n),.q(zero_cnt),.clk,.rst);
+
+  assign us_stall = us_valid & ds_stall & (zero_cnt <= num_in_fifo);
+
+endmodule
+
+
