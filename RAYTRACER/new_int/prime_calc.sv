@@ -80,7 +80,8 @@ module prime_calc(
   assign inB_mult_o2 = mK2;
   assign inB_mult_o3 = mK3;
 
-  
+  assign in_Tbuf = tK;
+
   // Second Level of tree
   assign inA_add_o12 = out_mult_o1;
   assign inB_add_o12 = out_mult_o2;
@@ -132,7 +133,7 @@ module prime_calc(
   .underflow(underflow_mult_o3 ),
 	.zero(zero_mult_o3));
 
-
+  
   buf_t3 #(.LAT(5), .WIDTH($bits(float_t))) Tbuf5(
     .clk, .rst,
     .data_in(in_Tbuf),

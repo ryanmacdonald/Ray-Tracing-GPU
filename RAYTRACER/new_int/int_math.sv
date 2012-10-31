@@ -6,7 +6,7 @@
 
 */
 
-module new_int_math(
+module int_math(
   input logic clk, rst,
   input int_cacheline_t int_cacheline,
   input ray_vec_t ray_vec,
@@ -108,6 +108,7 @@ module new_int_math(
 
   // dirp X buffer 6
   float_t dXp_in, dXp_out;
+  assign dXp_in = dirp_x;
   buf_t3 #(.LAT(6), .WIDTH($bits(float_t))) 
     dXp_buf6(.data_in(dXp_in), .data_out(dXp_out), .clk, .rst);
 
@@ -158,6 +159,7 @@ module new_int_math(
 
   // dirp Y buffer 6
   float_t dYp_in, dYp_out;
+  assign dYp_in = dirp_y;
   buf_t3 #(.LAT(6), .WIDTH($bits(float_t))) 
     dYp_buf6(.data_in(dYp_in), .data_out(dYp_out), .clk, .rst);
 

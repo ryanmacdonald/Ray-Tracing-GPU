@@ -33,7 +33,8 @@ typedef struct packed {
 
  // maximum of 512 rays at a time in the pipeline TODO ?? 
 typedef struct packed {
-  logic [8:0] ID;
+  logic is_occular;
+  logic [8:0] ID; 
 } rayID_t;
 
 typedef struct packed {
@@ -69,13 +70,14 @@ typedef struct packed {
   float_t v;
 } bari_uv_t;
 
+/*
 typedef struct packed {
   triID_t triID;
   float_t t_int; // time intersection
   bari_uv_t uv; // uv of baricentric coordinates
 
 } intersection_t;
-
+*/
 
 typedef struct packed {
   float_t m11;
@@ -96,6 +98,7 @@ typedef struct packed {
 
 } int_cacheline_t;
 
+/*
 typedef struct packed {
   logic tri1_valid;
   float_t t_max;
@@ -115,7 +118,7 @@ typedef struct packed {
   triID_t tri1_ID;
   rayID_t rayID;
 } int_pipe2_t;
-
+*/
 
 // for each key, key[0] is the press pulse and key[1] is release pulse
 typedef struct packed {
@@ -248,25 +251,43 @@ typedef struct packed {
 } trav_to_ss_t ;
 
 
-// iarb_t
+// type containting leaf node triangle info
+typedef struct packed {
+  logic [12:0] lindex; // current index
+  logic [4:0] lnum_left; // number of triangles left
+} ln_tri_t;
+
+
+// Used on the following interfacese
+  // trav -> larb
+  // larb -> mailbox
+  // mailbox -> larb
+  // mailbox -> lcache
+  // int -> larb
+
 typedef struct packed {
   rayID_t rayID;
-  float_t t_max;
-  triID_t tri0_ID;
-  triID_t tri1_ID;
-  logic tri1_valid;
+ // float_t t_max_leaf;
+  ln_tri_t ln_tri;
+} leaf_info_t;
 
-} iarb_t ;
+
+    
+// lcache_to_rs
+typedef struct packed {
+  rayID_t rayID;
+//  float_t t_max_leaf;
+  ln_tri_t ln_tri;
+  triID_t triID;
+} lcache_to_raystore;
 
 
 // rs_to_icache_t
 typedef struct packed {
   rayID_t rayID;
-  float_t t_max;
-  triID_t tri0_ID;
-  triID_t tri1_ID;
-  logic tri1_valid;
-  logic last_leaf;  // Determine if last leaf by comparing t_max_scene to t_max
+//  float_t t_max_leaf;
+  ln_tri_t ln_tri;
+  triID_t triID;
   ray_vec_t ray_vec;
 
 } rs_to_icache_t ;
@@ -275,37 +296,32 @@ typedef struct packed {
 // icache_to_int_t
 typedef struct packed {
   rayID_t rayID;
-  float_t t_max;
-  triID_t tri0_ID;
-  triID_t tri1_ID;
-  logic tri1_valid;
-  logic last_leaf;
+//  float_t t_max_leaf;
+  ln_tri_t ln_tri;
+  triID_t triID;
   ray_vec_t ray_vec;
-  int_cacheline_t tri0_cacheline;
-  int_cacheline_t tri1_cacheline;
+  int_cacheline_t tri_cacheline;
 
 } icache_to_int_t ;
 
-//TODO: this needs to be finished
-typedef struct packed {
-	rayID_t rayID;
-} lcache_to_rs_t;
 
-
-// int_to_ss_t
+// int_to_list_t
 typedef struct packed {
   rayID_t rayID;
-  logic req; // 1 = clear, 0 = miss (pop)
+  triID_t triID;
+  logic hit;
+  float_t t_int;
+  bari_uv_t uv;
 
-} int_to_ss_t ;
+} int_to_list_t ;
 
-
-// int_to_shade_t
+/*
+// int_to_mailbox // sends to mailbox if triangle was greater than t_max_leaf
 typedef struct packed {
   rayID_t rayID;
+  triID_t triID;
 
-} int_to_shade_t ;
-
-
+} int_to_mailbox;
+*/
 
 
