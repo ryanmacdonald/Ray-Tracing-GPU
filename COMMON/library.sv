@@ -153,7 +153,7 @@ endmodule
 
 // depth 2^k
 module fifo(clk, rst,
-            data_in, we, re, full, empty, data_out);
+            data_in, we, re, full, empty, data_out, num_in_fifo);
   parameter WIDTH = 32;
   parameter K = 2;
   input clk, rst;
@@ -163,11 +163,17 @@ module fifo(clk, rst,
   output full;
   output empty;
   output [WIDTH-1:0] data_out ;
+  output [K:0] num_in_fifo;
+
+
 
   logic write_allowed, read_allowed;
 
   logic [K:0] rPtr, rPtr_n;
   logic [K:0] wPtr, wPtr_n;
+  logic [K:0] cnt, cnt_n;
+
+  assign num_in_fifo = cnt;
 
   // actual queue
   logic [(1<<K) - 1:0][WIDTH-1:0] queue;
@@ -182,6 +188,15 @@ module fifo(clk, rst,
   assign read_allowed = re & ~empty ;
 
   always_comb begin
+    case({write_allowed,read_allowed})
+      2'b00 : cnt_n = cnt;
+      2'b01 : cnt_n = cnt - 1'b1 ;
+      2'b10 : cnt_n = cnt + 1'b1 ;
+      2'b11 : cnt_n = cnt;
+    endcase
+  end
+
+  always_comb begin
     queue_n = queue ;
     if(write_allowed) queue_n[wPtr[K-1:0]] = data_in;
     if(read_allowed) queue_n[rPtr[K-1:0]] = 'h0;
@@ -193,6 +208,7 @@ module fifo(clk, rst,
   ff_ar #(K+1,'h0) ff_r(.q(rPtr), .d(rPtr_n), .clk, .rst);
   ff_ar #(K+1,'h0) ff_w(.q(wPtr), .d(wPtr_n), .clk, .rst);
   ff_ar #((1<<K)*WIDTH,'h0) ff_q(.q(queue), .d(queue_n), .clk, .rst); 
+  ff_ar #(K+1,'h0) ff_cnt(.q(cnt), .d(cnt_n), .clk, .rst);
 
 endmodule
 
