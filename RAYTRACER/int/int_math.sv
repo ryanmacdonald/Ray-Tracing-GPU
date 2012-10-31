@@ -1,246 +1,290 @@
-/*
-  This is the main fully pipelined intersection unit.  All intersection computations are done here except triangle fetching from cache and routing hits/misses to the other units.
+/* 
+  Fully pipelined 1/1 intersection unit.
+  Takes in a cacheline (Matrix + translate)
+  A ray_vec
+  and does a intersection test with them (t_int > epsilon && bari_test)  NO MAX test
 
 */
 
-
 module int_math(
-  input logic clk,
-  input logic rst,
+  input logic clk, rst,
+  input int_cacheline_t int_cacheline,
+  input ray_vec_t ray_vec,
 
-  input logic v0, v1, v2,
-
-  //inputs
-  input valid_in,
-  input int_cacheline_t tri0_cacheline,
-  input int_cacheline_t tri1_cacheline,
-  input int_pipe1_t int_pipe1_in,
-  input ray_vec_t ray_vec_in,
+  output logic hit,
+  output float_t t_int,
+  output bari_uv_t uv
 
 
-  output logic valid_out,
-  output logic hit_out,  // 1 if hit //0 if miss
-  output rayID_t rayID_out,
-  output intersection_t intersection_out,
-  //output float_t tMax,
-
-  // Early Miss outputs
-  output rayID_t EM_rayID_out,   // Early Miss Ray
-  output logic EM_miss      // 1 if miss, 0 if hit
-  
   );
 
-
-`ifndef SYNTH
-  //debugshit
-  shortreal originp_pc1_f;
-  shortreal dirp_pc1_f;
-  shortreal originp_pc0_f;
-  shortreal dirp_pc0_f;
-  shortreal t_intersect_tuv0_f;
-  shortreal t_intersect_tuv1_f;
-  shortreal u0_f, v0_f;
-  shortreal u1_f, v1_f;
-
- always_comb begin
-  originp_pc1_f = $bitstoshortreal(originp_pc1);
-  dirp_pc1_f = $bitstoshortreal(dirp_pc1);
-  originp_pc0_f = $bitstoshortreal(originp_pc0);
-  dirp_pc0_f = $bitstoshortreal(dirp_pc0);
-  t_intersect_tuv0_f = $bitstoshortreal(t_intersect_tuv0);
-  t_intersect_tuv1_f = $bitstoshortreal(t_intersect_tuv1);
-  u0_f = $bitstoshortreal(uv_tuv0.u);
-  v0_f = $bitstoshortreal(uv_tuv0.v);
-  u1_f = $bitstoshortreal(uv_tuv1.u);
-  v1_f = $bitstoshortreal(uv_tuv1.v);
-  end
-`endif 
+  // Prime calc X
+  float_t mK1_x, mK2_x, mK3_x, tK_x;
+  float_t originp_x, dirp_x;
   
+  assign mK1_x = int_cacheline.matrix.m11;
+  assign mK2_x = int_cacheline.matrix.m12;
+  assign mK3_x = int_cacheline.matrix.m13;
+  assign tK_x = int_cacheline.translate.x;
+
+  prime_calc pcX(
+    .clk, .rst,
+    .ray_vec,
+    .mK1(mK1_x),
+    .mK2(mK2_x),
+    .mK3(mK3_x),
+    .tK(tK_x),
+    .originp(originp_x),
+    .dirp(dirp_x) );
+
+
+
+  // Prime calc Y
+  float_t mK1_y, mK2_y, mK3_y, tK_y;
+  float_t originp_y, dirp_y;
   
-  // prime_calc0 
-   vector_t origin_in_pc0;
-   vector_t dir_in_pc0;
-   int_cacheline_t tri_info_in_pc0;
+  assign mK1_y = int_cacheline.matrix.m21;
+  assign mK2_y = int_cacheline.matrix.m22;
+  assign mK3_y = int_cacheline.matrix.m23;
+  assign tK_y = int_cacheline.translate.y;
 
-   float_t originp_pc0;
-   float_t dirp_pc0;
-
-  // prime_calc1
-   vector_t origin_in_pc1;
-   vector_t dir_in_pc1;
-   int_cacheline_t tri_info_in_pc1;
-
-   float_t originp_pc1;
-   float_t dirp_pc1;
-
-
-  // buf27 
-  int_pipe1_t buf27_out;
+  prime_calc pcY(
+    .clk, .rst,
+    .ray_vec,
+    .mK1(mK1_y),
+    .mK2(mK2_y),
+    .mK3(mK3_y),
+    .tK(tK_y),
+    .originp(originp_y),
+    .dirp(dirp_y) );
 
 
-  // tuv_calc0
-   float_t dirp_tuv0;
-   float_t originp_tuv0;
-   float_t t_intersect_tuv0;
-   logic bari_hit_tuv0;
-   bari_uv_t uv_tuv0;
-
-
-  // tuv_calc1
-   float_t dirp_tuv1;
-   float_t originp_tuv1;
-   float_t t_intersect_tuv1;
-   logic bari_hit_tuv1;
-   bari_uv_t uv_tuv1;
-
-
-  // t_comp 
-   float_t t_int0_tc;
-   float_t t_int1_tc;
-   int_pipe1_t int_pipe1_in_tc;
-   logic EM_miss_tc;
-   rayID_t EM_rayID_tc;
-   int_pipe2_t int_pipe2_out_tc;
-
-
-  // Vbuf28
-  logic valid_buf28_in;
-  logic valid_buf28_out;
-
-  // Vbuf19
-  logic valid_buf19_in;
-  logic valid_buf19_out;
-
-  // Output logic
-
-
-
-  // prime_calc0 inst
-  assign origin_in_pc0 = ray_vec_in.origin;
-  assign dir_in_pc0 = ray_vec_in.dir;
-  assign tri_info_in_pc0 = tri0_cacheline;
-  prime_calc pc0(
-  .clk,
-  .rst,
-  .v0(v0),
-  .v1(v1),
-  .v2(v2),
-  .origin_in(origin_in_pc0),
-  .dir_in(dir_in_pc0),
-  .tri_info_in(tri_info_in_pc0),
-  .originp(originp_pc0),
-  .dirp(dirp_pc0) );
+  // Prime calc Z
+  float_t mK1_z, mK2_z, mK3_z, tK_z;
+  float_t originp_z, dirp_z;
   
+  assign mK1_z = int_cacheline.matrix.m31;
+  assign mK2_z = int_cacheline.matrix.m32;
+  assign mK3_z = int_cacheline.matrix.m33;
+  assign tK_z = int_cacheline.translate.z;
 
-  // prime_calc1 inst
-  assign origin_in_pc1 = ray_vec_in.origin;
-  assign dir_in_pc1 = ray_vec_in.dir;
-  assign tri_info_in_pc1 = tri1_cacheline;
-  prime_calc pc1(
-  .clk,
-  .rst,
-  .v0(v0),
-  .v1(v1),
-  .v2(v2),
-  .origin_in(origin_in_pc1),
-  .dir_in(dir_in_pc1),
-  .tri_info_in(tri_info_in_pc1),
-  .originp(originp_pc1),
-  .dirp(dirp_pc1) );
-
-
-  // buf25_t1 inst
-  buf_t1 #(.LAT(27), .WIDTH($bits(int_pipe1_t)))
-    int_pipe2_buf27(.data_in(int_pipe1_in), .data_out(buf27_out), .v0(v0), .clk, .rst);
+  prime_calc pcZ(
+    .clk, .rst,
+    .ray_vec,
+    .mK1(mK1_z),
+    .mK2(mK2_z),
+    .mK3(mK3_z),
+    .tK(tK_z),
+    .originp(originp_z),
+    .dirp(dirp_z) );
 
 
 
-  // tuv_calc0 inst
-  assign dirp_tuv0 = dirp_pc0;
-  assign originp_tuv0 = originp_pc0;
-  tuv_calc tuv0(
-  .clk,
-  .rst,
-  .v0(v2),
-  .v1(v0),
-  .v2(v1),
-  .dirp(dirp_tuv0),
-  .originp(originp_tuv0),
-  .t_intersect(t_intersect_tuv0),
-  .bari_hit(bari_hit_tuv0),
-  .uv(uv_tuv0) );
+  // Divider signals
+  float_t inA_div, inB_div, out_div;
+  logic nan_div, overflow_div, underflow_div, zero_div, division_by_zero_div;
+
+  assign inA_div = originp_z;
+  assign inB_div = {1'b0,dirp_z[30:0]};
+  altfp_div div1 (
+  .aclr(rst ),
+  .clock(clk ),
+  .dataa(inA_div ),
+  .datab(inB_div ),
+  .division_by_zero(division_by_zero_div ),
+  .nan(nan_div ),
+  .overflow(overflow_div ),
+  .result(out_div ),
+  .underflow(underflow_div ),
+	.zero(zero_div));
+
+
+  // originp X buffer 11
+  float_t oXp_in, oXp_out;
+  assign oXp_in = originp_x;
+  buf_t3 #(.LAT(11), .WIDTH($bits(float_t))) 
+    oXp_buf11(.data_in(oXp_in), .data_out(oXp_out), .clk, .rst);
+
+
+  // dirp X buffer 6
+  float_t dXp_in, dXp_out;
+  assign dXp_in = dirp_x;
+  buf_t3 #(.LAT(6), .WIDTH($bits(float_t))) 
+    dXp_buf6(.data_in(dXp_in), .data_out(dXp_out), .clk, .rst);
+
+
+   // Multiply signals
+  float_t inA_mult_x, inB_mult_x, out_mult_x;
+  logic nan_mult_x, overflow_mult_x, underflow_mult_x, zero_mult_x;
+ 
+  assign inA_mult_x = dXp_out;
+  assign inB_mult_x = out_div;
+  altfp_mult mult_x (
+  .aclr(rst ),
+  .clock(clk),
+  .dataa(inA_mult_x),
+  .datab(inB_mult_x),
+  .nan(nan_mult_x ),
+  .overflow(overflow_mult_x ),
+  .result(out_mult_x ),
+  .underflow(underflow_mult_x ),
+	.zero(zero_mult_x));
+
+
+  // Add X
+  float_t inA_add_x, inB_add_x, out_add_x;
+  logic nan_add_x, overflow_add_x, underflow_add_x, zero_add_x;
+
+  assign inA_add_x = oXp_out;
+  assign inB_add_x = out_mult_x;
+  altfp_add add_x(
+  .aclr(rst ),
+  .clock(clk ),
+  .dataa(inA_add_x ),
+  .datab(inB_add_x ),
+  .nan(nan_add_x ),
+  .overflow(overflow_add_x ),
+  .result(out_add_x ),
+  .underflow(underflow_add_x ),
+	.zero(zero_add_x) );
+
+
+
+  // originp Y buffer 11
+  float_t oYp_in, oYp_out;
+  assign oYp_in = originp_y;
+  buf_t3 #(.LAT(11), .WIDTH($bits(float_t))) 
+    oYp_buf11(.data_in(oYp_in), .data_out(oYp_out), .clk, .rst);
+
+
+  // dirp Y buffer 6
+  float_t dYp_in, dYp_out;
+  assign dYp_in = dirp_y;
+  buf_t3 #(.LAT(6), .WIDTH($bits(float_t))) 
+    dYp_buf6(.data_in(dYp_in), .data_out(dYp_out), .clk, .rst);
+
+
+   // Multiply signals
+  float_t inA_mult_y, inB_mult_y, out_mult_y;
+  logic nan_mult_y, overflow_mult_y, underflow_mult_y, zero_mult_y;
+ 
+  assign inA_mult_y = dYp_out;
+  assign inB_mult_y = out_div;
+  altfp_mult mult_y (
+  .aclr(rst ),
+  .clock(clk),
+  .dataa(inA_mult_y),
+  .datab(inB_mult_y),
+  .nan(nan_mult_y ),
+  .overflow(overflow_mult_y ),
+  .result(out_mult_y ),
+  .underflow(underflow_mult_y ),
+	.zero(zero_mult_y));
+
+
+  // Add Y
+  float_t inA_add_y, inB_add_y, out_add_y;
+  logic nan_add_y, overflow_add_y, underflow_add_y, zero_add_y;
+
+  assign inA_add_y = oYp_out;
+  assign inB_add_y = out_mult_y;
+  altfp_add add_y(
+  .aclr(rst ),
+  .clock(clk ),
+  .dataa(inA_add_y ),
+  .datab(inB_add_y ),
+  .nan(nan_add_y ),
+  .overflow(overflow_add_y ),
+  .result(out_add_y ),
+  .underflow(underflow_add_y ),
+	.zero(zero_add_y) );
+
+
+  // Add bary
+  float_t inA_bary, inB_bary, out_bary;
+  logic nan_bary, overflow_bary, underflow_bary, zero_bary;
+
+  assign inA_bary = out_add_x;
+  assign inB_bary = out_add_y;
+  altfp_add bary(
+  .aclr(rst ),
+  .clock(clk ),
+  .dataa(inA_bary ),
+  .datab(inB_bary ),
+  .nan(nan_bary ),
+  .overflow(overflow_bary ),
+  .result(out_bary ),
+  .underflow(underflow_bary ),
+	.zero(zero_bary) );
+
+/* Just need to add t_int buf19,
+  uv buf8, 
+  out_bary < 1
+  t_int > eps
+  t_int flop
+
+*/
+
+  float_t t_int_buf_in, t_int_buf_out;
+  assign t_int_buf_in = out_div;
+  buf_t3 #(.LAT(19), .WIDTH($bits(float_t))) 
+    t_int_buf19(.data_in(t_int_buf_in), .data_out(t_int_buf_out), .clk, .rst);
+
+  bari_uv_t bary_in, bary_out ;
+  assign bary_in.u = out_add_x ;
+  assign bary_in.v = out_add_y ;
+  buf_t3 #(.LAT(8), .WIDTH($bits(bari_uv_t))) 
+    bary_buf8(.data_in(bary_in), .data_out(bary_out), .clk, .rst);
+ 
+
+// comp1
+  float_t inA_comp1, inB_comp1;
+  logic out_agb_comp1;
+  assign inA_comp1 = `FP_1;
+  assign inB_comp1 = out_bary ;
+  altfp_compare comp1 (
+  .aclr(rst),
+  .clock(clk ),
+  .dataa(inA_comp1 ),
+  .datab(inB_comp1 ),
+  //.aeb(out_aeb_comp1),
+	.agb(out_agb_comp1) );
 
   
-  // tuv_calc1 inst
-  assign dirp_tuv1 = dirp_pc1;
-  assign originp_tuv1 = originp_pc1;
-  tuv_calc tuv1(
-  .clk,
-  .rst,
-  .v0(v2),
-  .v1(v0),
-  .v2(v1),
-  .dirp(dirp_tuv1),
-  .originp(originp_tuv1),
-  .t_intersect(t_intersect_tuv1),
-  .bari_hit(bari_hit_tuv1),
-  .uv(uv_tuv1) );
-
-  
-  // t_comp inst
-  assign t_int0_tc = t_intersect_tuv0;
-  assign t_int1_tc = t_intersect_tuv1;
-  assign int_pipe1_in_tc = buf27_out;
-  t_comp tc(
-  .clk,
-  .rst,
-  .v0(v2),
-  .v1(v0),
-  .v2(v1),
-  .t_int0(t_int0_tc),
-  .t_int1(t_int1_tc),
-  .int_pipe1_in(int_pipe1_in_tc),
-  .EM_miss(EM_miss_tc),
-  .EM_rayID(EM_rayID_tc),
-  .int_pipe2_out(int_pipe2_out_tc) );
+  ff_ar #($bits(float_t),'h0) t_reg_inst(.d(t_int_buf_out), .q(t_int), .clk, .rst);
 
 
-  // valid buf 28
-  assign valid_buf28_in = valid_in;
-  buf_t1 #(.LAT(28), .WIDTH(1) )
-    valid_buf28(.data_in(valid_buf28_in), .data_out(valid_buf28_out), .v0(v0), .clk, .rst);
+   float_t inA_comp_ep, inB_comp_ep;
+  logic out_agb_comp_ep;
+  assign inA_comp_ep = t_int_buf_out;
+  assign inB_comp_ep = `EPSILON ;
+  altfp_compare comp_ep (
+  .aclr(rst),
+  .clock(clk ),
+  .dataa(inA_comp_ep ),
+  .datab(inB_comp_ep ),
+  //.aeb(out_aeb_comp_ep),
+	.agb(out_agb_comp_ep) );
+ 
 
-  // valid buf 19
-  assign valid_buf19_in = valid_buf28_out;
-  buf_t1 #(.LAT(19), .WIDTH(1) )
-    valid_buf19(.data_in(valid_buf19_in), .data_out(valid_buf19_out), .v0(v1), .clk, .rst);
+  // outputs
+  assign hit = out_agb_comp1 & out_agb_comp_ep & ~uv.u.sign & ~uv.v.sign ;
+  // t_int is already register
+  assign uv = bary_out;
 
-
-
-  // Output logic
-
-  assign EM_rayID_out = EM_rayID_tc;
-  assign EM_miss = EM_miss_tc & v1 & valid_buf28_out ;
-  
-  assign valid_out = valid_buf19_out & v2 & (int_pipe2_out_tc.t_val0 | int_pipe2_out_tc.t_val1) ; // if missed on t_comp, already early miss
-  
-  
-  logic hit_tri0, hit_tri1, tri_hit;
-  assign hit_tri0 = int_pipe2_out_tc.t_val0 & bari_hit_tuv0;
-  assign hit_tri1 = int_pipe2_out_tc.t_val1 & bari_hit_tuv1;
-  assign hit_out =   hit_tri0 | hit_tri1 ;
-  
-  assign tri_hit = ~hit_tri0 | (int_pipe2_out_tc.t_sel & hit_tri1) ; // which triangle was hit
-  
-  assign rayID_out = int_pipe2_out_tc.rayID;
-  assign intersection_out.triID = tri_hit ? int_pipe2_out_tc.tri1_ID : int_pipe2_out_tc.tri0_ID;
-  assign intersection_out.t_int = tri_hit ? int_pipe2_out_tc.t_int1 :  int_pipe2_out_tc.t_int0 ;
-  assign intersection_out.uv = tri_hit ? uv_tuv1 : uv_tuv0 ;
-
+  `ifndef SYNTH
+    shortreal t_int_f;
+    shortreal u_f;
+    shortreal v_f;
+    always_comb begin
+      t_int_f = $bitstoshortreal(out_div);
+      u_f = $bitstoshortreal(uv.u);
+      v_f = $bitstoshortreal(uv.v);
+    end
+  `endif
 
 
 endmodule
-
 
 
 

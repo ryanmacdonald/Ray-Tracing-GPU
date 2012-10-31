@@ -16,15 +16,32 @@
 module prime_calc(
   input clk,
   input rst,
+  
+  input v0, v1, v2,
 
-  input ray_vec_t ray_vec,
-  input float_t mK1, mK2, mK3, // K is 1 for X, 2 for Y and 3 for Z
-  input float_t tK, // K is x for x, y for y, z for z
+  input vector_t origin_in,
+  input vector_t dir_in,
+  input int_cacheline_t tri_info_in,
+
+
   output float_t originp,
   output float_t dirp
   
   );
   
+
+
+
+  int_cacheline_t tri_info_buf;
+  ff_ar_en #($bits(tri_info_buf),'h0) tri_info_buf1(.d(tri_info_in), .q(tri_info_buf), .en(v0), .clk, .rst);
+
+  vector_t origin_buf;
+  vector_t dir_buf;
+
+  ff_ar_en #($bits(vector_t),'h0) origin_buf1(.d(origin_in), .q(origin_buf), .en(v0), .clk, .rst);
+
+  ff_ar_en #($bits(vector_t),'h0) dir_buf1(.d(dir_in), .q(dir_buf), .en(v0), .clk, .rst);
+
 
 /*
   Origin matrix multiply and translation
@@ -37,6 +54,17 @@ module prime_calc(
 
 
 */
+/*  
+  // adder flags
+  float_t inA_add, inB_add, out_add;
+  logic nan_add, overflow_add, underflow_add, zero_add;
+  
+  
+  // mult flags
+  float_t inA_mult, inB_mult, out_mult;
+  logic nan_mult, overflow_mult, underflow_mult, zero_mult;
+*/
+
 
 
   // mult_o1
@@ -71,17 +99,41 @@ module prime_calc(
   float_t inA_add_oSum, inB_add_oSum, out_add_oSum;
   logic nan_add_oSum, overflow_add_oSum, underflow_add_oSum, zero_add_oSum;
 
-  // First Level of tree
-  assign inA_mult_o1 = ray_vec.origin.x;
-  assign inA_mult_o2 = ray_vec.origin.y;
-  assign inA_mult_o3 = ray_vec.origin.z;
 
-  assign inB_mult_o1 = mK1;
-  assign inB_mult_o2 = mK2;
-  assign inB_mult_o3 = mK3;
-
-  assign in_Tbuf = tK;
-
+  // mult_o1/2/3 inputs
+  always_comb begin
+    casex({v1,v2,v0}) // packet present at multipliers starting at v1
+      3'b100: begin
+        inA_mult_o1 = tri_info_buf.matrix.m31;
+        inB_mult_o1 = origin_buf.x;
+        inA_mult_o2 = tri_info_buf.matrix.m32;
+        inB_mult_o2 = origin_buf.y;
+        inA_mult_o3 = tri_info_buf.matrix.m33;
+        inB_mult_o3 = origin_buf.z;
+        in_Tbuf     = tri_info_buf.translate.z;
+    end
+      3'b010: begin
+        inA_mult_o1 = tri_info_buf.matrix.m21;
+        inB_mult_o1 = origin_buf.x;
+        inA_mult_o2 = tri_info_buf.matrix.m22;
+        inB_mult_o2 = origin_buf.y;
+        inA_mult_o3 = tri_info_buf.matrix.m23;
+        inB_mult_o3 = origin_buf.z;
+        in_Tbuf     = tri_info_buf.translate.y;
+      end
+      3'b001: begin
+        inA_mult_o1 = tri_info_buf.matrix.m11;
+        inB_mult_o1 = origin_buf.x;
+        inA_mult_o2 = tri_info_buf.matrix.m12;
+        inB_mult_o2 = origin_buf.y;
+        inA_mult_o3 = tri_info_buf.matrix.m13;
+        inB_mult_o3 = origin_buf.z;
+        in_Tbuf     = tri_info_buf.translate.x;
+      end
+    endcase
+  end
+  
+  
   // Second Level of tree
   assign inA_add_o12 = out_mult_o1;
   assign inB_add_o12 = out_mult_o2;
@@ -98,8 +150,6 @@ module prime_calc(
 
   
   // Origin Multiplier Instantiations
-  
-  
   altfp_mult mult_o1 (
   .aclr(rst ),
   .clock(clk),
@@ -133,7 +183,7 @@ module prime_calc(
   .underflow(underflow_mult_o3 ),
 	.zero(zero_mult_o3));
 
-  
+
   buf_t3 #(.LAT(5), .WIDTH($bits(float_t))) Tbuf5(
     .clk, .rst,
     .data_in(in_Tbuf),
@@ -217,16 +267,37 @@ module prime_calc(
   //add_dSum
   float_t inA_add_dSum, inB_add_dSum, out_add_dSum;
   logic nan_add_dSum, overflow_add_dSum, underflow_add_dSum, zero_add_dSum;
-  
-  // First level of tree
-  assign inA_mult_d1 = ray_vec.dir.x;
-  assign inA_mult_d2 = ray_vec.dir.y;
-  assign inA_mult_d3 = ray_vec.dir.z;
 
-  assign inB_mult_d1 = mK1;
-  assign inB_mult_d2 = mK2;
-  assign inB_mult_d3 = mK3;
 
+  // mult_d1/2/3 inputs
+  always_comb begin
+    case({v1,v2,v0}) // packet present at multipliers starting at v1
+      3'b100: begin
+        inA_mult_d1 = tri_info_buf.matrix.m31;
+        inB_mult_d1 = dir_buf.x;
+        inA_mult_d2 = tri_info_buf.matrix.m32;
+        inB_mult_d2 = dir_buf.y;
+        inA_mult_d3 = tri_info_buf.matrix.m33;
+        inB_mult_d3 = dir_buf.z;
+    end
+      3'b010: begin
+        inA_mult_d1 = tri_info_buf.matrix.m21;
+        inB_mult_d1 = dir_buf.x;
+        inA_mult_d2 = tri_info_buf.matrix.m22;
+        inB_mult_d2 = dir_buf.y;
+        inA_mult_d3 = tri_info_buf.matrix.m23;
+        inB_mult_d3 = dir_buf.z;
+      end
+      3'b001: begin
+        inA_mult_d1 = tri_info_buf.matrix.m11;
+        inB_mult_d1 = dir_buf.x;
+        inA_mult_d2 = tri_info_buf.matrix.m12;
+        inB_mult_d2 = dir_buf.y;
+        inA_mult_d3 = tri_info_buf.matrix.m13;
+        inB_mult_d3 = dir_buf.z;
+      end
+    endcase
+  end
 
   // Second Level of tree
   assign inA_add_d12 = out_mult_d1;

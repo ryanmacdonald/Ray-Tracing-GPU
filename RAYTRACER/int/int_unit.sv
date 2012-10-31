@@ -1,171 +1,158 @@
-/*
-  This is the main fully pipelined intersection unit.  All intersection computations are done here except triangle fetching from cache and routing hits/misses to the other units.
+/* 
+  Fully pipelined 1/1 intersection unit.
+  Takes in a cacheline (Matrix + translate)
+  A ray_vec
+  and does a intersection test with them (t_int > epsilon && bari_test)  NO MAX test unless add mailbox
+  
+  // This also decides if it is the last triangle / decrements the triangle count // inc list index
 
 */
 
+// TODO TODO TODO
+/*
+  Update to have 2 seperate fifos for the outports. Then port the higher of the two fifo counts
+  to the pipe_num_in_fifo port.  Also inc/dec the ln_tri stuff before you put in the vs_pipe
 
+*/
 
 module int_unit(
-  input logic clk,
-  input logic rst,
+  input logic clk, rst,
   
-  input logic raystore_to_int_valid,
-  output logic raystore_to_int_stall,
-  input rayID_t raystore_to_int_rayID,
-  input raystore_to_int_t raystore_to_int_data,
+  input logic icache_to_int_valid,
+  input icache_to_int_t icache_to_int_data,
+  output logic icache_to_int_stall,
 
-  // int to shortstack EM miss
-  output logic int_to_shortstack_EM_valid,
-  output rayID_t int_to_shortstack_EM_rayID,
-  input logic int_to_shortstack_EM_stall,
+  output logic int_to_list_valid,
+  output int_to_list_t int_to_list_data,
+  input logic int_to_list_stall,
 
-  // int to shortstack miss
-  output logic int_to_shortstack_valid,
-  output rayID_t int_to_shortstack_rayID,
-  input logic int_to_shortstack_stall,
- 
-  // int to shader
-  output logic int_to_shader_valid,
-  output rayID_t int_to_shader_rayID,
-  output intersection_t int_to_shader_intersection,
-  input logic int_to_shader_stall
+
+  output logic int_to_larb_valid,
+  output leaf_info_t int_to_larb_data,
+  input logic int_to_larb_stall
+
   );
-  
-
-  logic v0, v1, v2;
-
-  //inputs to math 
-  logic valid_in;
-  int_cacheline_t tri0_cacheline;
-  
-  int_cacheline_t tri1_cacheline;
-  int_pipe1_t int_pipe1_in;
-  ray_vec_t ray_vec_in;
-
-
-  logic valid_out;
-  logic hit_out;  // 1 if hit //0 if miss
-  rayID_t rayID_out;
-  intersection_t intersection_out;
-  //output float_t tMax;
-
-  // Early Miss outputs
-  rayID_t EM_rayID_out;   // Early Miss Ray
-  logic EM_miss;      // 1 if miss, 0 if hit
- 
-
-  always_comb begin
-    tri0_cacheline = raystore_to_int_data.tri0_cacheline;
-    tri1_cacheline = raystore_to_int_data.tri1_cacheline;
-    int_pipe1_in.t_max = raystore_to_int_data.t_max;
-    int_pipe1_in.tri0_ID = raystore_to_int_data.tri0_ID;
-    int_pipe1_in.tri1_ID = raystore_to_int_data.tri1_ID;
-    int_pipe1_in.tri1_valid = raystore_to_int_data.tri1_valid;
-    int_pipe1_in.rayID = raystore_to_int_rayID;
-  end
-
-  int_math int_math_inst(.*);
-
-  // Probably WAYYYY too conservative // TODO 
-  assign raystore_to_int_stall = (int_to_shortstack_stall|int_to_shortstack_EM_stall|int_to_shader_stall)
-                                  | (~v0);
-
-
-  // EM fifo
-  rayID_t EM_fifo_in, EM_fifo_out;
-  logic EM_fifo_full, EM_fifo_empty, EM_fifo_we, EM_fifo_re;
-  
-  assign EM_fifo_in = EM_rayID_out;
-  assign EM_fifo_we = EM_miss;
-  
-  `ifndef SYNTH
-  //assert(!(EM_fifo_we & EM_fifo_full));
-  `endif
-  assign int_to_shortstack_EM_valid = ~int_to_shortstack_EM_stall & ~EM_fifo_empty;
-  assign EM_fifo_re = int_to_shortstack_EM_valid;
-  assign int_to_shortstack_EM_rayID = EM_fifo_out;
-
-  fifo #(.K(4), .WIDTH($bits(rayID_t))) EM_fifo(
-    .clk, .rst,
-    .data_in(EM_fifo_in),
-    .data_out(EM_fifo_out),
-    .re(EM_fifo_re),
-    .we(EM_fifo_we),
-    .full(EM_fifo_full),
-    .empty(EM_fifo_empty) );
 
 
 
-  // Norm Miss fifo
-  rayID_t normM_fifo_in, normM_fifo_out;
-  logic normM_fifo_full, normM_fifo_empty, normM_fifo_we, normM_fifo_re;
+  // int_math signals
+   int_cacheline_t int_cacheline;
+   ray_vec_t ray_vec;
 
-  assign normM_fifo_in = rayID_out;
-  assign normM_fifo_we = valid_out & ~hit_out;
-  
-  `ifndef SYNTH
-  //assert(!(normM_fifo_we & normM_fifo_full));
-  `endif
-  assign int_to_shortstack_valid = ~int_to_shortstack_stall & ~normM_fifo_empty;
-  assign normM_fifo_re = int_to_shortstack_valid;
-  assign int_to_shortstack_rayID = normM_fifo_out;
-  
-  fifo #(.K(4), .WIDTH($bits(rayID_t))) normM_fifo(
-    .clk, .rst,
-    .data_in(normM_fifo_in),
-    .data_out(normM_fifo_out),
-    .re(normM_fifo_re),
-    .we(normM_fifo_we),
-    .full(normM_fifo_full),
-    .empty(normM_fifo_empty) );
+   logic hit;
+   float_t t_int;
+   bari_uv_t uv;
 
 
+  // int_math instantiation
+  assign int_cacheline = icache_to_int_data.tri_cacheline;
+  assign ray_vec = icache_to_int_data.ray_vec;
+  int_math fat_ass_unit(.*);
 
-  // Hit fifo
+   
+  // valid stall pipe 
   struct packed {
     rayID_t rayID;
-    intersection_t intersection;
-  } hit_fifo_in, hit_fifo_out;
+    triID_t triID;
+    ln_tri_t ln_tri;
+  } int_pipe_in, int_pipe_out;
+  
+  logic pipe_ds_valid;
+  logic pipe_ds_stall;
+  logic [5:0] num_in_fifo;
 
-  logic hit_fifo_full, hit_fifo_empty, hit_fifo_we, hit_fifo_re;
 
-  assign hit_fifo_in = rayID_out;
-  assign hit_fifo_we = valid_out & hit_out;
+  logic [5:0] list_num_fifo, larb_num_fifo ;
+
+
+  always_comb begin
+    int_pipe_in.rayID = icache_to_int_data.rayID ;
+    int_pipe_in.triID = icache_to_int_data.triID ;
+    int_pipe_in.ln_tri.lnum_left = icache_to_int_data.ln_tri.lnum_left - 1'b1;
+    int_pipe_in.ln_tri.lindex = icache_to_int_data.ln_tri.lindex + 1'b1;
+  end
+  
+  // The math pipleile is 45 latency
+  pipe_valid_stall #(.WIDTH($bits(int_pipe_in)), .DEPTH(45)) pipe_inst(
+    .clk, .rst,
+    .us_valid(icache_to_int_valid),
+    .us_data(int_pipe_in),
+    .us_stall(icache_to_int_stall),
+    .ds_valid(pipe_ds_valid),
+    .ds_data(int_pipe_out),
+    .ds_stall(pipe_ds_stall),
+    .num_in_fifo(list_num_fifo>larb_num_fifo ? list_num_fifo : larb_num_fifo ) );
+ 
+  assign pipe_ds_stall = int_to_larb_stall | int_to_list_stall ;
+
+  logic	  list_rdreq;
+	logic	  list_wrreq;
+	logic	  list_empty;
+	logic	  list_full;
+
+  int_to_list_t list_fifo_in, list_fifo_out;
+
+	logic	  larb_rdreq;
+	logic	  larb_wrreq;
+	logic	  larb_empty;
+	logic	  larb_full;
+  
+  leaf_info_t larb_fifo_in, larb_fifo_out;
+  
+  always_comb begin
+    list_fifo_in.rayID = int_pipe_out.rayID;
+    list_fifo_in.triID = int_pipe_out.triID;
+    list_fifo_in.hit = hit;
+    list_fifo_in.t_int = t_int;
+    list_fifo_in.uv = uv;
+  end
+
+  always_comb begin
+    larb_fifo_in.rayID = int_pipe_out.rayID;
+    larb_fifo_in.ln_tri.lindex = int_pipe_out.ln_tri.lindex;
+    larb_fifo_in.ln_tri.lnum_left =  int_pipe_out.ln_tri.lnum_left;
+  end
+  
   
   `ifndef SYNTH
-  //assert(!(hit_fifo_we & hit_fifo_full));
+    always @(*) assert(!((list_full|larb_full) & pipe_ds_valid));
   `endif
-  assign int_to_shader_valid = ~int_to_shader_stall & ~hit_fifo_empty;
-  assign hit_fifo_re = int_to_shader_valid;
-  assign int_to_shader_rayID = hit_fifo_out.rayID;
-  assign int_to_shader_intersection = hit_fifo_out.intersection;
 
-  fifo #(.K(4), .WIDTH($bits(hit_fifo_in))) hit_fifo(
-    .clk, .rst,
-    .data_in(hit_fifo_in),
-    .data_out(hit_fifo_out),
-    .re(hit_fifo_re),
-    .we(hit_fifo_we),
-    .full(hit_fifo_full),
-    .empty(hit_fifo_empty) );
+  assign list_wrreq = pipe_ds_valid & (hit | int_pipe_out.ln_tri.lnum_left == 'h0);
+  assign larb_wrreq = pipe_ds_valid & (int_pipe_out.ln_tri.lnum_left != 'h0);
+
+  altbramfifo_w144_d45 list_fifo(
+	.clock (clk),
+	.data ( list_fifo_in),
+	.rdreq(list_rdreq),
+	.wrreq(list_wrreq),
+	.empty(list_empty),
+	.full(list_full),
+	.q(list_fifo_out ),
+  .usedw(list_num_fifo));
+
+  altbramfifo_w144_d45 larb_fifo(
+	.clock (clk),
+	.data ( larb_fifo_in),
+	.rdreq(larb_rdreq),
+	.wrreq(larb_wrreq),
+	.empty(larb_empty),
+	.full(larb_full),
+	.q(larb_fifo_out ),
+  .usedw(larb_num_fifo));
+
+  assign int_to_list_data = list_fifo_out;
+  assign int_to_list_valid = ~list_empty;
+  assign list_rdreq = int_to_list_valid & ~int_to_list_stall;
+
+  assign int_to_larb_data = larb_fifo_out;
+  assign int_to_larb_valid = ~larb_empty;
+  assign larb_rdreq = int_to_larb_valid & ~int_to_larb_stall;
 
 
 
-
-  logic [1:0] cnt_nV, cntV;
-
-	assign cnt_nV = ((cntV == 2'b10) ? 2'b00 : cntV + 1'b1);
-	
-	ff_ar #(2,0) cnt(.q(cntV),.d(cnt_nV),.clk,.rst);
-
-	assign v0 = (cntV == 2'b00);
-	assign v1 = (cntV == 2'b01);
-	assign v2 = (cntV == 2'b10);
-
-
+  initial begin 
+    $display("width of list_fifo = %d\nwidth of larb_fifo=%d",$bits(list_fifo_in),$bits(larb_fifo_in));
+  end
 
 endmodule
-
-
-
-
