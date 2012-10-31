@@ -52,15 +52,15 @@ module tb_int_unit();
     icache_to_int_data.rayID = 0;
     @(posedge clk);
     
-    for(shortreal r=0; r<=10; r +=1 ) begin
-      for(shortreal c=0; c<=10; c+=1) begin
+    for(shortreal r=0; r<10; r +=1 ) begin
+      for(shortreal c=0; c<10; c+=1) begin
         ray_vec_t ray_vec;
         ray_vec.dir = create_vec(0,0,1);
         ray_vec.origin = create_vec(c,r,0);
         icache_to_int_data.rayID <= rayID;
         icache_to_int_data.ray_vec <= ray_vec;
         icache_to_int_data.ln_tri.lindex <= (r*10 + c);
-        icache_to_int_data.ln_tri.lnum_left <= c;
+        icache_to_int_data.ln_tri.lnum_left <= c+1;
         icache_to_int_data.triID <= 6;
         icache_to_int_data.tri_cacheline <= tri_cacheline;
         icache_to_int_valid <= 1;
@@ -86,17 +86,17 @@ module tb_int_unit();
     num_to_list = 0;
     num_to_larb = 0;
     i = 0;
-    repeat(600) begin
-      @(posedge clk) i <= {$random}%5;
+    repeat(6000) begin
+      @(posedge clk) i <= {$random}%60;
     end
     $finish;
   end
 
   always_comb begin
 
-       if(int_to_list_valid && i < 3 ) int_to_list_stall = 1;
+       if(int_to_list_valid && i < 57 ) int_to_list_stall = 1;
       else int_to_list_stall = 0;
-      if(int_to_larb_valid && (i>2)) int_to_larb_stall = 1;
+      if(int_to_larb_valid && (i<58)) int_to_larb_stall = 1;
       else int_to_larb_stall = 0;
   end
 

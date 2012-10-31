@@ -1,6 +1,6 @@
 `default_nettype none
 // uncomment the following line when synthesizing to board
-// `define SYNTH
+ `define SYNTH
 
 `define FP_1 32'h3F80_0000
 `define FP_0 32'h0

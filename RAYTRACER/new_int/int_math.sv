@@ -272,6 +272,16 @@ module int_math(
   // t_int is already register
   assign uv = bary_out;
 
+  `ifndef SYNTH
+    shortreal t_int_f;
+    shortreal u_f;
+    shortreal v_f;
+    always_comb begin
+      t_int_f = $bitstoshortreal(out_div);
+      u_f = $bitstoshortreal(uv.u);
+      v_f = $bitstoshortreal(uv.v);
+    end
+  `endif
 
 
 endmodule
