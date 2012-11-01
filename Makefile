@@ -31,7 +31,7 @@ int_wrap:
 	$(CC) $(FLAGS) -top int_wrap COMMON/*v  COMMON/altfp*/*.v RAYTRACER/int/*.sv RAYTRACER/int/int_wrap.sv
 
 new_int: 
-	$(CC) $(FLAGS) -top tb_int_unit COMMON/*v COMMON/altfp*/*.v COMMON/altb*/*/*v RAYTRACER/new_int/*.sv
+	$(CC) $(FLAGS) -top tb_int_unit COMMON/*v COMMON/altfp*/*.v COMMON/altb*/*/*v RAYTRACER/int/*.sv
 
 prg_int: 
 	$(CC) $(FLAGS) -top tb_int_prg COMMON/*v  COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv TBs/tb_int_prg.sv

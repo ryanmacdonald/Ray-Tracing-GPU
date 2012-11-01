@@ -1,3 +1,16 @@
+/*
+case(trav_case)
+    0 : Traverse only low ( Do not change t_max / t_min )
+    1 : Traverse only high ( Do not change t_max / t_min )
+    2 : Travese low (t_max <= t_mid, t_min <= t_min)
+        Push high (t_max <= t_max, t_min <= t_mid)
+    3 : Travese high (t_max <= t_mid, t_min <= t_min)
+        Push low (t_max <= t_max, t_min <= t_mid)
+  endcase
+*/
+
+
+
 module trav_unit(
   input logic clk, rst,
 
@@ -6,7 +19,7 @@ module trav_unit(
   input tcache_to_trav_t tcache_to_trav_data,
   output logic tcache_to_trav_stall,
 
-
+//////////// normal node traversal /////////////////
   // trav to rs
   output logic trav_to_rs_valid,
   output trav_to_rs_t trav_to_rs_data,
@@ -18,42 +31,53 @@ module trav_unit(
   input rs_to_trav_t rs_to_trav_data,
   output logic rs_to_trav_stall,
 
+  // trav to ss // common port for push/update
+  output logic trav_to_ss_valid,
+  output trav_to_ss_t trav_to_ss_data,
+  input logic trav_to_ss_stall,
 
-  // trav to ss (push)
-  output logic trav_to_ss_push_valid,
-  output trav_to_ss_t trav_to_ss_push__data,
-  input logic trav_to_ss_push_stall,
-
-
-  // trav to ss (update)
-  output logic trav_to_ss_update_valid,
-  output trav_to_ss_t trav_to_ss_update__data,
-  input logic trav_to_ss_update_stall,
-
-
-   // trav to iarb
+  
+  // trav to iarb
   output logic trav_to_iarb_valid,
   output iarb_t trav_to_iarb_data,
   input logic trav_to_iarb_stall
- 
+ ///////////////////////////////////////
 
+///////// leaf node traversal //////////////////
+
+   // trav to larb
+  output logic trav_to_larb_valid,
+  output leaf_info_t trav_to_larb_data,
+  input logic trav_to_larb_stall
+ 
+  // trav to list (with tmax)
+  output logic trav_to_list_valid,
+  output float_t trav_to_list_data,
+  input logic trav_to_list_stall
+  
   );
 
-  logic tcache_valid_in;
-  tcache_to_trav_t tcache_data_out;
-  logic tcache_stall_us;
+  logic tcache_valid;
+  tcache_to_trav_t tcache_data;
+  logic tcache_stall;
 
-
+// Stall buffer
   VS_buf #($bits(tcache_to_trav_t)) stall_buf(.clk, .rst,
     .data_ds(tcache_data_out), 
-    .valid_ds(tcache_valid_in),
-    .stall_ds(tcache_stall_us),
+    .valid_ds(tcache_valid),
+    .stall_ds(tcache_stall),
     .data_us(tcache_to_trav_data),
     .valid_us(tcache_to_trav_valid),
     .stall_us(tcache_to_trav_stall) );
 
 
-  iarb_t leaf_fifo_in, leaf_fifo_out;
+////////////////// Leaf node route /////////////////////////////
+  struct packed {
+    rayID_t rayID;
+    float_t t_max;
+    ln_tri_t ln_tri;
+  } leaf_fifo_in, leaf_fifo_out,
+  
   logic leaf_fifo_we, leaf_fifo_re, leaf_fifo_full, leaf_fifo_empty;
   // add a small 4-wide fifo before the trav to tarb path
   
@@ -63,12 +87,11 @@ module trav_unit(
                             (leaf_fifo_full & tcache_data_out.tree_node.leaf_node.node_type == 2'b11) |
                             (trav_to_rs_stall & tcache_data_out.tree_node.leaf_node.node_type != 2'b11) );
 
+
   always_comb begin
     leaf_fifo_in.rayID = tcache_data_out.rayID ;
     leaf_fifo_in.t_max = tcache_data_out.t_max ;
-    leaf_fifo_in.tri0_ID = tcache_data_out.tree_node.leaf_node.tri0_ID;
-    leaf_fifo_in.tri1_ID = tcache_data_out.tree_node.leaf_node.tri1_ID;
-    leaf_fifo_in.tri1_valid = tcache_data_out.tree_node.leaf_node.tri1_valid;
+    leaf_fifo_in.ln_tri = tcache_data_out.tree_node.leaf_node.ln_tri ;
   end
 
   fifo #(.WIDTH($bits(iarb_t)), .K(2)) leaf_fifo(
@@ -80,8 +103,35 @@ module trav_unit(
     .full(leaf_fifo_full),
     .empty(leaf_fifo_empty) );
 
-  assign trav_to_iarb_valid = ~leaf_fifo_empty ;
-  assign leaf_fifo_re = trav_to_iarb_valid & ~trav_to_iarb_stall ;
+
+
+  float_t to_list_buf, to_list_buf_n;
+  logic to_list_valid, to_list_valid_n;
+
+  leaf_info_t to_larb_buf, to_larb_buf_n;
+  logic to_larb_valid, to_larb_valid_n;
+
+  assign leaf_fifo_re = (~to_list_valid | (to_list_valid & ~trav_to_list_stall)) &
+                        (~to_larb_valid | (to_larb_valid & ~trav_to_larb_stall)); 
+  assign to_larb_buf_n.rayID = leaf_fifo_out.rayID;
+  assign to_larb_buf_n.ln_tri = leaf_fifo_out.ln_tri;
+  assign to_larb_valid_n = trav_to_larb_stall ? 1'b1 : leaf_fifo_re;
+  ff_ar_en #($bits(leaf_info_t),'h0) larb_buf(.d(to_larb_buf_n), .q(to_larb_buf), .en(leaf_fifo_re), .clk, .rst);
+  ff_ar #($bits(leaf_info_t),'h0) larb_valid(.d(to_larb_valid_n), .q(to_larb_valid), .clk, .rst);
+  trav_to_larb_data = to_larb_buf;
+  trav_to_larb_valid = to_larb_valid;
+
+
+  assign to_list_buf_n.rayID = leaf_fifo_out.rayID;
+  assign to_list_buf_n.t_max = leaf_fifo_out.t_max;
+  assign to_list_valid_n = trav_to_list_stall ? 1'b1 : leaf_fifo_re ;
+  ff_ar_en #($bits(float_t),'h0) list_buf(.d(to_list_buf_n), .q(to_list_buf), .en(leaf_fifo_re), .clk, .rst);
+  ff_ar #($bits(float_t),'h0) list_valid(.d(to_list_valid_n), .q(to_list_valid), .clk, .rst);
+  trav_to_list_data = to_list_buf;
+  trav_to_list_valid = to_list_valid;
+
+///////////////////////////////////// end leaf node route //////////////////////////////////////
+
 
 
   // trav to rs
@@ -93,7 +143,20 @@ module trav_unit(
     trav_to_rs_data.t_max = tcache_data_out.t_max;
     trav_to_rs_data.t_min = tcache_data_out.t_min;
   end
+  assign trav_to_rs_valid = tcache_valid_in & tcache_data_out.tree_node.leaf_node.node_type != 2'b11;
 
+  
+  // rs_to_trav interface 
+
+  // trav_math instantiation
+
+  // pipe_stall_valid inst
+
+  // fifo inst
+
+  // trav_to_ss buffer and interface
+
+  // trav_to_iarb buffer and interface
 
   // 0 traverse only low
   // 1 traverse only high

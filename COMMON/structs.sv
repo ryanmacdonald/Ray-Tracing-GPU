@@ -135,9 +135,7 @@ typedef struct packed {
 
 typedef struct packed {
   logic [1:0] node_type;
-  triID_t tri0_ID;
-  triID_t tri1_ID;
-  logic tri1_valid;
+  ln_tri_t ln_tri;
   logic [4:0] reserve0;
 
 } leaf_node_t;
@@ -250,6 +248,10 @@ typedef struct packed {
   float_t t_min;
 } trav_to_ss_t ;
 
+
+typedef struct packed {
+  rayID_t rayID;
+}
 
 // type containting leaf node triangle info
 typedef struct packed {
