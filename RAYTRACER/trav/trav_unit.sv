@@ -51,7 +51,7 @@ module trav_unit(
  
   // trav to list (with tmax)
   output logic trav_to_list_valid,
-  output float_t trav_to_list_data,
+  output trav_to_list_t trav_to_list_data,
   input logic trav_to_list_stall
   
   );
@@ -111,11 +111,13 @@ module trav_unit(
   leaf_info_t to_larb_buf, to_larb_buf_n;
   logic to_larb_valid, to_larb_valid_n;
 
-  assign leaf_fifo_re = (~to_list_valid | (to_list_valid & ~trav_to_list_stall)) &
-                        (~to_larb_valid | (to_larb_valid & ~trav_to_larb_stall)); 
+  assign leaf_fifo_re = ~leaf_fifo_empty & (~to_list_valid | ~trav_to_list_stall) &
+                                           (~to_larb_valid | ~trav_to_larb_stall); 
   assign to_larb_buf_n.rayID = leaf_fifo_out.rayID;
   assign to_larb_buf_n.ln_tri = leaf_fifo_out.ln_tri;
+  
   assign to_larb_valid_n = trav_to_larb_stall ? 1'b1 : leaf_fifo_re;
+
   ff_ar_en #($bits(leaf_info_t),'h0) larb_buf(.d(to_larb_buf_n), .q(to_larb_buf), .en(leaf_fifo_re), .clk, .rst);
   ff_ar #(1,'h0) larb_valid(.d(to_larb_valid_n), .q(to_larb_valid), .clk, .rst);
   
@@ -285,7 +287,7 @@ module trav_unit(
   logic pop_valid;
   logic push_valid;
   logic update_restnode_valid;
-  
+  nodeID_t push_node_ID;
   
   nodeID_t low_node_ID;
   
@@ -294,7 +296,7 @@ module trav_unit(
   assign pop_valid = (only_low & low_empty) | (only_high & high_empty) ;
   assign push_valid = ((~low_empty & ~high_empty) & (trav_lo_then_hi | trav_hi_then_lo)) ;
   assign update_restnode_valid = trav_fifo_out.restnode_search & push_valid;
-  nodeID_t push_node_ID = trav_lo_then_hi ? trav_fifo_out.right_ID : low_node_ID ;
+  assign push_node_ID = trav_lo_then_hi ? trav_fifo_out.right_ID : low_node_ID ;
 
   // trav_to_ss buffer and interface
   trav_to_ss_t ss_buf_n, ss_buf;
@@ -315,6 +317,11 @@ module trav_unit(
   ff_ar #(1,1'b0) ss_valid_reg(.d(ss_valid_n), .q(ss_valid), .clk, .rst);
   ff_ar #($bits(trav_to_ss_t),'h0) ss_buf_reg(.d(ss_buf_n), .q(ss_buf), .clk, .rst);
  
+
+  assign trav_to_ss_valid = ss_valid;
+  assign trav_to_ss_data = ss_buf;
+
+//--------------------------------------------------------------------------
   nodeID_t trav_node_ID;
   float_t trav_t_max;
   float_t trav_t_min;
@@ -358,7 +365,9 @@ module trav_unit(
   ff_ar #(1,1'b0) tarb_valid_reg(.d(tarb_valid_n), .q(tarb_valid), .clk, .rst);
   ff_ar #($bits(tarb_t),'h0) tarb_buf_reg(.d(tarb_buf_n), .q(tarb_buf), .clk, .rst);
 
-  
+  assign trav_to_tarb_valid = tarb_valid;
+  assign trav_to_tarb_data = tarb_buf;
+
   assign ds_stall_pipe_vs = (ss_valid & trav_to_ss_stall) | (tarb_valid & trav_to_tarb_stall) ;
   always_comb begin
     case({ss_valid_n,tarb_valid_n})
