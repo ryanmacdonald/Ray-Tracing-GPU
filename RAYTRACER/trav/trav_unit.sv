@@ -31,16 +31,15 @@ module trav_unit(
   input rs_to_trav_t rs_to_trav_data,
   output logic rs_to_trav_stall,
 
-  // trav to ss // common port for push/update
+  // trav to ss // common port for push/pop/update
   output logic trav_to_ss_valid,
   output trav_to_ss_t trav_to_ss_data,
   input logic trav_to_ss_stall,
-
   
-  // trav to iarb
-  output logic trav_to_iarb_valid,
-  output iarb_t trav_to_iarb_data,
-  input logic trav_to_iarb_stall
+  // trav to tarb
+  output logic trav_to_tarb_valid,
+  output tarb_t trav_to_tarb_data,
+  input logic trav_to_tarb_stall,
  ///////////////////////////////////////
 
 ///////// leaf node traversal //////////////////
@@ -48,7 +47,7 @@ module trav_unit(
    // trav to larb
   output logic trav_to_larb_valid,
   output leaf_info_t trav_to_larb_data,
-  input logic trav_to_larb_stall
+  input logic trav_to_larb_stall,
  
   // trav to list (with tmax)
   output logic trav_to_list_valid,
@@ -63,7 +62,7 @@ module trav_unit(
 
 // Stall buffer
   VS_buf #($bits(tcache_to_trav_t)) stall_buf(.clk, .rst,
-    .data_ds(tcache_data_out), 
+    .data_ds(tcache_data), 
     .valid_ds(tcache_valid),
     .stall_ds(tcache_stall),
     .data_us(tcache_to_trav_data),
@@ -76,36 +75,37 @@ module trav_unit(
     rayID_t rayID;
     float_t t_max;
     ln_tri_t ln_tri;
-  } leaf_fifo_in, leaf_fifo_out,
+  } leaf_fifo_in, leaf_fifo_out;
   
   logic leaf_fifo_we, leaf_fifo_re, leaf_fifo_full, leaf_fifo_empty;
   // add a small 4-wide fifo before the trav to tarb path
   
-  assign leaf_fifo_we = ~leaf_fifo_full & tcache_valid_in & 
-                          (tcache_data_out.tree_node.leaf_node.node_type == 2'b11);
-  assign tcache_stall_us = tcache_valid_in & ( 
-                            (leaf_fifo_full & tcache_data_out.tree_node.leaf_node.node_type == 2'b11) |
-                            (trav_to_rs_stall & tcache_data_out.tree_node.leaf_node.node_type != 2'b11) );
+  assign leaf_fifo_we = ~leaf_fifo_full & tcache_valid & 
+                          (tcache_data.tree_node.leaf_node.node_type == 2'b11);
+  assign tcache_stall = tcache_valid & ( 
+                            (leaf_fifo_full & tcache_data.tree_node.leaf_node.node_type == 2'b11) |
+                            (trav_to_rs_stall & tcache_data.tree_node.leaf_node.node_type != 2'b11) );
 
 
   always_comb begin
-    leaf_fifo_in.rayID = tcache_data_out.rayID ;
-    leaf_fifo_in.t_max = tcache_data_out.t_max ;
-    leaf_fifo_in.ln_tri = tcache_data_out.tree_node.leaf_node.ln_tri ;
+    leaf_fifo_in.rayID = tcache_data.rayID ;
+    leaf_fifo_in.t_max = tcache_data.t_max ;
+    leaf_fifo_in.ln_tri = tcache_data.tree_node.leaf_node.ln_tri ;
   end
 
-  fifo #(.WIDTH($bits(iarb_t)), .K(2)) leaf_fifo(
+  fifo #(.WIDTH($bits(leaf_fifo_in)), .K(2)) leaf_fifo(
     .clk, .rst,
     .data_in(leaf_fifo_in),
     .data_out(leaf_fifo_out),
     .we(leaf_fifo_we),
     .re(leaf_fifo_re),
     .full(leaf_fifo_full),
-    .empty(leaf_fifo_empty) );
+    .empty(leaf_fifo_empty),
+    .num_in_fifo());
 
 
 
-  float_t to_list_buf, to_list_buf_n;
+  trav_to_list_t to_list_buf, to_list_buf_n;
   logic to_list_valid, to_list_valid_n;
 
   leaf_info_t to_larb_buf, to_larb_buf_n;
@@ -117,18 +117,19 @@ module trav_unit(
   assign to_larb_buf_n.ln_tri = leaf_fifo_out.ln_tri;
   assign to_larb_valid_n = trav_to_larb_stall ? 1'b1 : leaf_fifo_re;
   ff_ar_en #($bits(leaf_info_t),'h0) larb_buf(.d(to_larb_buf_n), .q(to_larb_buf), .en(leaf_fifo_re), .clk, .rst);
-  ff_ar #($bits(leaf_info_t),'h0) larb_valid(.d(to_larb_valid_n), .q(to_larb_valid), .clk, .rst);
-  trav_to_larb_data = to_larb_buf;
-  trav_to_larb_valid = to_larb_valid;
+  ff_ar #(1,'h0) larb_valid(.d(to_larb_valid_n), .q(to_larb_valid), .clk, .rst);
+  
+  assign trav_to_larb_data = to_larb_buf;
+  assign trav_to_larb_valid = to_larb_valid;
 
 
   assign to_list_buf_n.rayID = leaf_fifo_out.rayID;
-  assign to_list_buf_n.t_max = leaf_fifo_out.t_max;
+  assign to_list_buf_n.t_max_leaf = leaf_fifo_out.t_max;
   assign to_list_valid_n = trav_to_list_stall ? 1'b1 : leaf_fifo_re ;
-  ff_ar_en #($bits(float_t),'h0) list_buf(.d(to_list_buf_n), .q(to_list_buf), .en(leaf_fifo_re), .clk, .rst);
-  ff_ar #($bits(float_t),'h0) list_valid(.d(to_list_valid_n), .q(to_list_valid), .clk, .rst);
-  trav_to_list_data = to_list_buf;
-  trav_to_list_valid = to_list_valid;
+  ff_ar_en #($bits(trav_to_list_t),'h0) list_buf(.d(to_list_buf_n), .q(to_list_buf), .en(leaf_fifo_re), .clk, .rst);
+  ff_ar #(1,'h0) list_valid(.d(to_list_valid_n), .q(to_list_valid), .clk, .rst);
+  assign trav_to_list_data = to_list_buf;
+  assign trav_to_list_valid = to_list_valid;
 
 ///////////////////////////////////// end leaf node route //////////////////////////////////////
 
@@ -136,40 +137,158 @@ module trav_unit(
 
   // trav to rs
   always_comb begin
-    trav_to_rs_data.rayID = tcache_data_out.rayID;
-    trav_to_rs_data.nodeID = tcache_data_out.nodeID;
-    trav_to_rs_data.node = tcache_data_out.tree_node.norm_node;
-    trav_to_rs_data.restnode_search = tcache_data_out.restnode_search;
-    trav_to_rs_data.t_max = tcache_data_out.t_max;
-    trav_to_rs_data.t_min = tcache_data_out.t_min;
+    trav_to_rs_data.rayID = tcache_data.rayID;
+    trav_to_rs_data.nodeID = tcache_data.nodeID;
+    trav_to_rs_data.node = tcache_data.tree_node.norm_node;
+    trav_to_rs_data.restnode_search = tcache_data.restnode_search;
+    trav_to_rs_data.t_max = tcache_data.t_max;
+    trav_to_rs_data.t_min = tcache_data.t_min;
   end
-  assign trav_to_rs_valid = tcache_valid_in & tcache_data_out.tree_node.leaf_node.node_type != 2'b11;
+  assign trav_to_rs_valid = tcache_valid & tcache_data.tree_node.leaf_node.node_type != 2'b11;
+
+
+  struct packed {
+    rayID_t rayID;  // sb
+    nodeID_t parent_ID; //sb
+    nodeID_t right_ID; // sb
+    logic low_empty; // sb 
+    logic high_empty; // sb
+    logic restnode_search; // sb
+  } trav_sb_in, trav_sb_out;
+
+  struct packed {
+    rayID_t rayID;  // sb
+    nodeID_t parent_ID; //sb
+    nodeID_t right_ID; // sb
+    logic low_empty; // sb 
+    logic high_empty; // sb
+    logic restnode_search; // sb
+    // mains
+    float_t t_max_out;
+    float_t t_min_out;
+    float_t t_mid_out;
+    logic only_low;
+    logic only_high;
+    logic trav_lo_then_hi;
+    logic trav_hi_then_lo;
+
+  } trav_fifo_in, trav_fifo_out;
+
+  initial $display("trav_fifo_bits = %d",$bits(trav_fifo_in));
+
+  logic ds_valid_pipe_vs;
+  logic ds_stall_pipe_vs;
+
+  always_comb begin
+    trav_sb_in.rayID = rs_to_trav.rayID ;,
+    trav_sb_in.parent_ID = rs_to_trav.nodeID ;,
+    trav_sb_in.right_ID = rs_to_trav.node.right_ID ;,
+    trav_sb_in.low_empty = rs_to_trav.node.low_empty ;,
+    trav_sb_in.high_empty = rs_to_trav.node.high_empty ;,
+    trav_sb_in.restnode_search = rs_to_trav.restnode_search ;,
+  end
+
+  pipe_valid_stall #(.WIDTH(trav_sb_in), .DEPTH(14)) pipe_inst(
+    .clk, .rst,
+    .us_valid(rs_to_trav_valid),
+    .us_data(trav_sb_in),
+    .us_stall(rs_to_trav_stall),
+    .ds_valid(trav_fifo_we),
+    .ds_data(trav_sb_out),
+    .ds_stall(),
+    .num_in_fifo(num_in_trav_fifo) );
+
+
+  trav_math big_ass_math_thaaaang(
+    .clk, .rst,
+    .origin_in(rs_to_trav.origin),
+    .dir_in(rs_to_trav.dir),
+    .split_in(rs_to_trav.node.split),
+    .t_max_in(rs_to_trav.t_max),
+    .t_min_in(rs_to_trav.t_min),
+  
+    .t_max_in(trav_fifo_in.t_max_in),
+    .t_min_in(trav_fifo_in.t_min_in),
+    .t_mid_in(trav_fifo_in.t_mid_in),
+
+    .only_low(trav_fifo_in.only_low),
+    .only_high(trav_fifo_in.only_high),
+    .trav_lo_then_hi(trav_fifo_in.trav_lo_then_hi),
+    .trav_hi_then_lo(trav_fifo_in.trav_hi_then_lo),
+  );
+
+
+
+  always_comb begin
+    trav_fifo_in.rayID = trav_sb_out.rayID ;
+    trav_fifo_in.parent_ID = trav_sb_out.parent_ID ;
+    trav_fifo_in.right_ID = trav_sb_out.right_ID ;
+    trav_fifo_in.low_empty = trav_sb_out.low_empty ;
+    trav_fifo_in.high_empty = trav_sb_out.high_empty ;
+    trav_fifo_in.restnode_search = trav_sb_out.restnode_search ;
+  end
+
+
+  logic trav_fifo_full.
+  logic trav_fifo_empty,
+  logic trav_fifo_re,
+  logic trav_fifo_we,
+
+  fifo (.K(4), .WIDTH($bits(trav_fifo_in)) ) trav_fifo_inst(
+    .data_in(trav_fifo_in),
+    .data_out(trav_fifo_out),
+    .full(trav_fifo_full),
+    .empty(trav_fifo_empty),
+    .re(trav_fifo_re),
+    .we(trav_fifo_we),
+    .num_in_fifo(num_in_trav_fifo) );
+
+    
+
+  logic low_empty;
+  logic high_empty;
+  float_t t_max_out;
+  float_t t_min_out;
+  float_t t_mid_out;
+  logic only_low;
+  logic only_high;
+  logic trav_lo_then_hi;
+  logic trav_hi_then_lo;
 
   
-  // rs_to_trav interface 
+  logic using_ss;
+  logic pop_valid;
+  assign using_ss = ((~low_empty & ~high_empty) & (trav_lo_then_hi | trav_hi_then_lo)) |
+                    (only_low & 
 
-  // trav_math instantiation
-
-  // pipe_stall_valid inst
-
-  // fifo inst
 
   // trav_to_ss buffer and interface
+  trav_to_ss_t ss_buf_n, ss_buf;
+  logic ss_valid_n, ss_valid;
 
-  // trav_to_iarb buffer and interface
+  always_comb begin
+    ss_buf_n.rayID = trav_fifo_out.rayID;
+    ss_buf_n.rayID = trav_fifo_out.rayID;
+    ss_buf_n.rayID = trav_fifo_out.rayID;
+  end
 
-  // 0 traverse only low
-  // 1 traverse only high
-  // 2 traverse low and push high
-  // 3 traverse high and push low
-  
-  logic [3:0] trav_case; 
+// trav_to_ss_t   (This sends either a push request or an update request)
+typedef struct packed {
+  rayID_t rayID;
+  logic push_req; // 1 == push, 0 == update restnode
+  nodeID_t push_node;
+  logic update_restnode_req;
+  nodeID_t rest_node;
+  float_t t_max;
+  logic pop_req;
+} trav_to_ss_t ;
 
-  // rs to trav
-  
-  // Update stack request
-  // only valid if restnode_search & (trav_case = 2 or 3)
-  
+
+
+
+  // trav_to_tarb buffer and interface
+  trav_to_tarb_t tarb_buf_n tarb_buf;
+  logic tarb_valid_n, tarb_valid;
 
 
 endmodule

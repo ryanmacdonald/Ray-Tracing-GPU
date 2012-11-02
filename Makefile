@@ -13,8 +13,6 @@ trtr:
 fbh:
 	$(CC) $(FLAGS) -top fbh_tb COMMON/*v COMMON/altfp*/*v PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/sram.sv TBs/fbh_tb.sv
 
-trav:
-	$(CC) $(FLAGS) -top trav_unit COMMON/*v RAYTRACER/trav/trav_unit.sv
 prime_calc:
 	$(CC) $(FLAGS) -top tb_prime_calc COMMON/*v COMMON/altfp_mult/*.v COMMON/altfp_add/*.v RAYTRACER/int/prime_calc.sv RAYTRACER/int/TBs/tb_prim_calc.sv
 
@@ -32,6 +30,9 @@ int_wrap:
 
 new_int: 
 	$(CC) $(FLAGS) -top tb_int_unit COMMON/*v COMMON/altfp*/*.v COMMON/altb*/*/*v RAYTRACER/int/*.sv
+
+trav: 
+	$(CC) $(FLAGS) -top trav_unit COMMON/*v COMMON/altfp*/*.v COMMON/altb*/*/*v RAYTRACER/trav/*.sv
 
 prg_int: 
 	$(CC) $(FLAGS) -top tb_int_prg COMMON/*v  COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv TBs/tb_int_prg.sv

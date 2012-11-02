@@ -133,52 +133,29 @@ typedef struct packed {
 } keys_t;
 
 
+// type containting leaf node triangle info
+typedef struct packed {
+  logic [12:0] lindex; // current index
+  logic [4:0] lnum_left; // number of triangles left
+} ln_tri_t;
+
+
 typedef struct packed {
   logic [1:0] node_type;
   ln_tri_t ln_tri;
-  logic [4:0] reserve0;
-
+  logic [27:0] reserve0;
+  
 } leaf_node_t;
 
 typedef struct packed {
   logic [1:0] node_type;
-  float24_t split;
+  float24_t split; // probably needs to be 25 bits
   nodeID_t right_ID;
   logic left_empty;
   logic right_empty;
-  logic SAH_flip; 
+  logic reserve;
 
 } norm_node_t;
-
-/*
-typedef struct packed {
-  ray_vec_t ray_vec;
-  float_t tMax;
-  float_t tMin;
-
-} raystore_t;
-
-
-typedef struct packed {
-  int_cacheline_t tri0_cacheline;
-  int_cacheline_t tri1_cacheline;
-  float_t t_max;
-  triID_t tri0_ID;
-  triID_t tri1_ID;
-  logic tri1_valid;
-  ray_vec_t ray_vec;
-
-} raystore_to_int_t;
-*/
-// ss == shortstack
-// rs = raystore
-// sint = scene intersecter
-
-/* shade_to_sint_t 
-typedef struct packed {
-
-} shade_to_sint_t;
-*/
 
 // sint_to_rs_t   (This will write ray_vec to raystore
 typedef struct packed { // TODO make it go to both ss and rs
@@ -233,7 +210,8 @@ typedef struct packed {
   logic restnode_search;
   float_t t_max;
   float_t t_min;
-  ray_vec_t ray_vec;
+  float_t origin;
+  float_t dir;
 } rs_to_trav_t ;
 
 
@@ -245,19 +223,13 @@ typedef struct packed {
   logic update_restnode_req;
   nodeID_t rest_node;
   float_t t_max;
-  float_t t_min;
+  logic pop_req;
 } trav_to_ss_t ;
-
 
 typedef struct packed {
   rayID_t rayID;
-}
-
-// type containting leaf node triangle info
-typedef struct packed {
-  logic [12:0] lindex; // current index
-  logic [4:0] lnum_left; // number of triangles left
-} ln_tri_t;
+  float_t t_max_leaf;
+} trav_to_list_t ;
 
 
 // Used on the following interfacese
