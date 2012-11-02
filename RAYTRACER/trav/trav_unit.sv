@@ -164,9 +164,9 @@ module trav_unit(
     logic high_empty; // sb
     logic restnode_search; // sb
     // mains
-    float_t t_max_out;
-    float_t t_min_out;
-    float_t t_mid_out;
+    float_t t_max;
+    float_t t_min;
+    float_t t_mid;
     logic only_low;
     logic only_high;
     logic trav_lo_then_hi;
@@ -174,47 +174,48 @@ module trav_unit(
 
   } trav_fifo_in, trav_fifo_out;
 
-  initial $display("trav_fifo_bits = %d",$bits(trav_fifo_in));
 
   logic ds_valid_pipe_vs;
   logic ds_stall_pipe_vs;
 
+  logic [4:0] num_in_trav_fifo;
+  
   always_comb begin
-    trav_sb_in.rayID = rs_to_trav.rayID ;,
-    trav_sb_in.parent_ID = rs_to_trav.nodeID ;,
-    trav_sb_in.right_ID = rs_to_trav.node.right_ID ;,
-    trav_sb_in.low_empty = rs_to_trav.node.low_empty ;,
-    trav_sb_in.high_empty = rs_to_trav.node.high_empty ;,
-    trav_sb_in.restnode_search = rs_to_trav.restnode_search ;,
+    trav_sb_in.rayID = rs_to_trav_data.rayID ;
+    trav_sb_in.parent_ID = rs_to_trav_data.nodeID ;
+    trav_sb_in.right_ID = rs_to_trav_data.node.right_ID ;
+    trav_sb_in.low_empty = rs_to_trav_data.node.low_empty ;
+    trav_sb_in.high_empty = rs_to_trav_data.node.high_empty ;
+    trav_sb_in.restnode_search = rs_to_trav_data.restnode_search ;
   end
 
-  pipe_valid_stall #(.WIDTH(trav_sb_in), .DEPTH(14)) pipe_inst(
+  pipe_valid_stall #(.WIDTH($bits(trav_sb_in)), .DEPTH(14)) pipe_inst(
     .clk, .rst,
     .us_valid(rs_to_trav_valid),
     .us_data(trav_sb_in),
     .us_stall(rs_to_trav_stall),
-    .ds_valid(trav_fifo_we),
+    .ds_valid(ds_valid_pipe_vs),
     .ds_data(trav_sb_out),
-    .ds_stall(),
-    .num_in_fifo(num_in_trav_fifo) );
+    .ds_stall(ds_stall_pipe_vs),
+    .num_in_fifo(num_in_trav_fifo[3:0]) );
 
 
   trav_math big_ass_math_thaaaang(
     .clk, .rst,
-    .origin_in(rs_to_trav.origin),
-    .dir_in(rs_to_trav.dir),
-    .split_in(rs_to_trav.node.split),
-    .t_max_in(rs_to_trav.t_max),
-    .t_min_in(rs_to_trav.t_min),
+    .origin_in(rs_to_trav_data.origin),
+    .dir_in(rs_to_trav_data.dir),
+    .split_in({rs_to_trav_data.node.split,8'b0}),
+    .t_max_in(rs_to_trav_data.t_max),
+    .t_min_in(rs_to_trav_data.t_min),
   
-    .t_max_in(trav_fifo_in.t_max_in),
-    .t_min_in(trav_fifo_in.t_min_in),
-    .t_mid_in(trav_fifo_in.t_mid_in),
+    .t_max_out(trav_fifo_in.t_max),
+    .t_min_out(trav_fifo_in.t_min),
+    .t_mid_out(trav_fifo_in.t_mid),
 
     .only_low(trav_fifo_in.only_low),
     .only_high(trav_fifo_in.only_high),
     .trav_lo_then_hi(trav_fifo_in.trav_lo_then_hi),
-    .trav_hi_then_lo(trav_fifo_in.trav_hi_then_lo),
+    .trav_hi_then_lo(trav_fifo_in.trav_hi_then_lo)
   );
 
 
@@ -229,12 +230,17 @@ module trav_unit(
   end
 
 
-  logic trav_fifo_full.
-  logic trav_fifo_empty,
-  logic trav_fifo_re,
-  logic trav_fifo_we,
+  logic trav_fifo_full;
+  logic trav_fifo_empty;
+  logic trav_fifo_re;
+  logic trav_fifo_we;
 
-  fifo (.K(4), .WIDTH($bits(trav_fifo_in)) ) trav_fifo_inst(
+
+  assign trav_fifo_we = ds_valid_pipe_vs ;
+  
+
+  fifo #(.K(4), .WIDTH($bits(trav_fifo_in)) ) trav_fifo_inst(
+    .clk, .rst,
     .data_in(trav_fifo_in),
     .data_out(trav_fifo_out),
     .full(trav_fifo_full),
@@ -247,48 +253,120 @@ module trav_unit(
 
   logic low_empty;
   logic high_empty;
-  float_t t_max_out;
-  float_t t_min_out;
-  float_t t_mid_out;
+  float_t t_max;
+  float_t t_min;
+  float_t t_mid;
   logic only_low;
   logic only_high;
   logic trav_lo_then_hi;
   logic trav_hi_then_lo;
-
+   
+  assign low_empty = trav_fifo_out.low_empty;
+  assign high_empty = trav_fifo_out.high_empty;
+  assign t_max = trav_fifo_out.t_max;
+  assign t_min = trav_fifo_out.t_min;
+  assign t_mid = trav_fifo_out.t_mid;
+  assign only_low = trav_fifo_out.only_low;
+  assign only_high = trav_fifo_out.only_high;
+  assign trav_lo_then_hi = trav_fifo_out.trav_lo_then_hi;
+  assign trav_hi_then_lo = trav_fifo_out.trav_hi_then_lo;
+ 
   
+  `ifndef SYNTH
+    always @(*) begin
+      assert(!(trav_fifo_full & ds_valid_pipe_vs));
+      assert(trav_fifo_empty || (only_low + only_high + trav_lo_then_hi + trav_hi_then_lo == 1));
+      assert(trav_fifo_empty || (t_max > t_min));
+    end
+  `endif
+ 
+
   logic using_ss;
   logic pop_valid;
-  assign using_ss = ((~low_empty & ~high_empty) & (trav_lo_then_hi | trav_hi_then_lo)) |
-                    (only_low & 
+  logic push_valid;
+  logic update_restnode_valid;
+  
+  
+  nodeID_t low_node_ID;
+  
+  assign low_node_ID = trav_fifo_out.parent_ID + 1'b1;
 
+  assign pop_valid = (only_low & low_empty) | (only_high & high_empty) ;
+  assign push_valid = ((~low_empty & ~high_empty) & (trav_lo_then_hi | trav_hi_then_lo)) ;
+  assign update_restnode_valid = trav_fifo_out.restnode_search & push_valid;
+  nodeID_t push_node_ID = trav_lo_then_hi ? trav_fifo_out.right_ID : low_node_ID ;
 
   // trav_to_ss buffer and interface
   trav_to_ss_t ss_buf_n, ss_buf;
   logic ss_valid_n, ss_valid;
-
+  
+  assign ss_valid_n = (~trav_fifo_empty & (pop_valid | push_valid | update_restnode_valid) ) |
+                      (ss_valid & trav_to_ss_stall) ;
   always_comb begin
     ss_buf_n.rayID = trav_fifo_out.rayID;
-    ss_buf_n.rayID = trav_fifo_out.rayID;
-    ss_buf_n.rayID = trav_fifo_out.rayID;
+    ss_buf_n.push_req = push_valid ;
+    ss_buf_n.push_node_ID = push_node_ID ;
+    ss_buf_n.update_restnode_req = update_restnode_valid ;
+    ss_buf_n.rest_node_ID = trav_fifo_out.parent_ID ;
+    ss_buf_n.t_max = t_max; // TODO is it always t_max??
+    ss_buf_n.pop_req = pop_valid ;
+ end
+
+  ff_ar #(1,1'b0) ss_valid_reg(.d(ss_valid_n), .q(ss_valid), .clk, .rst);
+  ff_ar #($bits(trav_to_ss_t),'h0) ss_buf_reg(.d(ss_buf_n), .q(ss_buf), .clk, .rst);
+ 
+  nodeID_t trav_node_ID;
+  float_t trav_t_max;
+  float_t trav_t_min;
+
+  // DIfficult logic here TODO
+  assign trav_node_ID = only_low | (trav_lo_then_hi & ~low_empty) | (trav_hi_then_lo & high_empty) ?
+                        low_node_ID : trav_fifo_out.right_ID ;
+  always_comb begin
+    unique case({only_low|only_high,(trav_lo_then_hi & ~low_empty)|(trav_hi_then_lo & ~high_empty),(trav_hi_then_lo & high_empty)|(trav_lo_then_hi & low_empty)})
+     3'b100 : begin
+        trav_t_max = t_max;
+        trav_t_min = t_min;
+      end
+     3'b010 : begin
+        trav_t_max = t_mid;
+        trav_t_min = t_min;
+      end
+     3'b001 : begin
+        trav_t_max = t_max;
+        trav_t_min = t_mid;
+      end
+    endcase
+
   end
 
-// trav_to_ss_t   (This sends either a push request or an update request)
-typedef struct packed {
-  rayID_t rayID;
-  logic push_req; // 1 == push, 0 == update restnode
-  nodeID_t push_node;
-  logic update_restnode_req;
-  nodeID_t rest_node;
-  float_t t_max;
-  logic pop_req;
-} trav_to_ss_t ;
-
-
-
-
   // trav_to_tarb buffer and interface
-  trav_to_tarb_t tarb_buf_n tarb_buf;
+  tarb_t tarb_buf_n, tarb_buf;
   logic tarb_valid_n, tarb_valid;
 
+  // TODO sketchy!! maybe
+  assign tarb_valid_n = (~trav_fifo_empty & ~pop_valid) | (tarb_valid & trav_to_tarb_stall);
+  
+  always_comb begin
+    tarb_buf_n.rayID = trav_fifo_out.rayID ;
+    tarb_buf_n.nodeID = trav_node_ID;
+    tarb_buf_n.restnode_search = trav_fifo_out.restnode_search & ~push_valid;
+    tarb_buf_n.t_max = trav_t_max ;
+    tarb_buf_n.t_min = trav_t_min ;
+  end
+
+  ff_ar #(1,1'b0) tarb_valid_reg(.d(tarb_valid_n), .q(tarb_valid), .clk, .rst);
+  ff_ar #($bits(tarb_t),'h0) tarb_buf_reg(.d(tarb_buf_n), .q(tarb_buf), .clk, .rst);
+
+  
+  assign ds_stall_pipe_vs = (ss_valid & trav_to_ss_stall) | (tarb_valid & trav_to_tarb_stall) ;
+  always_comb begin
+    case({ss_valid_n,tarb_valid_n})
+      2'b00 : trav_fifo_re = 1'b0;
+      2'b10 : trav_fifo_re = ~trav_to_ss_stall;
+      2'b01 : trav_fifo_re = ~trav_to_tarb_stall;
+      2'b11 : trav_fifo_re = ~trav_to_ss_stall & ~trav_to_tarb_stall;
+    endcase
+  end
 
 endmodule

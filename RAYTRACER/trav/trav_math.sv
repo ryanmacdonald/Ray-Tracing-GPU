@@ -129,7 +129,7 @@ module trav_math(
 //----------------------------------------------------------
   logic dir_eq_0;
 
-  ff_ar #(0,1'b0) dir_eq_0_reg(.d(division_by_zero_div), .q(dir_eq_0), .clk, .rst);
+  ff_ar #(1,1'b0) dir_eq_0_reg(.d(division_by_zero_div), .q(dir_eq_0), .clk, .rst);
   
 //----------------------------------------------------------
   // Is t_max > t_mid ?
@@ -151,7 +151,7 @@ module trav_math(
   float_t inA_midmin, inB_midmin;
   logic mid_g_min;
   assign inA_midmin = out_div; // t_mid
-  assign inB_midmin = t_minax_out.t_min ;
+  assign inB_midmin = t_minmax_out.t_min ;
   altfp_compare comp_midmin (
   .aclr(rst),
   .clock(clk ),
