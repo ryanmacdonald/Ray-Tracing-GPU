@@ -32,7 +32,7 @@ new_int:
 	$(CC) $(FLAGS) -top tb_int_unit COMMON/*v COMMON/altfp*/*.v COMMON/altb*/*/*v RAYTRACER/int/*.sv
 
 trav: 
-	$(CC) $(FLAGS) -top trav_unit COMMON/*v COMMON/altfp*/*.v COMMON/altb*/*/*v RAYTRACER/trav/*.sv
+	$(CC) $(FLAGS) -top tb_trav_unit COMMON/*v COMMON/altfp*/*.v COMMON/altb*/*/*v RAYTRACER/trav/*.sv
 
 prg_int: 
 	$(CC) $(FLAGS) -top tb_int_prg COMMON/*v  COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv TBs/tb_int_prg.sv
