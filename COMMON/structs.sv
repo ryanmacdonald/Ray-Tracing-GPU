@@ -253,7 +253,7 @@ typedef struct packed {
 //  float_t t_max_leaf;
   ln_tri_t ln_tri;
   triID_t triID;
-} lcache_to_raystore;
+} lcache_to_rs_t;
 
 
 // rs_to_icache_t

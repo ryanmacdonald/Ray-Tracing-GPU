@@ -1,100 +1,104 @@
-
 module raystore(
-	output rs_to_trav_t rstt1,
-	output logic rstt1_valid,
-	input logic rstt1_stall,
+	input trav_to_rs_t trav_to_rs0,
+	input logic trav_to_rs0_valid,
+	output logic trav_to_rs0_stall,
 
-	output rs_to_trav_t rstt2,
-	output logic rstt2_valid,
-	input logic rstt2_stall,
+	input trav_to_rs_t trav_to_rs1,
+	input logic trav_to_rs1_valid,
+	output logic trav_to_rs1_stall,
 
-	output rs_to_icache_t rstic,
-	output logic rstic_valid,
-	input logic rstic_stall,
+	input lcache_to_rs_t lcache_to_rs,
+	input logic lcache_to_rs_valid,
+	output logic lcache_to_rs_stall,
 
-	input trav_to_rs_t ttrs1,
-	input logic ttrs1_re,
-	output logic ttrs1_stall,
-
-	input trav_to_rs_t ttrs2,
-	input logic ttrs2_re,
-	output logic ttrs2_stall,
-
-	input lcache_to_rs_t lctrs,
-	input logic lctrs_re,
-	output logic lctrs_stall,
+	input pcalc_to_rs_t pcalc_to_rs,
+	input logic pcalc_to_rs_valid,
+	output logic pcalc_to_rs_stall,
 
 	input logic clk, rst
 );
 
-	logic [2:0] rr;
-	shifter #(.W(3), .RV(3'b110)) rr_sr(.q(rr), .d(rr[0]), .en(1'b1), .clr(1'b0), .clk, .rst);
-
-	logic [2:0] ABC_out, ABC_out1, ABC_out2, ABC_in;
-	assign ABC_in = {ttrs1_re, ttrs2_re, lctrs_re};
-
-	always_comb begin
-		ttrs1_stall = 1'b0;
-		ttrs2_stall = 1'b0;
-		lctrs_stall = 1'b0;
-		ABC_out = ABC_in;
-		if(ABC_in == 3'b111) begin
-			ABC_out = rr;
-			ttrs1_stall = ~ABC_out[0];
-			ttrs2_stall = ~ABC_out[1];
-			lctrs_stall = ~ABC_out[2];
-		end
-	end
-
-	ff_ar #(3, 3'b000) ABC_out_reg1(.q(ABC_out1), .d(ABC_out), .clk, .rst);
-	ff_ar #(3, 3'b000) ABC_out_reg2(.q(ABC_out2), .d(ABC_out1), .clk, .rst);
-
-	logic blkram_re1, blkram_re2;
-
-	assign blkram_re1 = |ABC_out;
-	assign blkram_re2 = (ABC_out == 3'b011 || ABC_out == 3'b110 || ABC_out == 3'b101);
-
-	rayID_t A_addr, B_addr, C_addr;
-	assign A_addr = ttrs1.rayID;
-	assign B_addr = ttrs2.rayID;
-	assign C_addr = lctrs.rayID;
-
-	logic [$bits(rayID_t)-1:0] blkram_addr1, blkram_addr2;
-
-	assign blkram_addr1 = (ABC_out[1]) ? B_addr : A_addr;
-	assign blkram_addr2 = (ABC_out[2]) ? C_addr : B_addr;
-
-	logic [$bits(ray_vec_t)-1:0] blkq1, blkq2;
-
-	assign blkq1 = 'b0;
-	assign blkq2 = 'b0;
-
-	assign rstt1.ray_vec = blkq1;
-	assign rstt2.ray_vec = (ABC_out2[1]) ? blkq2 : blkq1;
-	assign rstic.ray_vec = blkq2;
-
-	assign {rstt1_valid, rstt2_valid, rstic_valid} = ABC_out2;
+/*	raystore_pipe rsp0 #() ();
+	raystore_pipe rsp1 #() ();
+	raystore_pipe rsp2 #() ();
+	raystore_pipe rsp3 #() (); */
 
 	// TODO: instantiate block ram
-	// inputs to block ram:
-	// * blkram_addr1
-	// * blkram_addr2
-	// * blkram_re1
-	// * blkram_re2
-	// outputs of block ram:
-	// * blkq1
-	// * blkq2
-	raystore_blkram (
-		aclr,
-		address_a,
-		address_b,
-		clock,
-		data_a,
-		data_b,
-		wren_a,
-		wren_b,
-		q_a,
-		q_b);
-
 
 endmodule: raystore
+
+module raystore_arb #(parameter N=4) (
+	input logic [N-1:0] us_valid,
+	output logic [N-1:0] us_stall,
+	input rayID_t us_data [N-1:0],
+
+	input logic [N-1:0] ds_stall,
+	output logic [N-1:0] ds_valid,
+	output logic data_sel,
+	output logic [N-1:0] ds_data,
+
+	input logic [$clog2(N)-1:0] rrp
+);
+
+
+
+endmodule: raystore_arb
+
+/*
+module raystore_pipe #(parameter WIDTH = 8) (
+	input logic [WIDTH-1:0] us_data,
+	input logic us_valid,
+	output logic us_stall,
+	input logic mux_sel, // TODO
+
+	input logic [WIDTH-1:0] rd_data1, rd_data2,
+	
+	output logic [WIDTH-1:0] ds_data_out,
+	output logic ds_valid,
+	input logic ds_stall,
+	input logic re,
+
+	input logic clk, rst
+);
+
+	logic [$clog2(DEPTH+2)-1:0] num_in_fifo;
+	logic we, re;
+
+	logic [] pipe_data_out; // TODO: define width
+
+	// TODO: define depth
+	pipe_valid_stall #(.WIDTH, .DEPTH()) pvs(
+		.clk, .rst,
+		.us_valid,
+		.us_data,
+		.us_stall,
+		.ds_valid(we),
+		.ds_data(pipe_data_out),
+		.ds_stall,
+		.num_in_fifo);
+
+	logic full, empty;
+	logic [WIDTH-1:0] fifo_data_out;
+
+	logic [] mux_out; // TODO: define width
+	assign mux_out = {}; // TODO
+
+	logic [WIDTH-1:0] fifo_data_in;
+	assign fifo_data_in = ; // TODO: mux data1, data2
+
+	assign ds_valid = ~empty;
+
+	assign re = ; // TODO: define re
+
+	fifo f(
+		.clk, .rst,
+		.data_in(fifo_data_in),
+		.we,
+		.re,
+		.full,
+		.empty,
+		.data_out(fifo_data_out),
+		.num_in_fifo);
+
+endmodule: raystore_pipe
+*/
