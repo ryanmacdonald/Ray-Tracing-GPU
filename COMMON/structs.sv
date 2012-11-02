@@ -151,8 +151,8 @@ typedef struct packed {
   logic [1:0] node_type;
   float24_t split; // probably needs to be 25 bits
   nodeID_t right_ID;
-  logic left_empty;
-  logic right_empty;
+  logic low_empty;
+  logic high_empty;
   logic reserve;
 
 } norm_node_t;
@@ -219,9 +219,9 @@ typedef struct packed {
 typedef struct packed {
   rayID_t rayID;
   logic push_req; // 1 == push, 0 == update restnode
-  nodeID_t push_node;
+  nodeID_t push_node_ID;
   logic update_restnode_req;
-  nodeID_t rest_node;
+  nodeID_t rest_node_ID;
   float_t t_max;
   logic pop_req;
 } trav_to_ss_t ;
@@ -254,7 +254,6 @@ typedef struct packed {
   ln_tri_t ln_tri;
   triID_t triID;
 } lcache_to_rs_t;
-
 
 // rs_to_icache_t
 typedef struct packed {

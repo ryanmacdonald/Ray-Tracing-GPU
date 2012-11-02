@@ -35,7 +35,7 @@
     trav_to_ss_push (2 input ports)
       push(new_SE)
     
-    trav_to_ss_update( 2 input ports)
+    trav_to_ss_update( 3 input ports) (2 from trav and 1 from sint)
       Write(new_restartnode)
 
     sceneint_to_ss (1 input port)

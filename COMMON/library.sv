@@ -355,7 +355,7 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
 
   ff_ar #($clog2(DEPTH+2),DEPTH) cnt_inst(.d(zero_cnt_n),.q(zero_cnt),.clk,.rst);
 
-  assign us_stall = us_valid & ds_stall & (zero_cnt <= num_in_fifo);
+  assign us_stall = ds_stall & (zero_cnt <= num_in_fifo); // Used to & with us_valid
 
 endmodule
 
