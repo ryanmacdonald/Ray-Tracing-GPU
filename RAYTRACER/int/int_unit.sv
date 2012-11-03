@@ -150,9 +150,4 @@ module int_unit(
   assign larb_rdreq = int_to_larb_valid & ~int_to_larb_stall;
 
 
-
-  initial begin 
-    $display("width of list_fifo = %d\nwidth of larb_fifo=%d",$bits(list_fifo_in),$bits(larb_fifo_in));
-  end
-
 endmodule
