@@ -74,7 +74,7 @@ module tb_trav_unit();
   function norm_node_t create_norm_node(logic [1:0] axis, shortreal split, nodeID_t right_ID, logic low_empty, logic high_empty);
     norm_node_t r;
     r.node_type = axis;
-    r.split = to_bits24(split);
+    r.split = ($shortrealtobits(split) >> 8);
     r.right_ID = right_ID;
     r.low_empty = low_empty;
     r.high_empty = high_empty;
@@ -119,8 +119,9 @@ module tb_trav_unit();
     trav_to_tarb_stall = 0;
     @(posedge clk);
     norm_node = create_norm_node(2'b01, 5, 12, 0,0);
+    $display("split=%x",norm_node.split);
     send_to_trav(2, 2, 1, 10, 1, norm_node);
-/*    norm_node = create_norm_node(2'b01, 5, 12, 0,1);
+    norm_node = create_norm_node(2'b01, 5, 12, 0,1);
     send_to_trav(2, 2, 1, 10, 1, norm_node);
     norm_node = create_norm_node(2'b01, 5, 12, 1,0);
     send_to_trav(2, 2, 1, 10, 1, norm_node);
@@ -131,7 +132,7 @@ module tb_trav_unit();
     send_to_trav(4, 2, 1, 13, 0, leaf_node);
     leaf_node = create_leaf_node(7, 1);
     send_to_trav(5, 2, 1, 0.05, 0, leaf_node);
-*/   
+   
     
     tcache_to_trav_valid <= 0;
     repeat(100) @(posedge clk);
@@ -169,9 +170,5 @@ module tb_trav_unit();
     return $shortrealtobits(a);
   endfunction
 
-  function float24_t to_bits24(shortreal a);
-    float_t k = $shortrealtobits(a);
-    return k[31:8];
-  endfunction
 
 endmodule
