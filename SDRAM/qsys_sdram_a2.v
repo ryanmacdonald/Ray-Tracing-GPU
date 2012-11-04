@@ -204,7 +204,7 @@ module sdram_a2 (
 		.zs_we_n        (zs_we_n)                                 //      .export
 	);
 
-	/*
+	`ifdef SYNTH
 	qsys_sdram_a2_altpll_0 altpll_0 (
 		.clk       (clk_clk),                            //       inclk_interface.clk
 		.reset     (rst_controller_001_reset_out_reset), // inclk_interface_reset.reset
@@ -217,7 +217,10 @@ module sdram_a2 (
 		.areset    (),                                   //        areset_conduit.export
 		.locked    (),                                   //        locked_conduit.export
 		.phasedone ()                                    //     phasedone_conduit.export
-	);*/
+	);
+	`else
+	assign altpll_0_c0_clk = clk_clk;
+	`endif
 
 	altera_reset_controller #(
 		.NUM_RESET_INPUTS        (1),

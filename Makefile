@@ -57,7 +57,7 @@ camera:
 	$(CC) $(FLAGS) -top tb_camera COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v CAMERA/*.sv
 
 sdram:
-	$(CC) $(FLAGS) -top top COMMON/*v SDRAM/* SDRAM/submodules/* SDRAM/qsys_sdram_mem_model/synthesis/submodules/* 
+	$(CC) $(FLAGS) -top top COMMON/*v SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v
 
 
 
