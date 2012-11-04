@@ -1,6 +1,6 @@
 `default_nettype none
 // uncomment the following line when synthesizing to board
- `define SYNTH
+// `define SYNTH
 
 `define FP_1 32'h3F80_0000
 `define FP_0 32'h0
@@ -278,6 +278,10 @@ typedef struct packed {
 
 } icache_to_int_t ;
 
+typedef struct packed {
+	ray_vec_t ray_vec;
+} pcalc_to_rs_t;
+
 
 // int_to_list_t
 typedef struct packed {
@@ -288,6 +292,14 @@ typedef struct packed {
   bari_uv_t uv;
 
 } int_to_list_t ;
+
+typedef struct packed {
+	rayID_t rayID;
+} list_to_rs_t;
+
+typedef struct packed {
+	ray_vec_t ray_vec;
+} rs_to_pcalc_t;
 
 /*
 // int_to_mailbox // sends to mailbox if triangle was greater than t_max_leaf
