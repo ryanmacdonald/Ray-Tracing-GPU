@@ -113,10 +113,16 @@ module trav_unit(
 
   assign leaf_fifo_re = ~leaf_fifo_empty & (~to_list_valid | ~trav_to_list_stall) &
                                            (~to_larb_valid | ~trav_to_larb_stall); 
-  assign to_larb_buf_n.rayID = leaf_fifo_out.rayID;
-  assign to_larb_buf_n.ln_tri = leaf_fifo_out.ln_tri;
+  always_comb begin
+    if(trav_to_larb_stall) to_larb_buf_n = to_larb_buf;
+    else begin
+      to_larb_buf_n.rayID = leaf_fifo_out.rayID;
+      to_larb_buf_n.ln_tri = leaf_fifo_out.ln_tri;
+    end
+  end
+
+  assign to_larb_valid_n = (trav_to_larb_stall & to_larb_valid) | leaf_fifo_re;
   
-  assign to_larb_valid_n = trav_to_larb_stall ? 1'b1 : leaf_fifo_re;
 
   ff_ar_en #($bits(leaf_info_t),'h0) larb_buf(.d(to_larb_buf_n), .q(to_larb_buf), .en(leaf_fifo_re), .clk, .rst);
   ff_ar #(1,'h0) larb_valid(.d(to_larb_valid_n), .q(to_larb_valid), .clk, .rst);
@@ -124,10 +130,16 @@ module trav_unit(
   assign trav_to_larb_data = to_larb_buf;
   assign trav_to_larb_valid = to_larb_valid;
 
+  always_comb begin
+    if(trav_to_list_stall) to_list_buf_n = to_list_buf;
+    else begin
+      to_list_buf_n.rayID = leaf_fifo_out.rayID;
+      to_list_buf_n.t_max_leaf = leaf_fifo_out.t_max;
+    end
+  end
 
-  assign to_list_buf_n.rayID = leaf_fifo_out.rayID;
-  assign to_list_buf_n.t_max_leaf = leaf_fifo_out.t_max;
-  assign to_list_valid_n = trav_to_list_stall ? 1'b1 : leaf_fifo_re ;
+  assign to_list_valid_n = (trav_to_list_stall & to_list_valid) | leaf_fifo_re ;
+  
   ff_ar_en #($bits(trav_to_list_t),'h0) list_buf(.d(to_list_buf_n), .q(to_list_buf), .en(leaf_fifo_re), .clk, .rst);
   ff_ar #(1,'h0) list_valid(.d(to_list_valid_n), .q(to_list_valid), .clk, .rst);
   assign trav_to_list_data = to_list_buf;
@@ -302,16 +314,23 @@ module trav_unit(
   trav_to_ss_t ss_buf_n, ss_buf;
   logic ss_valid_n, ss_valid;
   
-  assign ss_valid_n = (~trav_fifo_empty & (pop_valid | push_valid | update_restnode_valid) ) |
-                      (ss_valid & trav_to_ss_stall) ;
+  logic good_to_ss;
+  assign good_to_ss = ~trav_fifo_empty & (pop_valid | push_valid | update_restnode_valid);
+
+  assign ss_valid_n = (ss_valid & trav_to_ss_stall) | (good_to_ss & trav_fifo_re) ;
+
+
   always_comb begin
-    ss_buf_n.rayID = trav_fifo_out.rayID;
-    ss_buf_n.push_req = push_valid ;
-    ss_buf_n.push_node_ID = push_node_ID ;
-    ss_buf_n.update_restnode_req = update_restnode_valid ;
-    ss_buf_n.rest_node_ID = trav_fifo_out.parent_ID ;
-    ss_buf_n.t_max = t_max; // TODO is it always t_max??
-    ss_buf_n.pop_req = pop_valid ;
+    if(ss_valid & trav_to_ss_stall) ss_buf_n = ss_buf;
+    else begin
+      ss_buf_n.rayID = trav_fifo_out.rayID;
+      ss_buf_n.push_req = push_valid ;
+      ss_buf_n.push_node_ID = push_node_ID ;
+      ss_buf_n.update_restnode_req = update_restnode_valid ;
+      ss_buf_n.rest_node_ID = trav_fifo_out.parent_ID ;
+      ss_buf_n.t_max = t_max; // TODO is it always t_max??
+      ss_buf_n.pop_req = pop_valid ;
+    end
  end
 
   ff_ar #(1,1'b0) ss_valid_reg(.d(ss_valid_n), .q(ss_valid), .clk, .rst);
@@ -351,15 +370,21 @@ module trav_unit(
   tarb_t tarb_buf_n, tarb_buf;
   logic tarb_valid_n, tarb_valid;
 
+  logic good_to_tarb;
+  assign good_to_tarb = ~trav_fifo_empty & ~pop_valid;
+
   // TODO sketchy!! maybe
-  assign tarb_valid_n = (~trav_fifo_empty & ~pop_valid) | (tarb_valid & trav_to_tarb_stall);
+  assign tarb_valid_n = (tarb_valid & trav_to_tarb_stall) | (good_to_tarb & trav_fifo_re);
   
   always_comb begin
-    tarb_buf_n.rayID = trav_fifo_out.rayID ;
-    tarb_buf_n.nodeID = trav_node_ID;
-    tarb_buf_n.restnode_search = trav_fifo_out.restnode_search & ~push_valid;
-    tarb_buf_n.t_max = trav_t_max ;
-    tarb_buf_n.t_min = trav_t_min ;
+    if(tarb_valid & trav_to_tarb_stall) tarb_buf_n = tarb_buf;
+    else begin
+      tarb_buf_n.rayID = trav_fifo_out.rayID ;
+      tarb_buf_n.nodeID = trav_node_ID;
+      tarb_buf_n.restnode_search = trav_fifo_out.restnode_search & ~push_valid;
+      tarb_buf_n.t_max = trav_t_max ;
+      tarb_buf_n.t_min = trav_t_min ;
+    end
   end
 
   ff_ar #(1,1'b0) tarb_valid_reg(.d(tarb_valid_n), .q(tarb_valid), .clk, .rst);
@@ -370,7 +395,7 @@ module trav_unit(
 
   assign ds_stall_pipe_vs = (ss_valid & trav_to_ss_stall) | (tarb_valid & trav_to_tarb_stall) ;
   always_comb begin
-    case({ss_valid_n,tarb_valid_n})
+    case({good_to_ss,good_to_tarb})
       2'b00 : trav_fifo_re = 1'b0;
       2'b10 : trav_fifo_re = ~trav_to_ss_stall;
       2'b01 : trav_fifo_re = ~trav_to_tarb_stall;

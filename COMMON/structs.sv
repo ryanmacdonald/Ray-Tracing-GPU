@@ -72,7 +72,7 @@ typedef struct packed {
 
 /*
 typedef struct packed {
-  triID_t triID;
+ triID_t triID;
   float_t t_int; // time intersection
   bari_uv_t uv; // uv of baricentric coordinates
 

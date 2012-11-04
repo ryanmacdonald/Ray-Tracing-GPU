@@ -113,18 +113,18 @@ module tb_trav_unit();
   initial begin
     tcache_to_trav_valid = 0;
     tcache_to_trav_data = 'hX;
-    trav_to_list_stall = 0;
-    trav_to_larb_stall = 0;
-    trav_to_ss_stall = 0;
-    trav_to_tarb_stall = 0;
+//    trav_to_list_stall = 0;
+//    trav_to_larb_stall = 0;
+   // trav_to_ss_stall = 0;
+   // trav_to_tarb_stall = 0;
     @(posedge clk);
     norm_node = create_norm_node(2'b01, 5, 12, 0,0);
     $display("split=%x",norm_node.split);
     send_to_trav(2, 2, 1, 10, 1, norm_node);
-    norm_node = create_norm_node(2'b01, 5, 12, 0,1);
-    send_to_trav(2, 2, 1, 10, 1, norm_node);
     norm_node = create_norm_node(2'b01, 5, 12, 1,0);
-    send_to_trav(2, 2, 1, 10, 1, norm_node);
+    send_to_trav(2, 2, 1, 11, 6, norm_node);
+    norm_node = create_norm_node(2'b01, 5, 12, 0,1);
+    send_to_trav(2, 2, 1, 4, 1, norm_node);
     
     leaf_node = create_leaf_node(5, 8);
     send_to_trav(3, 2, 1, 4, 0, leaf_node);
@@ -153,16 +153,36 @@ module tb_trav_unit();
   end
 
   initial begin
-    rs_to_trav_data.origin = to_bits(9);
-    rs_to_trav_data.dir = to_bits(-1);
-/*    while(~rs_to_trav_valid | rs_to_trav_stall) @(posedge clk);
+    rs_to_trav_data.origin = to_bits(8);
+    rs_to_trav_data.dir = to_bits(0.05);
+/*  while(~rs_to_trav_valid | rs_to_trav_stall) @(posedge clk);
     trav_to_data.origin = to_bits(5);
     trav_to_data.dir = to_bits(-1);
     while(~rs_to_trav_valid | rs_to_trav_stall) @(posedge clk);
 */
   end
 
+  int i;
+  initial begin
+    
+    forever @(posedge clk) begin
+      i = {$random}%2;
+    end
+  end
 
+  always_comb begin
+    
+    if(i & trav_to_ss_valid ) trav_to_ss_stall = 1;
+    else trav_to_ss_stall = 0;
+    if((!i) & trav_to_tarb_valid) trav_to_tarb_stall = 1;
+    else trav_to_tarb_stall = 0;
+
+    if((!i) & trav_to_list_valid ) trav_to_list_stall = 1;
+    else trav_to_list_stall = 0;
+    if((i) & trav_to_larb_valid) trav_to_larb_stall = 1;
+    else trav_to_larb_stall = 0;
+
+  end
   
 
 
