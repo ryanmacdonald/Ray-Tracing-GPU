@@ -2,6 +2,57 @@ module tb_trav_unit();
 
   logic clk, rst;
 
+//////////////// interface with  raystore /////////////////
+	trav_to_rs_t    trav_to_rs0;
+	logic           trav_to_rs0_valid;
+	logic           trav_to_rs0_stall;
+
+	trav_to_rs_t    trav_to_rs1;
+	bit             trav_to_rs1_valid;
+	bit             trav_to_rs1_stall;
+
+	assign trav_to_rs1_valid = 1'b1;
+	assign trav_to_rs1 = 'b0;
+
+	lcache_to_rs_t  lcache_to_rs;
+	bit             lcache_to_rs_valid;
+	bit             lcache_to_rs_stall;
+
+	assign lcache_to_rs_valid = 1'b1;
+	assign lcache_to_rs = 'b0;
+
+	list_to_rs_t    list_to_rs;
+	bit             list_to_rs_valid;
+	bit             list_to_rs_stall;
+
+	assign list_to_rs_valid = 1'b1;
+	assign list_to_rs = 'b0;
+
+	// downstream interface
+
+	rs_to_trav_t    rs_to_trav0;
+	bit             rs_to_trav0_valid;
+	bit             rs_to_trav0_stall;
+
+	rs_to_trav_t    rs_to_trav1;
+	bit             rs_to_trav1_valid;
+	bit             rs_to_trav1_stall;
+
+	rs_to_icache_t  rs_to_icache;
+	bit             rs_to_icache_valid;
+	bit             rs_to_icache_stall;
+
+	rs_to_pcalc_t   rs_to_pcalc;
+	bit             rs_to_pcalc_valid;
+	bit             rs_to_pcalc_stall;
+
+	logic raystore_we;
+	logic [8:0] raystore_write_addr;
+	ray_vec_t raystore_write_data;
+
+//////////////// end of interface with  raystore /////////////////
+
+
   // tcache to trav
   logic tcache_to_trav_valid;
   tcache_to_trav_t tcache_to_trav_data;
@@ -110,21 +161,55 @@ module tb_trav_unit();
 
   norm_node_t norm_node;
   leaf_node_t leaf_node;
+
+  ray_vec_t ray_vec;
+
   initial begin
     tcache_to_trav_valid = 0;
     tcache_to_trav_data = 'hX;
-//    trav_to_list_stall = 0;
-//    trav_to_larb_stall = 0;
-   // trav_to_ss_stall = 0;
-   // trav_to_tarb_stall = 0;
+
+    raystore_we <= 1'b0;
+    raystore_write_addr <= 'bx;
+    raystore_write_data <= 'bx;
+
+	// write the test ray vector into the ray store
+    ray_vec.origin = create_vec(0,8,1);
+    ray_vec.dir = create_vec(1,-1,0);
     @(posedge clk);
-    norm_node = create_norm_node(2'b01, 5, 12, 0,0);
-    $display("split=%x",norm_node.split);
-    send_to_trav(2, 2, 1, 10, 1, norm_node);
+    raystore_we <= 1'b1;
+    raystore_write_addr <= 'd6;
+    raystore_write_data <= ray_vec;
+
+    ray_vec.origin = create_vec(1,7,0);
+    ray_vec.dir = create_vec(2,-2,1);
+    @(posedge clk);
+    raystore_we <= 1'b1;
+    raystore_write_addr <= 'd7;
+    raystore_write_data <= ray_vec;
+
+
+	@(posedge clk);
+    raystore_we <= 1'b0;
+    raystore_write_addr <= 'bx;
+    raystore_write_data <= 'bx;
+
+	// wait some time
+    repeat(10) @(posedge clk);
+
+    @(posedge clk);
+    norm_node = create_norm_node(2'b00, 5, 12, 0,0);
+    send_to_trav(6, 2, 1, 10, 0, norm_node);
     norm_node = create_norm_node(2'b01, 5, 12, 1,0);
-    send_to_trav(2, 2, 1, 11, 6, norm_node);
-    norm_node = create_norm_node(2'b01, 5, 12, 0,1);
-    send_to_trav(2, 2, 1, 4, 1, norm_node);
+    send_to_trav(6, 2, 1, 10, 0, norm_node);
+    norm_node = create_norm_node(2'b10, 5, 12, 0,1);
+    send_to_trav(6, 2, 1, 10, 0, norm_node);
+
+    norm_node = create_norm_node(2'b00, 5, 12, 0,0);
+    send_to_trav(7, 2, 1, 10, 0, norm_node);
+    norm_node = create_norm_node(2'b01, 5, 12, 1,0);
+    send_to_trav(7, 2, 1, 10, 0, norm_node);
+    norm_node = create_norm_node(2'b10, 5, 12, 0,1);
+    send_to_trav(7, 2, 1, 10, 0, norm_node);
     
     leaf_node = create_leaf_node(5, 8);
     send_to_trav(3, 2, 1, 4, 0, leaf_node);
@@ -141,6 +226,17 @@ module tb_trav_unit();
 
   // Deal with trav ->rs -> trav
 
+	assign trav_to_rs0_valid = trav_to_rs_valid;
+	assign trav_to_rs0 = trav_to_rs_data;
+	assign trav_to_rs_stall = trav_to_rs0_stall;
+
+	raystore rs(.*);
+
+	assign rs_to_trav_valid = rs_to_trav0_valid;
+	assign rs_to_trav_data = rs_to_trav0;
+	assign rs_to_trav0_stall = rs_to_trav_stall;
+
+	/*
   assign rs_to_trav_valid = trav_to_rs_valid;
   assign trav_to_rs_stall = rs_to_trav_stall;
   always_comb begin
@@ -151,10 +247,12 @@ module tb_trav_unit();
     rs_to_trav_data.t_max = trav_to_rs_data.t_max ;
     rs_to_trav_data.t_min = trav_to_rs_data.t_min ;
   end
+  */
 
   initial begin
-    rs_to_trav_data.origin = to_bits(8);
-    rs_to_trav_data.dir = to_bits(0.05);
+// NOTE: commented the following two lines since they are now coming from the raystore
+//    rs_to_trav_data.origin = to_bits(8);
+//    rs_to_trav_data.dir = to_bits(0.05);
 /*  while(~rs_to_trav_valid | rs_to_trav_stall) @(posedge clk);
     trav_to_data.origin = to_bits(5);
     trav_to_data.dir = to_bits(-1);
@@ -190,5 +288,12 @@ module tb_trav_unit();
     return $shortrealtobits(a);
   endfunction
 
+  function vector_t create_vec(shortreal x, shortreal y, shortreal z);
+    vector_t vec;
+    vec.x = $shortrealtobits(x);
+    vec.y = $shortrealtobits(y);
+    vec.z = $shortrealtobits(z);
+    return vec;
+  endfunction
 
 endmodule
