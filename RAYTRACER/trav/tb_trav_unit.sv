@@ -144,7 +144,7 @@ module tb_trav_unit();
 
   task send_to_trav(int rayID, int nodeID, logic restnode_search, shortreal t_max, shortreal t_min, norm_node_t tree_node);
    // @(posedge clk);
-    tcache_to_trav_data.rayID <= rayID;
+    tcache_to_trav_data.ray_info.rayID <= rayID;
     tcache_to_trav_data.nodeID <= nodeID;
     tcache_to_trav_data.restnode_search <= restnode_search;
     tcache_to_trav_data.t_max <= to_bits(t_max);

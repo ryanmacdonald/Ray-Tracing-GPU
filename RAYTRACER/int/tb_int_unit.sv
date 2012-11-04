@@ -37,19 +37,19 @@ module tb_int_unit();
 
 
   // Create an arbitrary ray every v0 cycle.
-  rayID_t rayID;
+  ray_info_t ray_info;
   vectorf_t A0,B0,C0;
   int_cacheline_t tri_cacheline;
   initial begin
     icache_to_int_data = 'h0;
     icache_to_int_valid = 0;
-    rayID = 0;
+    ray_info = 0;
     A0 = create_vecf(0.5, 3, 4);
     B0 = create_vecf(3.5, 6, 4);
     C0 = create_vecf(3, 1.5, 4);
 
     tri_cacheline = create_int_cacheline(A0,B0,C0);
-    icache_to_int_data.rayID = 0;
+    icache_to_int_data.ray_info = 0;
     @(posedge clk);
     
     for(shortreal r=0; r<10; r +=1 ) begin
@@ -57,7 +57,7 @@ module tb_int_unit();
         ray_vec_t ray_vec;
         ray_vec.dir = create_vec(0,0,1);
         ray_vec.origin = create_vec(c,r,0);
-        icache_to_int_data.rayID <= rayID;
+        icache_to_int_data.ray_info <= ray_info;
         icache_to_int_data.ray_vec <= ray_vec;
         icache_to_int_data.ln_tri.lindex <= (r*10 + c);
         icache_to_int_data.ln_tri.lnum_left <= c+1;
@@ -71,7 +71,7 @@ module tb_int_unit();
           icache_to_int_valid <= 0;
           @(posedge clk);
         end
-        rayID += 1;
+        ray_info.rayID += 1;
       end
     end
     icache_to_int_valid <= 0;
@@ -103,7 +103,7 @@ module tb_int_unit();
   always @(posedge clk) begin
     if(int_to_list_valid & ~int_to_list_stall) begin
       num_to_list++;
-//      $display("\nRAY %d was a %s",rayID_out, hit_out ? "HIT!!" : "MISS");
+//      $display("\nRAY %d was a %s",ray_info_out, hit_out ? "HIT!!" : "MISS");
  //     $display("\t hit tri%1b at t=%f",intersection_out.triID, t_int_f);
 //      $display("\t bary = (%f,%f)",bary_u_f,bary_v_f);
     end
@@ -112,7 +112,7 @@ module tb_int_unit();
   always @(posedge clk) begin
     if(int_to_larb_valid & ~int_to_larb_stall) begin
       num_to_larb++;
-//      $display("\nRAY %d was a %s",rayID_out, hit_out ? "HIT!!" : "MISS");
+//      $display("\nRAY %d was a %s",ray_info_out, hit_out ? "HIT!!" : "MISS");
  //     $display("\t hit tri%1b at t=%f",intersection_out.triID, t_int_f);
 //      $display("\t bary = (%f,%f)",bary_u_f,bary_v_f);
     end

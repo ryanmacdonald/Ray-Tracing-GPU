@@ -53,7 +53,7 @@ module int_unit(
    
   // valid stall pipe 
   struct packed {
-    rayID_t rayID;
+    ray_info_t ray_info;
     triID_t triID;
     ln_tri_t ln_tri;
   } int_pipe_in, int_pipe_out;
@@ -67,7 +67,7 @@ module int_unit(
 
 
   always_comb begin
-    int_pipe_in.rayID = icache_to_int_data.rayID ;
+    int_pipe_in.ray_info = icache_to_int_data.ray_info ;
     int_pipe_in.triID = icache_to_int_data.triID ;
     int_pipe_in.ln_tri.lnum_left = icache_to_int_data.ln_tri.lnum_left - 1'b1;
     int_pipe_in.ln_tri.lindex = icache_to_int_data.ln_tri.lindex + 1'b1;
@@ -104,7 +104,7 @@ module int_unit(
   assign is_last = (int_pipe_out.ln_tri.lnum_left == 0) ;
   
   always_comb begin
-    list_fifo_in.rayID = int_pipe_out.rayID;
+    list_fifo_in.ray_info = int_pipe_out.ray_info;
     list_fifo_in.triID = int_pipe_out.triID;
     list_fifo_in.hit = hit;
     list_fifo_in.is_last = is_last ;
@@ -113,7 +113,7 @@ module int_unit(
   end
 
   always_comb begin
-    larb_fifo_in.rayID = int_pipe_out.rayID;
+    larb_fifo_in.ray_info = int_pipe_out.ray_info;
     larb_fifo_in.ln_tri.lindex = int_pipe_out.ln_tri.lindex;
     larb_fifo_in.ln_tri.lnum_left =  int_pipe_out.ln_tri.lnum_left;
   end

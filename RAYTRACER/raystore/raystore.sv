@@ -148,7 +148,7 @@ module raystore(
 
 	rs_to_trav_t f0_data_in;
 
-	assign f0_data_in.rayID = pvs0_data_out.trav_to_rs.rayID;
+	assign f0_data_in.ray_info = pvs0_data_out.trav_to_rs.ray_info;
 	assign f0_data_in.nodeID = pvs0_data_out.trav_to_rs.nodeID;
 	assign f0_data_in.node = pvs0_data_out.trav_to_rs.node;
 	assign f0_data_in.restnode_search = pvs0_data_out.trav_to_rs.restnode_search;
@@ -232,7 +232,7 @@ module raystore(
 
 	rs_to_trav_t f1_data_in;
 
-	assign f1_data_in.rayID = pvs1_data_out.trav_to_rs.rayID;
+	assign f1_data_in.ray_info = pvs1_data_out.trav_to_rs.ray_info;
 	assign f1_data_in.nodeID = pvs1_data_out.trav_to_rs.nodeID;
 	assign f1_data_in.node = pvs1_data_out.trav_to_rs.node;
 	assign f1_data_in.restnode_search = pvs1_data_out.trav_to_rs.restnode_search;
@@ -289,7 +289,7 @@ module raystore(
 
 	rs_to_icache_t f2_data_in;
 
-	assign f2_data_in.rayID  = pvs2_data_out.lcache_to_rs.rayID;
+	assign f2_data_in.ray_info  = pvs2_data_out.lcache_to_rs.ray_info;
 	assign f2_data_in.ln_tri = pvs2_data_out.lcache_to_rs.ln_tri;
 	assign f2_data_in.triID  = pvs2_data_out.lcache_to_rs.triID;
 
@@ -342,7 +342,7 @@ module raystore(
 
 	rs_to_pcalc_t f3_data_in;
 
-	assign f3_data_in.rayID  = pvs3_data_out.list_to_rs.rayID;
+	assign f3_data_in.ray_info  = pvs3_data_out.list_to_rs.ray_info;
 	// TODO: other things for list_to_rs struct...
 
 	assign f3_data_in.ray_vec = (pvs3_data_out.data_sel) ? rd_data1 : rd_data0;
@@ -371,19 +371,19 @@ module raystore(
 
 	always_comb begin
 		case(mux_sel0)
-			2'b00: addr0 = trav_to_rs0.rayID.ID;
-			2'b01: addr0 = trav_to_rs1.rayID.ID;
-			2'b10: addr0 = lcache_to_rs.rayID.ID;
-			2'b11: addr0 = list_to_rs.rayID.ID;
+			2'b00: addr0 = trav_to_rs0.ray_info.rayID;
+			2'b01: addr0 = trav_to_rs1.ray_info.rayID;
+			2'b10: addr0 = lcache_to_rs.ray_info.rayID;
+			2'b11: addr0 = list_to_rs.ray_info.rayID;
 		endcase
 	end
 
 	always_comb begin
 		case(mux_sel1)
-			2'b00: addr1 = trav_to_rs0.rayID.ID;
-			2'b01: addr1 = trav_to_rs1.rayID.ID;
-			2'b10: addr1 = lcache_to_rs.rayID.ID;
-			2'b11: addr1 = list_to_rs.rayID.ID;
+			2'b00: addr1 = trav_to_rs0.ray_info.rayID;
+			2'b01: addr1 = trav_to_rs1.ray_info.rayID;
+			2'b10: addr1 = lcache_to_rs.ray_info.rayID;
+			2'b11: addr1 = list_to_rs.ray_info.rayID;
 		endcase
 	end
 

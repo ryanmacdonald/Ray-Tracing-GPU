@@ -72,7 +72,7 @@ module trav_unit(
 
 ////////////////// Leaf node route /////////////////////////////
   struct packed {
-    rayID_t rayID;
+    ray_info_t ray_info;
     float_t t_max;
     ln_tri_t ln_tri;
   } leaf_fifo_in, leaf_fifo_out;
@@ -88,7 +88,7 @@ module trav_unit(
 
 
   always_comb begin
-    leaf_fifo_in.rayID = tcache_data.rayID ;
+    leaf_fifo_in.ray_info = tcache_data.ray_info ;
     leaf_fifo_in.t_max = tcache_data.t_max ;
     leaf_fifo_in.ln_tri = tcache_data.tree_node.leaf_node.ln_tri ;
   end
@@ -116,7 +116,7 @@ module trav_unit(
   always_comb begin
     if(trav_to_larb_stall) to_larb_buf_n = to_larb_buf;
     else begin
-      to_larb_buf_n.rayID = leaf_fifo_out.rayID;
+      to_larb_buf_n.ray_info = leaf_fifo_out.ray_info;
       to_larb_buf_n.ln_tri = leaf_fifo_out.ln_tri;
     end
   end
@@ -133,7 +133,7 @@ module trav_unit(
   always_comb begin
     if(trav_to_list_stall) to_list_buf_n = to_list_buf;
     else begin
-      to_list_buf_n.rayID = leaf_fifo_out.rayID;
+      to_list_buf_n.ray_info = leaf_fifo_out.ray_info;
       to_list_buf_n.t_max_leaf = leaf_fifo_out.t_max;
     end
   end
@@ -151,7 +151,7 @@ module trav_unit(
 
   // trav to rs
   always_comb begin
-    trav_to_rs_data.rayID = tcache_data.rayID;
+    trav_to_rs_data.ray_info = tcache_data.ray_info;
     trav_to_rs_data.nodeID = tcache_data.nodeID;
     trav_to_rs_data.node = tcache_data.tree_node.norm_node;
     trav_to_rs_data.restnode_search = tcache_data.restnode_search;
@@ -162,7 +162,7 @@ module trav_unit(
 
 
   struct packed {
-    rayID_t rayID;  // sb
+    ray_info_t ray_info;  // sb
     nodeID_t parent_ID; //sb
     nodeID_t right_ID; // sb
     logic low_empty; // sb 
@@ -171,7 +171,7 @@ module trav_unit(
   } trav_sb_in, trav_sb_out;
 
   struct packed {
-    rayID_t rayID;  // sb
+    ray_info_t ray_info;  // sb
     nodeID_t parent_ID; //sb
     nodeID_t right_ID; // sb
     logic low_empty; // sb 
@@ -195,7 +195,7 @@ module trav_unit(
   logic [4:0] num_in_trav_fifo;
   
   always_comb begin
-    trav_sb_in.rayID = rs_to_trav_data.rayID ;
+    trav_sb_in.ray_info = rs_to_trav_data.ray_info ;
     trav_sb_in.parent_ID = rs_to_trav_data.nodeID ;
     trav_sb_in.right_ID = rs_to_trav_data.node.right_ID ;
     trav_sb_in.low_empty = rs_to_trav_data.node.low_empty ;
@@ -235,7 +235,7 @@ module trav_unit(
 
 
   always_comb begin
-    trav_fifo_in.rayID = trav_sb_out.rayID ;
+    trav_fifo_in.ray_info = trav_sb_out.ray_info ;
     trav_fifo_in.parent_ID = trav_sb_out.parent_ID ;
     trav_fifo_in.right_ID = trav_sb_out.right_ID ;
     trav_fifo_in.low_empty = trav_sb_out.low_empty ;
@@ -323,7 +323,7 @@ module trav_unit(
   always_comb begin
     if(ss_valid & trav_to_ss_stall) ss_buf_n = ss_buf;
     else begin
-      ss_buf_n.rayID = trav_fifo_out.rayID;
+      ss_buf_n.ray_info = trav_fifo_out.ray_info;
       ss_buf_n.push_req = push_valid ;
       ss_buf_n.push_node_ID = push_node_ID ;
       ss_buf_n.update_restnode_req = update_restnode_valid ;
@@ -379,7 +379,7 @@ module trav_unit(
   always_comb begin
     if(tarb_valid & trav_to_tarb_stall) tarb_buf_n = tarb_buf;
     else begin
-      tarb_buf_n.rayID = trav_fifo_out.rayID ;
+      tarb_buf_n.ray_info = trav_fifo_out.ray_info ;
       tarb_buf_n.nodeID = trav_node_ID;
       tarb_buf_n.restnode_search = trav_fifo_out.restnode_search & ~push_valid;
       tarb_buf_n.t_max = trav_t_max ;

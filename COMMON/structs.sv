@@ -34,15 +34,15 @@ typedef struct packed {
  // maximum of 512 rays at a time in the pipeline TODO ?? 
 typedef struct packed {
   logic is_occular;
-  logic [8:0] ID; 
-} rayID_t;
+  logic [8:0] rayID; 
+} ray_info_t;
 
 typedef struct packed {
   logic [18:0] ID;
 } nodeID_t;
 
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
   vector_t origin;
   vector_t dir;
 } ray_t;
@@ -62,7 +62,7 @@ typedef struct packed {
 
 typedef struct packed {
   color_t color;
-  rayID_t rayID;
+  ray_info_t ray_info;
 } pixel_buffer_entry_t;
 
 typedef struct packed {
@@ -104,7 +104,7 @@ typedef struct packed {
   float_t t_max;
   triID_t tri0_ID;
   triID_t tri1_ID;
-  rayID_t rayID;
+  ray_info_t ray_info;
 } int_pipe1_t;
 
 
@@ -116,7 +116,7 @@ typedef struct packed {
   logic t_val1;
   triID_t tri0_ID;
   triID_t tri1_ID;
-  rayID_t rayID;
+  ray_info_t ray_info;
 } int_pipe2_t;
 */
 
@@ -159,7 +159,7 @@ typedef struct packed {
 
 // sint_to_rs_t   (This will write ray_vec to raystore
 typedef struct packed { // TODO make it go to both ss and rs
-  rayID_t rayID;
+  ray_info_t ray_info;
   ray_vec_t ray_vec;
   float_t t_max_scene;
 } sint_to_rs_t ;
@@ -167,7 +167,7 @@ typedef struct packed { // TODO make it go to both ss and rs
 
 // tarb_t // Traversal Arbiter
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
   nodeID_t nodeID;
   logic restnode_search; // set if still have not found restart node
   float_t t_max;
@@ -177,7 +177,7 @@ typedef struct packed {
 
 // tcache_to_trav_t
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
   nodeID_t nodeID;
   logic restnode_search;
   float_t t_max;
@@ -192,7 +192,7 @@ typedef struct packed {
 
 // trav_to_rs_t
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
   nodeID_t nodeID;
   norm_node_t node;
   logic restnode_search;
@@ -204,7 +204,7 @@ typedef struct packed {
 
 // rs_to_trav_t  // DO not need to get the scene max since intersection path has got it covered
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
   nodeID_t nodeID;
   norm_node_t node;
   logic restnode_search;
@@ -217,7 +217,7 @@ typedef struct packed {
 
 // trav_to_ss_t   (This sends either a push request or an update request)
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
   logic push_req; // 1 == push, 0 == update restnode
   nodeID_t push_node_ID;
   logic update_restnode_req;
@@ -227,7 +227,7 @@ typedef struct packed {
 } trav_to_ss_t ;
 
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
   float_t t_max_leaf;
 } trav_to_list_t ;
 
@@ -240,7 +240,7 @@ typedef struct packed {
   // int -> larb
 
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
  // float_t t_max_leaf;
   ln_tri_t ln_tri;
 } leaf_info_t;
@@ -249,7 +249,7 @@ typedef struct packed {
     
 // lcache_to_rs
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
 //  float_t t_max_leaf;
   ln_tri_t ln_tri;
   triID_t triID;
@@ -258,7 +258,7 @@ typedef struct packed {
 
 // rs_to_icache_t
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
 //  float_t t_max_leaf;
   ln_tri_t ln_tri;
   triID_t triID;
@@ -269,7 +269,7 @@ typedef struct packed {
 
 // icache_to_int_t
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
 //  float_t t_max_leaf;
   ln_tri_t ln_tri;
   triID_t triID;
@@ -285,7 +285,7 @@ typedef struct packed {
 
 // int_to_list_t
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
   triID_t triID;
   logic hit;
   logic is_last;
@@ -295,18 +295,18 @@ typedef struct packed {
 } int_to_list_t ;
 
 typedef struct packed {
-	rayID_t rayID;
+	ray_info_t ray_info;
 } list_to_rs_t;
 
 typedef struct packed {
-	rayID_t rayID;
+	ray_info_t ray_info;
 	ray_vec_t ray_vec;
 } rs_to_pcalc_t;
 
 /*
 // int_to_mailbox // sends to mailbox if triangle was greater than t_max_leaf
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
   triID_t triID;
 
 } int_to_mailbox;
