@@ -284,6 +284,7 @@ typedef struct packed {
   rayID_t rayID;
   triID_t triID;
   logic hit;
+  logic is_last;
   float_t t_int;
   bari_uv_t uv;
 

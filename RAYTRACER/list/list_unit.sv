@@ -1,3 +1,4 @@
+
 /*
 
   This is another Memory structure that is surounded by different ports with perform different operations
@@ -22,15 +23,16 @@
       
             }
         }
-        if(hit & (t_int_cur <= t_max_leaf) ) { // Note this is the hit status after the hit_in
-            list_to_shade <= Hit!!
-            list_to_ss <= non shadow hit!
-            Clear list_row // set hit to 0
+        if(last_of_leaf) {
+            if(hit & (t_int_cur <= t_max_leaf) ) { // Note this is the hit status after the hit_in
+                list_to_shade <= Hit!!
+                list_to_ss <= non shadow hit!
+                Clear list_row // set hit to 0
+            }
+            else { // report miss (even in the case where it was a hit outside of leaf node
+                list_to_ss <= miss!
+            }
         }
-        else { // report miss (even in the case where it was a hit outside of leaf node
-            list_to_ss <= miss!
-        }
-
 
   Outgoing ports
 
@@ -38,14 +40,8 @@
 
     list_to_ss
 
-  
-
 
 */
-
-
-
-
 
 
 module list_unit(

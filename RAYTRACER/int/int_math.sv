@@ -12,6 +12,7 @@ module int_math(
   input ray_vec_t ray_vec,
 
   output logic hit,
+  output logic t_int_lt1,
   output float_t t_int,
   output bari_uv_t uv
 
@@ -266,6 +267,21 @@ module int_math(
   //.aeb(out_aeb_comp_ep),
 	.agb(out_agb_comp_ep) );
  
+
+// comp_shadow
+  float_t inA_comp_shadow, inB_comp_shadow;
+  logic out_agb_comp_shadow;
+  assign inA_comp_shadow = `FP_1;
+  assign inB_comp_shadow = t_int_buf_out ;
+  altfp_compare comp_shadow (
+  .aclr(rst),
+  .clock(clk ),
+  .dataa(inA_comp_shadow ),
+  .datab(inB_comp_shadow ),
+  //.aeb(out_aeb_comp_shadow),
+	.agb(out_agb_comp_shadow) );
+
+  assign t_int_lt1 = out_agb_comp_shadow;
 
   // outputs
   assign hit = out_agb_comp1 & out_agb_comp_ep & ~uv.u.sign & ~uv.v.sign ;

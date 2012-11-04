@@ -40,6 +40,7 @@ module int_unit(
    ray_vec_t ray_vec;
 
    logic hit;
+   logic t_int_lt1;
    float_t t_int;
    bari_uv_t uv;
 
@@ -99,10 +100,14 @@ module int_unit(
   
   leaf_info_t larb_fifo_in, larb_fifo_out;
   
+  logic is_last;
+  assign is_last = (int_pipe_out.ln_tri.lnum_left == 0) ;
+  
   always_comb begin
     list_fifo_in.rayID = int_pipe_out.rayID;
     list_fifo_in.triID = int_pipe_out.triID;
     list_fifo_in.hit = hit;
+    list_fifo_in.is_last = is_last ;
     list_fifo_in.t_int = t_int;
     list_fifo_in.uv = uv;
   end
@@ -118,8 +123,8 @@ module int_unit(
     always @(*) assert(!((list_full|larb_full) & pipe_ds_valid));
   `endif
 
-  assign list_wrreq = pipe_ds_valid & (hit | int_pipe_out.ln_tri.lnum_left == 'h0);
-  assign larb_wrreq = pipe_ds_valid & (int_pipe_out.ln_tri.lnum_left != 'h0);
+  assign list_wrreq = pipe_ds_valid & (hit | is_last);
+  assign larb_wrreq = pipe_ds_valid & (~is_last);
 
   altbramfifo_w144_d45 list_fifo(
 	.clock (clk),

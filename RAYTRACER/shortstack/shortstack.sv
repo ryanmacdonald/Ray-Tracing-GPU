@@ -4,7 +4,7 @@
   ---------------------------------------------------
   Contents of shortstack indexed by rayID
 
-  ss_row = [ ElemCount, StackElement0, StackElement1, StackELement2, StackELement3 ]
+  ss_row = [StackElement0, StackElement1, StackELement2, StackELement3 ]
   ElemCOunt is the number of stack elements that are valid
   StackElement = [nodeID, t_max, t_min]; // TODO seems we can infer t_min and this do not need to store
                                          // t_min = t_max(leaf node it just traversed)
@@ -17,7 +17,6 @@
     Pop         : ElemCount <= ElemCOunt -1 ; // minimum of 0
                 : Outout <= SE0; SE0 <= SE1; SE1 <= SE2; SE2 <= SE3;  SE3 <= XX 
     
-    Clear       : ElemCount <= 0 ;
   ----------------------------------------------------------------------
 
   Contents of restartnode indexed by rayID (TODO might just want to seperate t_max_scene into different mem structure)
