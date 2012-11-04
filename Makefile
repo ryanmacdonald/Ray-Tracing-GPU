@@ -40,6 +40,9 @@ prg_int:
 prg:
 	$(CC) $(FLAGS) -top tb_prg COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v PRG/*.sv
 
+prg_int_stall:
+	$(CC) $(FLAGS) -top tb_prg_int_stall COMMON/*v COMMON/altbram_fifo/*/*v PERIPHERALS/*.sv COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv TBs/*.sv
+
 cam:
 	$(CC) $(FLAGS) -top  camera_controller COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v CAMERA/camera_controller.sv
 
@@ -49,6 +52,10 @@ camera_dp:
 
 camera:
 	$(CC) $(FLAGS) -top tb_camera COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v CAMERA/*.sv
+
+sdram:
+	$(CC) $(FLAGS) -top top COMMON/*v SDRAM/* SDRAM/submodules/* SDRAM/qsys_sdram_mem_model/synthesis/submodules/* 
+
 
 
 
