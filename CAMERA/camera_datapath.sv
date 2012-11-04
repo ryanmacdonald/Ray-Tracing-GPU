@@ -131,7 +131,7 @@ module camera_datapath (input logic clk, rst,
 
 		comp_sel = v2 ? vector_sel.x : (v0 ? vector_sel.y : vector_sel.z);
 
-		mult_2_datab = key[0] ? {~comp_sel[31],comp_sel[30:0]} : comp_sel;
+		mult_2_datab = last_key[0] ? {~comp_sel[31],comp_sel[30:0]} : comp_sel;
 
 	end	
 

@@ -4,7 +4,7 @@
 // MODULE: altsyncram 
 
 // ============================================================
-// File Name: ray_store.v
+// File Name: raystore_blkram.v
 // Megafunction Name(s):
 // 			altsyncram
 //
@@ -52,12 +52,12 @@ module raystore_blkram (
 	input	[8:0]  address_a;
 	input	[8:0]  address_b;
 	input	  clock;
-	input	[195:0]  data_a;
-	input	[195:0]  data_b;
+	input	[191:0]  data_a;
+	input	[191:0]  data_b;
 	input	  wren_a;
 	input	  wren_b;
-	output	[195:0]  q_a;
-	output	[195:0]  q_b;
+	output	[191:0]  q_a;
+	output	[191:0]  q_b;
 `ifndef ALTERA_RESERVED_QIS
 // synopsys translate_off
 `endif
@@ -69,10 +69,10 @@ module raystore_blkram (
 // synopsys translate_on
 `endif
 
-	wire [195:0] sub_wire0;
-	wire [195:0] sub_wire1;
-	wire [195:0] q_a = sub_wire0[195:0];
-	wire [195:0] q_b = sub_wire1[195:0];
+	wire [191:0] sub_wire0;
+	wire [191:0] sub_wire1;
+	wire [191:0] q_a = sub_wire0[191:0];
+	wire [191:0] q_b = sub_wire1[191:0];
 
 	altsyncram	altsyncram_component (
 				.clock0 (clock),
@@ -105,7 +105,7 @@ module raystore_blkram (
 		altsyncram_component.clock_enable_output_a = "BYPASS",
 		altsyncram_component.clock_enable_output_b = "BYPASS",
 		altsyncram_component.indata_reg_b = "CLOCK0",
-		altsyncram_component.intended_device_family = "Cyclone IV GX",
+		altsyncram_component.intended_device_family = "Cyclone IV E",
 		altsyncram_component.lpm_type = "altsyncram",
 		altsyncram_component.numwords_a = 512,
 		altsyncram_component.numwords_b = 512,
@@ -120,8 +120,8 @@ module raystore_blkram (
 		altsyncram_component.read_during_write_mode_port_b = "NEW_DATA_NO_NBE_READ",
 		altsyncram_component.widthad_a = 9,
 		altsyncram_component.widthad_b = 9,
-		altsyncram_component.width_a = 196,
-		altsyncram_component.width_b = 196,
+		altsyncram_component.width_a = 192,
+		altsyncram_component.width_b = 192,
 		altsyncram_component.width_byteena_a = 1,
 		altsyncram_component.width_byteena_b = 1,
 		altsyncram_component.wrcontrol_wraddress_reg_b = "CLOCK0";
@@ -158,11 +158,11 @@ endmodule
 // Retrieval info: PRIVATE: INDATA_REG_B NUMERIC "1"
 // Retrieval info: PRIVATE: INIT_FILE_LAYOUT STRING "PORT_A"
 // Retrieval info: PRIVATE: INIT_TO_SIM_X NUMERIC "0"
-// Retrieval info: PRIVATE: INTENDED_DEVICE_FAMILY STRING "Cyclone IV GX"
+// Retrieval info: PRIVATE: INTENDED_DEVICE_FAMILY STRING "Cyclone IV E"
 // Retrieval info: PRIVATE: JTAG_ENABLED NUMERIC "0"
 // Retrieval info: PRIVATE: JTAG_ID STRING "NONE"
 // Retrieval info: PRIVATE: MAXIMUM_DEPTH NUMERIC "0"
-// Retrieval info: PRIVATE: MEMSIZE NUMERIC "100352"
+// Retrieval info: PRIVATE: MEMSIZE NUMERIC "98304"
 // Retrieval info: PRIVATE: MEM_IN_BITS NUMERIC "0"
 // Retrieval info: PRIVATE: MIFfilename STRING ""
 // Retrieval info: PRIVATE: OPERATION_MODE NUMERIC "3"
@@ -182,10 +182,10 @@ endmodule
 // Retrieval info: PRIVATE: USE_DIFF_CLKEN NUMERIC "0"
 // Retrieval info: PRIVATE: UseDPRAM NUMERIC "1"
 // Retrieval info: PRIVATE: VarWidth NUMERIC "0"
-// Retrieval info: PRIVATE: WIDTH_READ_A NUMERIC "196"
-// Retrieval info: PRIVATE: WIDTH_READ_B NUMERIC "196"
-// Retrieval info: PRIVATE: WIDTH_WRITE_A NUMERIC "196"
-// Retrieval info: PRIVATE: WIDTH_WRITE_B NUMERIC "196"
+// Retrieval info: PRIVATE: WIDTH_READ_A NUMERIC "192"
+// Retrieval info: PRIVATE: WIDTH_READ_B NUMERIC "192"
+// Retrieval info: PRIVATE: WIDTH_WRITE_A NUMERIC "192"
+// Retrieval info: PRIVATE: WIDTH_WRITE_B NUMERIC "192"
 // Retrieval info: PRIVATE: WRADDR_ACLR_B NUMERIC "0"
 // Retrieval info: PRIVATE: WRADDR_REG_B NUMERIC "1"
 // Retrieval info: PRIVATE: WRCTRL_ACLR_B NUMERIC "0"
@@ -198,7 +198,7 @@ endmodule
 // Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_A STRING "BYPASS"
 // Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_B STRING "BYPASS"
 // Retrieval info: CONSTANT: INDATA_REG_B STRING "CLOCK0"
-// Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone IV GX"
+// Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone IV E"
 // Retrieval info: CONSTANT: LPM_TYPE STRING "altsyncram"
 // Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "512"
 // Retrieval info: CONSTANT: NUMWORDS_B NUMERIC "512"
@@ -213,8 +213,8 @@ endmodule
 // Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_PORT_B STRING "NEW_DATA_NO_NBE_READ"
 // Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "9"
 // Retrieval info: CONSTANT: WIDTHAD_B NUMERIC "9"
-// Retrieval info: CONSTANT: WIDTH_A NUMERIC "196"
-// Retrieval info: CONSTANT: WIDTH_B NUMERIC "196"
+// Retrieval info: CONSTANT: WIDTH_A NUMERIC "192"
+// Retrieval info: CONSTANT: WIDTH_B NUMERIC "192"
 // Retrieval info: CONSTANT: WIDTH_BYTEENA_A NUMERIC "1"
 // Retrieval info: CONSTANT: WIDTH_BYTEENA_B NUMERIC "1"
 // Retrieval info: CONSTANT: WRCONTROL_WRADDRESS_REG_B STRING "CLOCK0"
@@ -222,22 +222,22 @@ endmodule
 // Retrieval info: USED_PORT: address_a 0 0 9 0 INPUT NODEFVAL "address_a[8..0]"
 // Retrieval info: USED_PORT: address_b 0 0 9 0 INPUT NODEFVAL "address_b[8..0]"
 // Retrieval info: USED_PORT: clock 0 0 0 0 INPUT VCC "clock"
-// Retrieval info: USED_PORT: data_a 0 0 196 0 INPUT NODEFVAL "data_a[195..0]"
-// Retrieval info: USED_PORT: data_b 0 0 196 0 INPUT NODEFVAL "data_b[195..0]"
-// Retrieval info: USED_PORT: q_a 0 0 196 0 OUTPUT NODEFVAL "q_a[195..0]"
-// Retrieval info: USED_PORT: q_b 0 0 196 0 OUTPUT NODEFVAL "q_b[195..0]"
+// Retrieval info: USED_PORT: data_a 0 0 192 0 INPUT NODEFVAL "data_a[191..0]"
+// Retrieval info: USED_PORT: data_b 0 0 192 0 INPUT NODEFVAL "data_b[191..0]"
+// Retrieval info: USED_PORT: q_a 0 0 192 0 OUTPUT NODEFVAL "q_a[191..0]"
+// Retrieval info: USED_PORT: q_b 0 0 192 0 OUTPUT NODEFVAL "q_b[191..0]"
 // Retrieval info: USED_PORT: wren_a 0 0 0 0 INPUT GND "wren_a"
 // Retrieval info: USED_PORT: wren_b 0 0 0 0 INPUT GND "wren_b"
 // Retrieval info: CONNECT: @aclr0 0 0 0 0 aclr 0 0 0 0
 // Retrieval info: CONNECT: @address_a 0 0 9 0 address_a 0 0 9 0
 // Retrieval info: CONNECT: @address_b 0 0 9 0 address_b 0 0 9 0
 // Retrieval info: CONNECT: @clock0 0 0 0 0 clock 0 0 0 0
-// Retrieval info: CONNECT: @data_a 0 0 196 0 data_a 0 0 196 0
-// Retrieval info: CONNECT: @data_b 0 0 196 0 data_b 0 0 196 0
+// Retrieval info: CONNECT: @data_a 0 0 192 0 data_a 0 0 192 0
+// Retrieval info: CONNECT: @data_b 0 0 192 0 data_b 0 0 192 0
 // Retrieval info: CONNECT: @wren_a 0 0 0 0 wren_a 0 0 0 0
 // Retrieval info: CONNECT: @wren_b 0 0 0 0 wren_b 0 0 0 0
-// Retrieval info: CONNECT: q_a 0 0 196 0 @q_a 0 0 196 0
-// Retrieval info: CONNECT: q_b 0 0 196 0 @q_b 0 0 196 0
+// Retrieval info: CONNECT: q_a 0 0 192 0 @q_a 0 0 192 0
+// Retrieval info: CONNECT: q_b 0 0 192 0 @q_b 0 0 192 0
 // Retrieval info: GEN_FILE: TYPE_NORMAL raystore_blkram.v TRUE
 // Retrieval info: GEN_FILE: TYPE_NORMAL raystore_blkram.inc FALSE
 // Retrieval info: GEN_FILE: TYPE_NORMAL raystore_blkram.cmp FALSE

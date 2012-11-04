@@ -39,7 +39,7 @@ module prg(input logic clk, rst,
 	assign pz = $bitstoshortreal(prg_data.dir.z);
 `endif
 	logic start_prg;
-	logic[39:0] rayValid;
+	logic[38:0] rayValid;
 
 	sync_to_v #(2) sv(.synced_signal(start_prg),.clk,.rst,.v0,.v1,.v2,.signal_to_sync(start));	
 
@@ -183,15 +183,20 @@ module prg(input logic clk, rst,
 					nextState = IDLE;
 				end
 				else if(v0) begin
-					next_u_dist = add_1_result;
-					nextState = ACTIVE;
-				end
-				else if(v1) begin
 					if(cnt >= 6'd39 || rayID > 0) begin
 						nextCnt = 0;
 						if(rayValid[0]) rayReady = 1;
 						nextrayID = rayID + 1'b1;
 					end
+					next_u_dist = add_1_result;
+					nextState = ACTIVE;
+				end
+				else if(v1) begin
+				/*	if(cnt >= 6'd39 || rayID > 0) begin
+						nextCnt = 0;
+						if(rayValid[0]) rayReady = 1;
+						nextrayID = rayID + 1'b1;
+					end*/
 					next_v_dist = add_1_result;
 					nextState = ACTIVE;
 				end
