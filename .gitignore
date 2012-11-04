@@ -7,6 +7,7 @@ simv.vdb
 session*
 .restartSimSession.tcl.old
 .synopsys_dve_rebuild.tcl
+.__*
 
 DVEfiles/
 simv.daidir/
