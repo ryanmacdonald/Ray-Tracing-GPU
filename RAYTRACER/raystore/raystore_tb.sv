@@ -1,8 +1,15 @@
 `default_nettype none
 
+`define NUM_CYCLES 20
+
 // TODO: constrain node_type to be 00, 01, or 10
 class trav_to_rs_c;
 	rand trav_to_rs_t trav_to_rs;
+
+	constraint legal_node_type {
+		trav_to_rs.node.node_type dist { [0:3] :/ 1 };
+	}
+
 endclass
 
 class ray_vec_c;
@@ -69,7 +76,6 @@ module raystore_tb;
 		forever #1 clk = ~clk;
 	end
 
-	integer i;
 	trav_to_rs_c t;
 	ray_vec_c r;
 	initial begin
@@ -79,7 +85,7 @@ module raystore_tb;
 		// initial values
 		trav_to_rs0 <= 'b0;
 		trav_to_rs0_valid <= 1'b0;
-		rs_to_trav0_stall <= 1'b0;
+//		rs_to_trav0_stall <= 1'b0;
 
 		trav_to_rs1 <= 'b0;
 		trav_to_rs1_valid <= 1'b0;
@@ -114,29 +120,24 @@ module raystore_tb;
 		@(posedge clk);
 		trav_to_rs0_valid <= 1'b0;
 
-		repeat(20) @(posedge clk);
+		repeat(`NUM_CYCLES) @(posedge clk);
 
 		$finish;
 	end
 
-	/*
 	int i;
 	initial begin
-		num_to_list = 0;
-		num_to_larb = 0;
 		i = 0;
-		repeat(6000) begin
+		repeat(`NUM_CYCLES) begin
 			@(posedge clk) i <= {$random}%60;
 		end
-		$finish;
 	end
 
 	always_comb begin
-		if(int_to_list_valid && i < 57 ) int_to_list_stall = 1;
-		else int_to_list_stall = 0;
-		if(int_to_larb_valid && (i<58)) int_to_larb_stall = 1;
-		else int_to_larb_stall = 0;
+		if(rs_to_trav0_valid && i < 20 )
+			rs_to_trav0_stall = 1;
+		else
+			rs_to_trav0_stall = 0;
 	end
-	*/
 
 endmodule: raystore_tb

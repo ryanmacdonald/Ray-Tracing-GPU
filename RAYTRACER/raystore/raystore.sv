@@ -22,9 +22,9 @@ typedef struct packed {
 } rs_arb_to_lcache_pipe_t;
 
 typedef struct packed {
-	pcalc_to_rs_t pcalc_to_rs;
+	list_to_rs_t list_to_rs;
 	logic data_sel;
-} rs_arb_to_pcalc_pipe_t;
+} rs_arb_to_list_pipe_t;
 
 module raystore(
 
@@ -77,7 +77,7 @@ module raystore(
 	counter #(.W(2), .RV(2'b00)) round_robin_pointer(.cnt(rrp), .clr(1'b0), .inc(1'b1), .clk, .rst);
 
 	logic [3:0] data_sel; // go to the pipes to be augmented with their data
-	logic [3:0] us_pipe_stalls, us_pipe_valids;
+	logic [3:0] us_pipe_stalls, us_pipe_valids, ds_pipe_valids;
 	logic [1:0] mux_sel0, mux_sel1;
 
 	raystore_arb rsa(
@@ -101,7 +101,6 @@ module raystore(
 	assign pvs0_data_in.data_sel = data_sel[0];
 
 	rs_arb_to_trav_pipe_t pvs0_data_out;
-	logic [3:0] ds_pipe_valids;
 
 	pipe_valid_stall
 	#(.WIDTH($bits(rs_arb_to_trav_pipe_t)), .DEPTH(2))
@@ -177,49 +176,195 @@ module raystore(
 	);
 	// PIPE/FIFO 00000000
 
-	/*
 	// PIPE/FIFO 11111111
+
+	logic [1:0] nif1;
 
 	rs_arb_to_trav_pipe_t pvs1_data_in;
-	pvs1_data_in.trav_to_rs = trav_to_rs1;
-	pvs1_data_in.data_sel = data_sel[1];
+	assign pvs1_data_in.trav_to_rs = trav_to_rs1;
+	assign pvs1_data_in.data_sel = data_sel[1];
+
+	rs_arb_to_trav_pipe_t pvs1_data_out;
 
 	pipe_valid_stall
-	#(.WIDTH(), .DEPTH())
+	#(.WIDTH($bits(rs_arb_to_trav_pipe_t)), .DEPTH(2))
 	pvs1(
+		.clk, .rst,
+
+		.us_valid(us_pipe_valids[1]),
+		.us_data(pvs1_data_in),
+		.us_stall(us_pipe_stalls[1]),
+
+		.ds_valid(ds_pipe_valids[1]),
+		.ds_data(pvs1_data_out),
+		.ds_stall(rs_to_trav1_stall),
+
+		.num_in_fifo(nif1)
 	);
 
-	rs_to_trav_t f1_data_in;
-	assign f1_data_in = ; // TODO
+	logic [1:0] nt1;
+	assign nt1 = pvs1_data_out.trav_to_rs.node.node_type;
 
-	fifo              f1();
+	single_axis_origin_dir_t f1_data_in0, f1_data_in1;
+
+	always_comb begin
+		case(nt1)
+			2'b00: begin
+				f1_data_in0.origin = rd_data0.origin.x;
+				f1_data_in0.dir = rd_data0.dir.x;
+				f1_data_in1.origin = rd_data1.origin.x;
+				f1_data_in1.dir = rd_data1.dir.x;
+			end
+			2'b01: begin
+				f1_data_in0.origin = rd_data0.origin.y;
+				f1_data_in0.dir = rd_data0.dir.y;
+				f1_data_in1.origin = rd_data1.origin.y;
+				f1_data_in1.dir = rd_data1.dir.y;
+			end
+			2'b10: begin
+				f1_data_in0.origin = rd_data0.origin.z;
+				f1_data_in0.dir = rd_data0.dir.z;
+				f1_data_in1.origin = rd_data1.origin.z;
+				f1_data_in1.dir = rd_data1.dir.z;
+			end
+		endcase
+	end
+
+	rs_to_trav_t f1_data_in;
+
+	assign f1_data_in.rayID = pvs1_data_out.trav_to_rs.rayID;
+	assign f1_data_in.nodeID = pvs1_data_out.trav_to_rs.nodeID;
+	assign f1_data_in.node = pvs1_data_out.trav_to_rs.node;
+	assign f1_data_in.restnode_search = pvs1_data_out.trav_to_rs.restnode_search;
+	assign f1_data_in.t_max = pvs1_data_out.trav_to_rs.t_max;
+	assign f1_data_in.t_min = pvs1_data_out.trav_to_rs.t_min;
+
+	assign f1_data_in.origin = (pvs1_data_out.data_sel) ? f1_data_in1.origin : f1_data_in0.origin;
+	assign f1_data_in.dir = (pvs1_data_out.data_sel) ? f1_data_in1.dir : f1_data_in0.dir;
+
+	logic f1_empty, f1_re;
+	assign rs_to_trav1_valid = ~f1_empty;
+	assign f1_re = ~rs_to_trav1_stall & ~f1_empty;
+
+	fifo
+	#(.WIDTH($bits(rs_to_trav_t)), .K(1))
+	f1(
+		.clk, .rst,
+		.data_in(f1_data_in),
+		.we(ds_pipe_valids[1]),
+		.re(f1_re),
+		.full(), // not used
+		.empty(f1_empty),
+		.data_out(rs_to_trav1),
+		.num_in_fifo(nif1)
+	);
+
 	// PIPE/FIFO 11111111
 
 	// PIPE/FIFO 22222222
 
+	logic [1:0] nif2;
+
 	rs_arb_to_lcache_pipe_t pvs2_data_in;
-	pvs2_data_in.lcache_to_rs = lcache_to_rs;
-	pvs2_data_in.data_sel = data_sel[2];
+	assign pvs2_data_in.lcache_to_rs = lcache_to_rs;
+	assign pvs2_data_in.data_sel = data_sel[2];
+
+	rs_arb_to_lcache_pipe_t pvs2_data_out;
 
 	pipe_valid_stall
-	#(.WIDTH(), .DEPTH())
-	pvs2();
-	fifo              f2();
+	#(.WIDTH($bits(rs_arb_to_lcache_pipe_t)), .DEPTH(2))
+	pvs2(
+		.clk, .rst,
+
+		.us_valid(us_pipe_valids[2]),
+		.us_data(pvs2_data_in),
+		.us_stall(us_pipe_stalls[2]),
+
+		.ds_valid(ds_pipe_valids[2]),
+		.ds_data(pvs2_data_out),
+		.ds_stall(rs_to_icache_stall),
+
+		.num_in_fifo(nif2)
+	);
+
+	rs_to_icache_t f2_data_in;
+
+	assign f2_data_in.rayID  = pvs2_data_out.lcache_to_rs.rayID;
+	assign f2_data_in.ln_tri = pvs2_data_out.lcache_to_rs.ln_tri;
+	assign f2_data_in.triID  = pvs2_data_out.lcache_to_rs.triID;
+
+	assign f2_data_in.ray_vec = (pvs2_data_out.data_sel) ? rd_data1 : rd_data0;
+
+	logic f2_empty, f2_re;
+	assign rs_to_icache_valid = ~f2_empty;
+	assign f2_re = ~rs_to_icache_stall & ~f2_empty;
+
+	fifo
+	#(.WIDTH($bits(rs_to_icache_t)), .K(1))
+	f2(
+		.clk, .rst,
+		.data_in(f2_data_in),
+		.we(ds_pipe_valids[2]),
+		.re(f2_re),
+		.full(), // not used
+		.empty(f2_empty),
+		.data_out(rs_to_icache),
+		.num_in_fifo(nif2)
+	);
 
 	// PIPE/FIFO 22222222
 
 	// PIPE/FIFO 33333333
 
-	rs_arb_to_pcalc_pipe_t pvs3_data_in;
-	pvs3_data_in.pcalc_to_rs = pcalc_to_rs;
-	pvs3_data_in.data_sel = data_sel[3];
+	logic [1:0] nif3;
+
+	rs_arb_to_list_pipe_t pvs3_data_in;
+	assign pvs3_data_in.list_to_rs = list_to_rs;
+	assign pvs3_data_in.data_sel = data_sel[3];
+
+	rs_arb_to_list_pipe_t pvs3_data_out;
 
 	pipe_valid_stall
-	#(.WIDTH(), .DEPTH())
-	pvs3();
-	fifo              f3();
+	#(.WIDTH($bits(rs_arb_to_list_pipe_t)), .DEPTH(2))
+	pvs3(
+		.clk, .rst,
+
+		.us_valid(us_pipe_valids[3]),
+		.us_data(pvs3_data_in),
+		.us_stall(us_pipe_stalls[3]),
+
+		.ds_valid(ds_pipe_valids[3]),
+		.ds_data(pvs3_data_out),
+		.ds_stall(rs_to_pcalc_stall),
+
+		.num_in_fifo(nif3)
+	);
+
+	rs_to_pcalc_t f3_data_in;
+
+	assign f3_data_in.rayID  = pvs3_data_out.list_to_rs.rayID;
+	// TODO: other things for list_to_rs struct...
+
+	assign f3_data_in.ray_vec = (pvs3_data_out.data_sel) ? rd_data1 : rd_data0;
+
+	logic f3_empty, f3_re;
+	assign rs_to_pcalc_valid = ~f3_empty;
+	assign f3_re = ~rs_to_pcalc_stall & ~f3_empty;
+
+	fifo
+	#(.WIDTH($bits(rs_to_pcalc_t)), .K(1))
+	f3(
+		.clk, .rst,
+		.data_in(f3_data_in),
+		.we(ds_pipe_valids[3]),
+		.re(f3_re),
+		.full(), // not used
+		.empty(f3_empty),
+		.data_out(rs_to_pcalc),
+		.num_in_fifo(nif3)
+	);
+
 	// PIPE/FIFO 33333333
- */
 
 	// block ram addresses
 	logic [8:0] addr0, addr1;

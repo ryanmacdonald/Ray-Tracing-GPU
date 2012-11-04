@@ -298,6 +298,7 @@ typedef struct packed {
 } list_to_rs_t;
 
 typedef struct packed {
+	rayID_t rayID;
 	ray_vec_t ray_vec;
 } rs_to_pcalc_t;
 
