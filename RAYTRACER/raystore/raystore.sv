@@ -73,12 +73,14 @@ module raystore(
 
 	ray_vec_t rd_data0, rd_data1;
 
-	logic [1:0] rrp;
-	counter #(.W(2), .RV(2'b00)) round_robin_pointer(.cnt(rrp), .clr(1'b0), .inc(1'b1), .clk, .rst);
-
 	logic [3:0] data_sel; // go to the pipes to be augmented with their data
 	logic [3:0] us_pipe_stalls, us_pipe_valids, ds_pipe_valids;
 	logic [1:0] mux_sel0, mux_sel1;
+
+	logic [1:0] rrp;
+	logic rrp_inc;
+	assign rrp_inc = ~raystore_we & (|us_pipe_valids);
+	counter #(.W(2), .RV(2'b00)) round_robin_pointer(.cnt(rrp), .clr(1'b0), .inc(rrp_inc), .clk, .rst);
 
 	raystore_arb rsa(
 		.us_valid({list_to_rs_valid, lcache_to_rs_valid, trav_to_rs1_valid, trav_to_rs0_valid}),

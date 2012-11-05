@@ -10,6 +10,9 @@ default: trtr.sv
 trtr:
 	$(CC) $(FLAGS) -top trtr_tb COMMON/*v COMMON/altfp*/*.v RAYTRACER/int/* PRG/*v TBs/trtr_tb.sv PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv trtr.sv 
 
+t32:
+	$(CC) $(FLAGS) -top t32_tb COMMON/*v COMMON/altfp*/*.v TBs/t32_tb.sv PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv t32.sv
+
 raystore:
 	$(CC) $(FLAGS) -top raystore_tb COMMON/*v COMMON/altfp*/*.v RAYTRACER/raystore/*v PRG/*v
 
