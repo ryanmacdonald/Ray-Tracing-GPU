@@ -114,7 +114,7 @@ module raystore_tb;
 		@(posedge clk);
 		t.randomize();
 		trav_to_rs0 <= t.trav_to_rs;
-		trav_to_rs0.rayID.ID <= 'b0; // want to read from address 0
+		trav_to_rs0.ray_info.rayID <= 'b0; // want to read from address 0
 		trav_to_rs0_valid <= 1'b1;
 
 		@(posedge clk);

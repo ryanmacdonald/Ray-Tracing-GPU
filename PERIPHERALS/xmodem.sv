@@ -17,10 +17,10 @@
 // TODO: block_num needs to be wider than 8 bits
 
 module xmodem(
-    output logic done,
-    output logic saw_valid_block,      // to scene loader
-    output logic saw_valid_msg_byte,       // to scene loader
-    output logic [7:0] data_byte,  // to scene loader
+    output logic xmodem_done,
+    output logic xmodem_saw_valid_block,      // to scene loader
+    output logic xmodem_saw_valid_msg_byte,       // to scene loader
+    output logic [7:0] xmodem_data_byte,  // to scene loader
     output logic [7:0] sl_block_num, // to scene loader
     output logic tx,
     output logic rts,
@@ -28,6 +28,14 @@ module xmodem(
     input logic rx_pin,
     input logic clk, rst
 );
+
+	logic saw_valid_msg_byte;
+	logic saw_valid_block;
+	logic [7:0] data_byte;
+
+	assign xmodem_saw_valid_msg_byte = saw_valid_msg_byte;
+	assign xmodem_saw_valid_block = saw_valid_block;
+	assign xmodem_data_byte = data_byte;
 
     logic start;
     logic rx_ff, rx;
@@ -44,8 +52,11 @@ module xmodem(
     logic saw_EOT_block;
     logic saw_valid_byte;
     logic saw_msg_byte;
+    logic saw_block;
+    logic valid_block;
 
     assign saw_valid_msg_byte = saw_valid_byte & saw_msg_byte;
+    assign saw_valid_block = saw_block && valid_block;
 
     xmodem_bitlevel_fsmd xbitfsmd(.*);
     xmodem_blocklevel_fsmd xblkfsmd(.*);
@@ -174,7 +185,8 @@ module xmodem_bitlevel_datapath(
 endmodule: xmodem_bitlevel_datapath
 
 module xmodem_blocklevel_fsmd(
-    output logic saw_valid_block,
+    output logic saw_block,
+    output logic valid_block,
     output logic saw_EOT_block,
     output logic saw_msg_byte,
     output logic [7:0] sl_block_num,
@@ -188,7 +200,7 @@ module xmodem_blocklevel_fsmd(
           en_block_num_err_ff,
           inc_byte_cnt_and_chksum,
           saw_SOH_byte, saw_EOT_byte,
-          saw_128_bytes, saw_block;
+          saw_128_bytes;
 
     xmodem_blocklevel_fsm blkf(.*);
     xmodem_blocklevel_datapath blkd(.*);
@@ -263,7 +275,7 @@ endmodule: xmodem_blocklevel_fsm
 module xmodem_blocklevel_datapath(
     output logic saw_SOH_byte, saw_EOT_byte,
                  saw_128_bytes,
-                 saw_valid_block,
+                 valid_block,
     output logic [7:0] sl_block_num,
     input logic saw_block,
     input logic clr_byte_cnt_and_chksum,
@@ -274,7 +286,6 @@ module xmodem_blocklevel_datapath(
     input logic clk, rst
 );
 
-	logic valid_block;
     logic block_num_err;
     logic chksum_err;
 
@@ -299,7 +310,6 @@ module xmodem_blocklevel_datapath(
     assign chksum_err = (chksum != data_byte) ? 1'b1 : 1'b0;
 
     assign valid_block = ~block_num_err & ~chksum_err;
-    assign saw_valid_block = saw_block && valid_block;
 
     always_comb begin
         if(clr_byte_cnt_and_chksum)
@@ -312,7 +322,7 @@ module xmodem_blocklevel_datapath(
     ff_ar #(8,8'b0) chksum_reg(.q(chksum), .d(next_chksum), .clk, .rst);
 
     ff_ar_en #(8,8'h01) block_num_reg(.q(block_num), .d(data_byte), .en(ld_block_num), .clk, .rst);
-    ff_ar_en #(8,8'h00) prev_block_num_reg(.q(prev_block_num), .d(block_num), .en(saw_valid_block), .clk, .rst);
+    ff_ar_en #(8,8'h00) prev_block_num_reg(.q(prev_block_num), .d(block_num), .en(saw_block & valid_block), .clk, .rst);
 
     ff_ar_en #(1,1'b0) block_num_err_ff(.q(block_num_err), .d(block_num_err_comb), .en(en_block_num_err_ff), .clk, .rst);
     counter #(7) byte_counter(.cnt(byte_cnt), .clr(clr_byte_cnt_and_chksum), .inc(inc_byte_cnt_and_chksum), .clk, .rst);
@@ -321,9 +331,9 @@ endmodule: xmodem_blocklevel_datapath
 
 module xmodem_protocol_fsmd(
     output logic send_ACK, send_NAK,
-    output logic done,
+    output logic xmodem_done,
     input logic start,
-    input logic saw_valid_block, saw_EOT_block,
+    input logic saw_block, valid_block, saw_EOT_block,
     input logic clk, rst
 );
 
@@ -344,7 +354,7 @@ endmodule: xmodem_protocol_fsmd
 module xmodem_protocol_fsm(
     output logic send_ACK,
     output logic send_NAK,
-    output logic done,
+    output logic xmodem_done,
     output logic inc_timeout_NAK_cnt,
     output logic inc_NAK_timer,
     output logic inc_invalid_NAK_cnt,
@@ -352,7 +362,7 @@ module xmodem_protocol_fsm(
     output logic clr_invalid_NAK_cnt,
     output logic clr_NAK_timer,
     input logic start,
-    input logic saw_valid_block, saw_EOT_block, timeout,
+    input logic saw_block, valid_block, saw_EOT_block, timeout,
     input logic time_for_NAK,
     input logic clk, rst
 );
@@ -388,7 +398,7 @@ module xmodem_protocol_fsm(
         clr_invalid_NAK_cnt = 1'b0;
         clr_NAK_timer = 1'b0;
 
-        done = saw_EOT_block;
+        xmodem_done = saw_EOT_block;
 
         case(curr_state)
             A: begin
@@ -402,16 +412,16 @@ module xmodem_protocol_fsm(
                     inc_timeout_NAK_cnt = 1'b1;
                     clr_NAK_timer = 1'b1;
                 end
-                else if(~saw_valid_block) begin
+                else if(~(saw_block & valid_block)) begin
                     inc_NAK_timer = 1'b1;
                 end
 
-                if(saw_valid_block) begin
+                if(saw_block & valid_block) begin
                     send_ACK = 1'b1;
                     clr_timeout_NAK_cnt = 1'b1;
                     clr_invalid_NAK_cnt = 1'b1;
                 end
-                if(saw_valid_block) begin
+                if(saw_block & ~valid_block) begin
                     send_NAK = 1'b1;
                     inc_invalid_NAK_cnt = 1'b1;
                 end
