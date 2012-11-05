@@ -23,15 +23,8 @@ module sdram_a2 (
 		output wire           zs_ras_n,
 		output wire           zs_we_n,
 		
-		output wire altpll_0_c0_clk,
-	
+		output reg altpll_0_c0_clk,
 
-		// FPGA Debugging pins
-		/*input  wire  [ 15: 0] sw,
-		output wire  [  7: 0] LEDs,
-		input  wire  [  1: 0] btns,*/
-
-		
 		// Interface from caches
 		input  wire read, write,
 		input  wire[24:0] addr_in,
@@ -136,7 +129,8 @@ module sdram_a2 (
 					we_n = 1;
 					nextState = `WRITE;
 				end
-				else if(count == size) begin	
+				// Only support 1 word writes as of now
+				else if(count == 1) begin	
 					nextCount = 0;
 					nextAddr = 0;
 					nextData = 0;
@@ -166,9 +160,9 @@ module sdram_a2 (
 	
 	always @(posedge clk_clk, negedge reset_reset_n) begin
 		if(~reset_reset_n) begin
-			addr <= 0;
-			data <= 0;
-			count <= 0;
+			addr <= 'h0;
+			data <= 'h0;
+			count <= 'h0;
 			state <= `IDLE;
 		end
 		else begin
@@ -219,7 +213,10 @@ module sdram_a2 (
 		.phasedone ()                                    //     phasedone_conduit.export
 	);
 	`else
-	assign altpll_0_c0_clk = clk_clk;
+
+	always_ff @(posedge clk_clk or negedge clk_clk) begin
+		altpll_0_c0_clk <= #17 clk_clk;
+	end
 	`endif
 
 	altera_reset_controller #(

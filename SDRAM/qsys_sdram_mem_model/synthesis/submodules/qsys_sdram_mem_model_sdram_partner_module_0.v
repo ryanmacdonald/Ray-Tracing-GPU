@@ -152,7 +152,7 @@ initial
           rd_mask_pipe_1 <= rd_mask_pipe_0;
           rd_mask_pipe_0 <= dqm;
         end
-    end
+	    end
 
 
   assign read_temp[7 : 0] = mask[0] ? 8'bz : read_data[7 : 0];
