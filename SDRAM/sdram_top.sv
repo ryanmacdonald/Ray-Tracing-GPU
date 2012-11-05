@@ -7,17 +7,23 @@
 // the transaction is done, the sdram asserts a valid
 // signal to the given cache.
 
-module sdram(
+module memory_request_arbiter(
 	     // Interface from caches to SDRAM controller
+	     // Read Interface
 	     input  logic[`numcaches-1:0][24:0] addr_cache_to_sdram,
-	     input  logic[`numcaches-1:0][31:0] writeData,
 	     input  logic[`numcaches-1:0][$clog2(`maxTrans)-1:0] transSize,
-	     input  logic[`numcaches-1:0] readReq, writeReq,
-	     input  logic clk, rst,	
-
+	     input  logic[`numcaches-1:0] readReq,
 	     output logic[`numcaches-1:0] readValid_out,
 	     output logic[`numcaches-1:0][31:0] readData,
-	     output logic[`numcaches-1:0] doneRead, doneWrite,
+	     output logic[`numcaches-1:0] doneRead,
+
+	     // Write Interface
+	     input  logic[24:0] addr_sl_to_sdram,
+	     input  logic[31:0] writeData,
+	     input logic  writeReq,
+	     output logic doneWrite,
+	
+	     input  logic clk, rst,
 
 	     // Interface from SDRAM controller to SDRAM chip
 	     output wire  [ 12: 0] zs_addr,
@@ -51,7 +57,7 @@ module sdram(
 	ff_ar_en #($clog2(`numcaches),0) cp(.q(currC),.d(nextC),.en(~busy),.clk,.rst);
 	
 	// Transaction counter
-	assign nextCnt = (doneRead[currC] || doneWrite[currC]) ? 6'b0 : cnt + 6'b1;
+	assign nextCnt = (doneRead[currC] || doneWrite) ? 6'b0 : cnt + 6'b1;
 	ff_ar_en #($clog2(`maxTrans),0) tc(.q(cnt),.d(nextCnt),.en(inc),.clk,.rst);	
 
 	assign size = transSize[currC];
@@ -68,12 +74,12 @@ module sdram(
 					addr_in = addr_cache_to_sdram[currC];
 					nextState = READ;
 				end
-				else if(writeReq[currC]) begin
+				else if(writeReq) begin
 					$display("IDLE case 2\n");
 					inc = 1;
 					write = 1;
-					addr_in = addr_cache_to_sdram[currC];
-					data_in = writeData[currC];
+					addr_in = addr_sl_to_sdram;
+					data_in = writeData;
 					nextState = WRITE;
 				end
 				else begin
@@ -106,14 +112,14 @@ module sdram(
 				end
 			end
 			WRITE:begin
-				addr_in = addr_cache_to_sdram[currC];
-				data_in = writeData[currC];
+				addr_in = addr_sl_to_sdram;
+				data_in = writeData;
 				inc = 1;
-				// Cannot support writes > 2 right now
-				if(cnt == transSize[currC]) begin
+				// Cannot support write 1 word now
+				if(cnt == 1) begin
 					busy = 0;
 					$display("WRITE case 1\n");
-					doneWrite[currC] = 1;
+					doneWrite = 1;
 					nextState = IDLE;
 				end
 				else begin
@@ -130,4 +136,4 @@ module sdram(
 		else state <= nextState;
 	end
 
-endmodule: sdram
+endmodule: memory_request_arbiter
