@@ -4,10 +4,12 @@ module scene_loader(
     output logic [24:0] sl_addr, // SDRAM width
     output logic [31:0] sl_io, // SDRAM width
     output logic sl_we,
+    output logic sl_done,
     input logic [7:0] xmodem_data_byte,
     input logic [7:0] sl_block_num,
     input logic xmodem_saw_valid_msg_byte,
     input logic xmodem_saw_valid_block,
+    input logic xmodem_done,
     input logic clk, rst
 );
 
@@ -18,6 +20,8 @@ module scene_loader(
     logic [7:0] data_reg0, data_reg1, data_reg2;
 
     logic [11:0] meta_block_num; // 8 + 5 = 13. 25 - 13 = 12.
+
+    assign sl_done = xmodem_done;
 
     logic en_dr0, en_dr1, en_dr2, send;
     assign en_dr0 = (byte_cnt[1:0] == 2'b00);

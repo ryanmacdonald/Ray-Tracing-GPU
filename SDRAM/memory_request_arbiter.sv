@@ -18,7 +18,7 @@ module memory_request_arbiter(
 	     output logic[`numcaches-1:0] doneRead,
 
 	     // Write Interface
-	     input  logic[24:0] addr_sl_to_sdram,
+	     input  logic[24:0] sl_addr,
 	     input  logic[31:0] writeData,
 	     input logic  writeReq,
 	     output logic doneWrite,
@@ -69,21 +69,21 @@ module memory_request_arbiter(
 		case(state)		
 			IDLE:begin
 				if(readReq[currC]) begin
-					$display("IDLE case 1\n");
+//					$display("IDLE case 1\n");
 					read = 1;
 					addr_in = addr_cache_to_sdram[currC];
 					nextState = READ;
 				end
 				else if(writeReq) begin
-					$display("IDLE case 2\n");
+//					$display("IDLE case 2\n");
 					inc = 1;
 					write = 1;
-					addr_in = addr_sl_to_sdram;
+					addr_in = sl_addr;
 					data_in = writeData;
 					nextState = WRITE;
 				end
 				else begin
-					$display("IDLE case 3\n");
+//					$display("IDLE case 3\n");
 					busy = 0;
 					nextState = IDLE;	
 				end
@@ -92,38 +92,39 @@ module memory_request_arbiter(
 				addr_in = addr_cache_to_sdram[currC];
 				// Send a word to the cache
 				// readyReady means a valid word is coming from the controller
-				if(readValid) begin
-					$display("READ case 1\n");
+				if(cnt == transSize[currC]) begin
+//					$display("READ case 2\n");
+					inc = 1;
+					busy = 0;
+					doneRead[currC] = 1;
+					nextState = IDLE;	
+				end
+				else if(readValid) begin
+//					$display("READ case 1\n");
 					readValid_out[currC] = 1;
 					readData[currC] = za_data;
 					inc = 1;
 					nextState = READ;
 				end
 				// Go back to the IDLE state
-				else if(cnt == transSize[currC]) begin
-					$display("READ case 2\n");
-					busy = 0;
-					doneRead[currC] = 1;
-					nextState = IDLE;	
-				end
 				else begin 	
-					$display("READ case 3\n");
+//					$display("READ case 3\n");
 					nextState = READ;
 				end
 			end
 			WRITE:begin
-				addr_in = addr_sl_to_sdram;
+				addr_in = sl_addr;
 				data_in = writeData;
 				inc = 1;
 				// Cannot support write 1 word now
 				if(cnt == 1) begin
 					busy = 0;
-					$display("WRITE case 1\n");
+//					$display("WRITE case 1\n");
 					doneWrite = 1;
 					nextState = IDLE;
 				end
 				else begin
-					$display("WRITE case 2\n");
+//					$display("WRITE case 2\n");
 					nextState = WRITE;
 				end
 			end

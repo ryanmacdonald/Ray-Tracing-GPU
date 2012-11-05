@@ -8,6 +8,7 @@ module frame_buffer_handler(
     // sram interface
     output logic sram_oe_b,
     output logic sram_we_b,
+    output logic sram_ce_b,
     output logic [19:0] sram_addr,
     inout wire [15:0] sram_io,
     output logic sram_ub_b, sram_lb_b,
@@ -24,6 +25,8 @@ module frame_buffer_handler(
     logic sram_re_b;
     assign sram_oe_b = sram_re_b;
 
+    assign sram_ce_b = 1'b0;
+
     logic [19:0] writer_addr, reader_addr;
     logic [15:0] writer_data, reader_data;
     logic writer_ub, writer_lb;
@@ -31,8 +34,8 @@ module frame_buffer_handler(
 
     assign reader_data = sram_io;
 
-    assign reader_ub = 1'b0;
-    assign reader_lb = 1'b0;
+    assign reader_ub = 1'b1;
+    assign reader_lb = 1'b1;
 
     assign sram_io = (~sram_we_b) ? writer_data : 16'bz;
     assign sram_addr = (~sram_re_b) ? reader_addr : writer_addr;
@@ -66,10 +69,10 @@ module fbh_writer(
     assign pb_re = second_write & ~sram_we_b;
 
     color_t pb_pixel;
-    ray_info_t pb_PID;
+    pixel_buffer_entry_t pb_PID;
     logic [18:0] PID_addr0, PID_addr1;
     assign pb_pixel = pb_data.color;
-    assign pb_PID = pb_data.ray_info.rayID;
+    assign pb_PID = pb_data.pixelID.pixelID;
 
     assign PID_addr0 = pb_PID + (pb_PID >> 1'b1);
     assign PID_addr1 = PID_addr0+1'b1;

@@ -5,6 +5,13 @@
 `define FP_1 32'h3F80_0000
 `define FP_0 32'h0
 
+// Number of caches and max read size for memory interface
+`define numcaches 4
+`define maxTrans 64
+
+// Number of primary rays for PRG
+`define num_rays 307200
+
 // Epsilon = 10^-20 for now?
 `define EPSILON 32'h1E3C_E508
 
@@ -60,9 +67,13 @@ typedef struct packed {
 
 } color_t ;
 
+typedef struct packed{
+  logic[18:0] pixelID;
+} pixelID_t;
+
 typedef struct packed {
   color_t color;
-  ray_info_t ray_info;
+  pixelID_t pixelID;
 } pixel_buffer_entry_t;
 
 typedef struct packed {

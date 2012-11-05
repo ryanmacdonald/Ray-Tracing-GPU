@@ -4,7 +4,7 @@
 
 module t32_tb;
 
-	//////////// SIGNAL DECLARATIONS ////////////
+    //////////// SIGNAL DECLARATIONS ////////////
 
     // general IO
     logic [17:0] LEDR;
@@ -52,12 +52,23 @@ module t32_tb;
     logic rst;
     assign rst = ~btns[3]; // for SRAM model
 
-	//////////// MODULE INSTANTIATIONS ////////////
+    //////////// MODULE INSTANTIATIONS ////////////
 
-    t_minus_32_days	t32(.*);
-    sram			sr(.*);
+    t_minus_32_days                                t32(.*);
+    sram                                           sr(.*);
+    qsys_sdram_mem_model_sdram_partner_module_0    dram(.*,
+                                                        .zs_addr(dram_addr),
+                                                        .zs_ba(dram_ba),
+                                                        .zs_cas_n(dram_cas_n),
+                                                        .zs_cke(dram_cke),
+                                                        .zs_cs_n(dram_cs_n),
+                                                        .zs_dq(dram_dq),
+                                                        .zs_dqm(dram_dqm),
+                                                        .zs_ras_n(dram_ras_n),
+                                                        .zs_we_n(dram_we_n),
+                                                        .clk(dram_clk));
 
-	//////////// CLOCK AND RESET INITIAL BLOCK ////////////
+    //////////// CLOCK AND RESET INITIAL BLOCK ////////////
 
     initial begin
         clk <= 1'b0;
@@ -69,19 +80,21 @@ module t32_tb;
         forever #(`CLOCK_PERIOD/2) clk = ~clk;
     end
 
-	//////////// MAIN INITIAL BLOCK ////////////
+    //////////// MAIN INITIAL BLOCK ////////////
 
     int j;
     logic [7:0] message [128];
 
     initial begin
 
-		btns[2:0] <= 3'b111;
-    	rx_pin <= 1'b1;
+	switches[0] <= 1'b0;
 
-        repeat (100) @(posedge clk);
+        btns[2:0] <= 3'b111;
+        rx_pin <= 1'b1;
 
-		// Hit start button
+        repeat (10000) @(posedge clk); // allow DRAM to initialize
+
+    // Hit start button
         @(posedge clk);
         btns[0] <= 1'b0;
         repeat(100) @(posedge clk);
@@ -90,17 +103,17 @@ module t32_tb;
         repeat (100) @(posedge clk);
 
         for(j=0; j<128; j++)
-            message[j] = $random % 8'hFF;
+//            message[j] = $random % 8'hFF;
+            message[j] = j;
 
-        send_block(message,8'd1,1); // send message with error
-
-        repeat (5000) @(posedge clk); // wait for NAK
+//        send_block(message,8'd1,1); // send message with error
+//        repeat (5000) @(posedge clk); // wait for NAK
 
         send_block(message,8'd1,0); // resend message without error
 
         send_EOT();
 
-        repeat (10000) @(posedge clk); // wait for things to finish up
+        repeat (500000) @(posedge clk); // wait for things to finish up
 
         $finish;
     end
@@ -129,9 +142,9 @@ module t32_tb;
             $display("i: %d x: %b %h sum: %b %h",i,x,x,sum,sum);
         end
         if(have_error)
-        	send_byte(sum-1);
+            send_byte(sum-1);
         else
-	        send_byte(sum);
+            send_byte(sum);
 
     endtask: send_block
 

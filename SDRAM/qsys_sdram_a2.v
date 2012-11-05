@@ -58,7 +58,7 @@ module sdram_a2 (
 	//assign LEDs = reg_data;
 	
 	assign reg_data_next = (za_valid) ? za_data[7:0] : reg_data;
-	ff_ar #(8,8'b0) za_data_reg(.q(reg_data), .d(reg_data_next), .clk(clk_clk), .rst_b(reset_reset_n));
+	ff_ar #(8,8'b0) za_data_reg(.q(reg_data), .d(reg_data_next), .clk(clk_clk), .rst(~reset_reset_n));
 
 	//wire    altpll_0_c0_clk;                    // altpll_0:c0 -> [rst_controller:clk, sdram_0:clk]
 	wire    rst_controller_reset_out_reset;     // rst_controller:reset_out -> sdram_0:reset_n
@@ -174,6 +174,13 @@ module sdram_a2 (
 	end
 		
 
+	// NOTE: this is a hack to make za_valid coincide with za_data during simulation
+	logic za_valid_pre_ff;
+	`ifdef SYNTH
+	assign za_valid = za_vaid_pre_ff;
+	`else
+	ff_ar #(1,1'b0) za_valid_ff(.q(za_valid), .d(za_valid_pre_ff), .clk(clk_clk), .rst(~reset_reset_n));
+	`endif 
 
 	qsys_sdram_a2_sdram_0 sdram_0 (
 		.clk            (clk_clk),                 //   clk.clk
@@ -185,7 +192,7 @@ module sdram_a2 (
 		.az_rd_n        (re_n),                                //      .read_n
 		.az_wr_n        (we_n),                                //      .write_n
 		.za_data        (za_data),                                //      .readdata
-		.za_valid       (za_valid),                                //      .readdatavalid
+		.za_valid       (za_valid_pre_ff),                         //      .readdatavalid
 		.za_waitrequest (za_waitrequest),                                //      .waitrequest
 		.zs_addr        (zs_addr),                                //  wire.export
 		.zs_ba          (zs_ba),                                //      .export
@@ -214,8 +221,10 @@ module sdram_a2 (
 	);
 	`else
 
+	// SKETCHY AS FUCK
+	// #delay is totally hacked to make za_valid coincide with za_data
 	always_ff @(posedge clk_clk or negedge clk_clk) begin
-		altpll_0_c0_clk <= #17 clk_clk;
+		altpll_0_c0_clk <= #0 clk_clk;
 	end
 	`endif
 
@@ -268,34 +277,5 @@ module sdram_a2 (
 		.reset_in14 (1'b0),                               // (terminated)
 		.reset_in15 (1'b0)                                // (terminated)
 	);
-
-endmodule
-
-
-module ff_ar #(parameter W=1, RV={W{1'b0}})
-	(output reg [W-1:0] q,
-	 input wire [W-1:0] d,
-	 input wire clk,
-	 input wire rst_b);
-
-	always @(posedge clk, negedge rst_b) begin
-		if(~rst_b)
-			q <= RV;
-		else
-			q <= d;
-	end
-
-endmodule
-
-module negedge_detector(
-	output wire ed,
-	input wire in,
-	input wire clk,
-	input wire rst_b
-);
-
-	wire ff_q;
-	assign ed = ff_q & ~in;
-	ff_ar #(1, 1'b0) in_ff(.q(ff_q), .d(in), .clk(clk), .rst_b(rst_b));
 
 endmodule
