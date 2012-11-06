@@ -15,6 +15,56 @@
 // Epsilon = 10^-20 for now?
 `define EPSILON 32'h1E3C_E508
 
+////////////////////// Defines for XMODEM //////////////////////
+`define CLK_FREQ        50000000
+//`define BAUD_RATE       115200
+`ifdef SYNTH
+    `define XM_CYC_PER_BIT     9'd434 // TODO: define in terms of CLK_FREQ and BAUD
+`else
+    `define XM_CYC_PER_BIT     9'd30 // TODO: define in terms of CLK_FREQ and BAUD
+`endif
+
+`define XM_NUM_SAMPLES     4'd10
+
+`define XM_MAX_RETRY       4'd10
+`define XM_NUM_CYC_TIMEOUT (10*`CLK_FREQ)
+
+`define SOH 8'h01
+`define EOT 8'h04
+
+`define ACK 8'h06
+`define NAK 8'h15
+////////////////////// End of Defines for XMODEM //////////////////////
+
+
+////////////////////// Defines for VGA //////////////////////
+`ifdef SYNTH
+	`define VGA_NUM_ROWS        10'd480
+	`define VGA_NUM_COLS        10'd640
+`else // use a very low resolution in simulation
+	`define VGA_NUM_ROWS        10'd9
+	`define VGA_NUM_COLS        10'd12
+`endif
+
+// following in terms of 25 MHz clock
+`define VGA_HS_TDISP        `VGA_NUM_COLS
+`define VGA_HS_TPW          10'd96
+`define VGA_HS_TFP          10'd16
+`define VGA_HS_TBP          10'd48
+`define VGA_HS_OFFSET      (`VGA_HS_TPW + `VGA_HS_TBP)
+`define VGA_HS_TS           (`VGA_HS_OFFSET+`VGA_HS_TDISP+`VGA_HS_TFP)
+
+// following in terms of lines
+`define VGA_VS_TDISP        `VGA_NUM_ROWS
+`define VGA_VS_TPW          10'd2
+`define VGA_VS_TFP          10'd10
+`define VGA_VS_TBP          10'd29
+`define VGA_VS_OFFSET      (`VGA_VS_TPW + `VGA_VS_TBP)
+`define VGA_VS_TS           (`VGA_VS_OFFSET+`VGA_VS_TDISP+`VGA_VS_TFP)
+
+`define VGA_CYC25_PER_SCREEN  1*(`VGA_VS_TS * `VGA_HS_TS) // 1* to cast as 32 bit integer
+////////////////////// End of Defines for VGA //////////////////////
+
 typedef struct packed {
   logic sign;
   logic [7:0] exp;
@@ -290,7 +340,7 @@ typedef struct packed {
 } icache_to_int_t ;
 
 typedef struct packed {
-	ray_vec_t ray_vec;
+    ray_vec_t ray_vec;
 } pcalc_to_rs_t;
 
 
@@ -306,12 +356,12 @@ typedef struct packed {
 } int_to_list_t ;
 
 typedef struct packed {
-	ray_info_t ray_info;
+    ray_info_t ray_info;
 } list_to_rs_t;
 
 typedef struct packed {
-	ray_info_t ray_info;
-	ray_vec_t ray_vec;
+    ray_info_t ray_info;
+    ray_vec_t ray_vec;
 } rs_to_pcalc_t;
 
 /*

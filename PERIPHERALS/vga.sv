@@ -1,10 +1,12 @@
 `default_nettype none
 
+// NOTE: see structs file for defines
+
 module vga(
     output logic display_done,
     output logic HS, VS,
-	output logic VGA_clk,
-	output logic VGA_blank,
+    output logic VGA_clk,
+    output logic VGA_blank,
     output logic [9:0] vga_row,
     output logic [9:0] vga_col,
     output logic clk_25M,
@@ -34,25 +36,25 @@ module vga(
         if(rst)    clk_25M <= 1'b0;
         else        clk_25M <= ~clk_25M;
     end
-	 
-	 logic HS_porch_b, VS_porch_b;
-	 range_check #(10) VS_portch_rc(.is_between(VS_porch_b), .val(vga_row), .low(10'd0), .high(10'd479));
-	 range_check #(10) HS_portch_rc(.is_between(HS_porch_b), .val(vga_col), .low(10'd0), .high(10'd639));
 
-	 assign VGA_blank = ~(~HS_porch_b | ~VS_porch_b);
-	 assign VGA_clk = ~clk_50M; // asserted low
+    logic HS_porch_b, VS_porch_b;
+    range_check #(10) VS_portch_rc(.is_between(VS_porch_b), .val(vga_row), .low(10'd0), .high(`VGA_NUM_ROWS-1'b1));
+    range_check #(10) HS_portch_rc(.is_between(HS_porch_b), .val(vga_col), .low(10'd0), .high(`VGA_NUM_COLS-1'b1));
 
-    vga_counter #(10,10'd0) clk_counter(.cnt(clk_cnt), .clk(clk_25M), .rst, .up(1'b1), .en(1'b1), .clr(clr_clk));
-    vga_counter #(10,10'd0) line_counter(.cnt(line_cnt), .clk(clk_25M), .rst, .up(1'b1), .en(inc_line), .clr(clr_line));
+    assign VGA_blank = ~(~HS_porch_b | ~VS_porch_b); // asserted low
+    assign VGA_clk = ~clk_50M; // asserted low
 
-    compare #(10) cmp_clk(.eq(inc_line), .aGT(), .bGT(), .a(clk_cnt), .b(10'd799));
-    compare #(10) cmp_line(.eq(max_line), .aGT(), .bGT(), .a(line_cnt), .b(10'd520));
+    counter #(10,10'd0) clk_counter(.cnt(clk_cnt), .clk(clk_25M), .rst, .inc(1'b1), .clr(clr_clk));
+    counter #(10,10'd0) line_counter(.cnt(line_cnt), .clk(clk_25M), .rst, .inc(inc_line), .clr(clr_line));
 
-    range_check #(10) HS_rc(.is_between(HS_b), .val(clk_cnt), .low(10'd0), .high(10'd95));
-    addSub #(10) col_offset(.result(vga_col), .z(), .n(), .a(clk_cnt), .b(10'd144), .add(1'b0));
+    compare #(10) cmp_clk(.eq(inc_line), .aGT(), .bGT(), .a(clk_cnt), .b(`VGA_HS_TS-1'b1));
+    compare #(10) cmp_line(.eq(max_line), .aGT(), .bGT(), .a(line_cnt), .b(`VGA_VS_TS-1'b1));
 
-    range_check #(10) VS_rc(.is_between(VS_b), .val(line_cnt), .low(10'd0), .high(10'd1));
-    addSub #(10) row_offset(.result(vga_row), .z(), .n(), .a(line_cnt), .b(10'd31), .add(1'b0));
+    range_check #(10) HS_rc(.is_between(HS_b), .val(clk_cnt), .low(10'd0), .high(`VGA_HS_TPW-1'b1));
+    addSub #(10) col_offset(.result(vga_col), .z(), .n(), .a(clk_cnt), .b(`VGA_HS_OFFSET), .add(1'b0));
+
+    range_check #(10) VS_rc(.is_between(VS_b), .val(line_cnt), .low(10'd0), .high(`VGA_VS_TPW-1'b1));
+    addSub #(10) row_offset(.result(vga_row), .z(), .n(), .a(line_cnt), .b(`VGA_VS_OFFSET), .add(1'b0));
 
 endmodule
 
@@ -63,6 +65,7 @@ module stripes(
 
     logic black, blue, green, cyan, red, purple, yellow, white;
 
+    // TODO: define stripe widths in terms of defines. Not a priority.
     range_check #(10) black_rc(black,vga_col,10'd0,10'd79);
     range_check #(10) blue_rc(blue,vga_col,10'd80,10'd159);
     range_check #(10) green_rc(green,vga_col,10'd160,10'd239);
@@ -75,22 +78,5 @@ module stripes(
     assign vga_color[2] = red | purple | yellow | white;
     assign vga_color[1] = green | cyan | yellow | white;
     assign vga_color[0] = blue | cyan | purple | white;
-
-endmodule
-
-// TODO: merge with counter in library.sv
-module vga_counter #(parameter W=1, RV={W{1'b0}}) (
-    output logic [W-1:0] cnt,
-    input logic clk, rst,
-    input logic up, en, clr);
-
-    always_ff @(posedge clk, posedge rst) begin
-        if(rst)
-            cnt <= RV;
-        else if(clr)
-            cnt <= RV;
-        else if(en)
-            cnt <= (up) ? cnt + 1'b1 : cnt - 1'b1;
-    end
 
 endmodule

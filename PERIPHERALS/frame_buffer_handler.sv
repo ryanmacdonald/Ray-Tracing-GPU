@@ -82,11 +82,12 @@ module fbh_writer(
     assign writer_lb = pb_PID[0] | first_write;
 
     always_comb begin
-        case({first_write,pb_PID[0]})
-            2'b00: writer_data = {pb_pixel[7:0],8'b0};
-            2'b01: writer_data = pb_pixel[15:0];
-            2'b10: writer_data = pb_pixel[23:8];
-            2'b11: writer_data = {8'b0,pb_pixel[23:16]};
+        case({first_write,pb_PID[0]}) // TODO: get bit 0 of pixelID specifically
+			// chronological order
+            2'b10: writer_data = {pb_pixel.red, pb_pixel.green};
+            2'b00: writer_data = {pb_pixel.blue,  8'b0};
+            2'b11: writer_data = {8'b0,           pb_pixel.red};
+            2'b01: writer_data = {pb_pixel.green, pb_pixel.blue};
         endcase
     end
 
@@ -163,7 +164,7 @@ module fbh_reader(
 
     // pixel reg
     logic [23:0] pixel_reg_q, pixel_reg_d;
-    assign pixel_reg_d = (pixel_mux_sel) ? {b_q[7:0],a_q} : {c_q,b_q[15:8]} ;
+    assign pixel_reg_d = (pixel_mux_sel) ? {a_q, b_q[15:8]} : {b_q[7:0], c_q};
     ff_ar_en #(24,24'd0) pixel_reg(.q(pixel_reg_q), .d(pixel_reg_d), .en(flip_pixel_mux_sel), .clk, .rst);
 
     stripes stripes_inst(.vga_color(stripes_color), .vga_row, .vga_col);
