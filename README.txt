@@ -1,6 +1,13 @@
 Project README
 ========================================
 
+=============SYNTHESIS==================
+In order to synthesize correctly, do the following:
+* Move COMMON files to top of file list in Quartus
+* Uncomment `define SYNTH in structs file
+* Add `default_nettype wire to alt_mf.v (make this permanent?)
+* Comment out any unions (TODO: figure out another solution to unions)
+
 Ray Tracing Algorithm Pseudo-Code
 ========================================
 
