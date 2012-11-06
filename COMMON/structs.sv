@@ -31,10 +31,17 @@ typedef struct packed {
   logic [19:0] ID;
 } triID_t;
 
+typedef struct packed {
+  logic [8:0] ID;
+} rayID_t;
+
+
  // maximum of 512 rays at a time in the pipeline TODO ?? 
 typedef struct packed {
   logic is_occular;
-  logic [8:0] rayID; 
+  logic [2:0] ss_num;
+  logic [1:0] ss_wptr;
+  rayID_t rayID;
 } ray_info_t;
 
 typedef struct packed {
@@ -227,7 +234,7 @@ typedef struct packed {
 } trav_to_ss_t ;
 
 typedef struct packed {
-  ray_info_t ray_info;
+  rayID_t rayID;
   float_t t_max_leaf;
 } trav_to_list_t ;
 
@@ -244,7 +251,6 @@ typedef struct packed {
  // float_t t_max_leaf;
   ln_tri_t ln_tri;
 } leaf_info_t;
-
 
     
 // lcache_to_rs
@@ -284,6 +290,7 @@ typedef struct packed {
 
 
 // int_to_list_t
+// Assuming for now that we only have radiance rays
 typedef struct packed {
   ray_info_t ray_info;
   triID_t triID;
@@ -294,12 +301,22 @@ typedef struct packed {
 
 } int_to_list_t ;
 
+// This is for hits 
 typedef struct packed {
-	ray_info_t ray_info;
+	rayID_t rayID;
+  bari_uv_t uv;
+  float_t t_int;
 } list_to_rs_t;
 
+
 typedef struct packed {
-	ray_info_t ray_info;
+  ray_info_t ray_info;
+  float_t t_max_leaf;
+} list_to_ss;
+
+
+typedef struct packed {
+	rayID_t rayID;
 	ray_vec_t ray_vec;
 } rs_to_pcalc_t;
 

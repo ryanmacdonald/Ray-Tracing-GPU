@@ -39,25 +39,28 @@ module tb_int_unit();
   // Create an arbitrary ray every v0 cycle.
   ray_info_t ray_info;
   vectorf_t A0,B0,C0;
+  int i;
   int_cacheline_t tri_cacheline;
   initial begin
     icache_to_int_data = 'h0;
     icache_to_int_valid = 0;
     ray_info = 0;
-    A0 = create_vecf(0.5, 3, 4);
-    B0 = create_vecf(3.5, 6, 4);
-    C0 = create_vecf(3, 1.5, 4);
+    A0 = create_vecf(0.5, 3,4);
+    B0 = create_vecf(3.5, 6,8);
+    C0 = create_vecf(3, 1.5,4);
 
     tri_cacheline = create_int_cacheline(A0,B0,C0);
     icache_to_int_data.ray_info = 0;
     @(posedge clk);
-    
+    i=0;
     for(shortreal r=0; r<10; r +=1 ) begin
       for(shortreal c=0; c<10; c+=1) begin
+        
         ray_vec_t ray_vec;
-        ray_vec.dir = create_vec(0,0,1);
+        ray_vec.dir = create_vec(0,0,5);
         ray_vec.origin = create_vec(c,r,0);
-        icache_to_int_data.ray_info <= ray_info;
+        icache_to_int_data.ray_info.rayID <= ray_info.rayID;
+        icache_to_int_data.ray_info.is_occular <= 1;
         icache_to_int_data.ray_vec <= ray_vec;
         icache_to_int_data.ln_tri.lindex <= (r*10 + c);
         icache_to_int_data.ln_tri.lnum_left <= c+1;
@@ -73,6 +76,7 @@ module tb_int_unit();
         end
         ray_info.rayID += 1;
       end
+      i++;
     end
     icache_to_int_valid <= 0;
     forever @(posedge clk);
@@ -94,9 +98,9 @@ module tb_int_unit();
 
   always_comb begin
 
-       if(int_to_list_valid && i < 57 ) int_to_list_stall = 1;
+       if(int_to_list_valid && i < 17 ) int_to_list_stall = 1;
       else int_to_list_stall = 0;
-      if(int_to_larb_valid && (i<58)) int_to_larb_stall = 1;
+      if(int_to_larb_valid && (i<28)) int_to_larb_stall = 1;
       else int_to_larb_stall = 0;
   end
 

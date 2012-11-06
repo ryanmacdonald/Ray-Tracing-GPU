@@ -285,7 +285,7 @@ module int_math(
 
   // outputs
   assign hit = out_agb_comp1 & out_agb_comp_ep & ~uv.u.sign & ~uv.v.sign ;
-  // t_int is already register
+  // t_int is already a register
   assign uv = bary_out;
 
   `ifndef SYNTH
