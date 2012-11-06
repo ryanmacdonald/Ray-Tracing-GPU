@@ -1,26 +1,13 @@
 `default_nettype none
 
-`define CLK_FREQ        50000000
-//`define BAUD_RATE       115200
-`define CYC_PER_BIT     9'd434 // TODO: define in terms of CLK_FREQ and BAUD
-`define NUM_SAMPLES     4'd10
-
-`define MAX_RETRY       4'd10
-`define NUM_CYC_TIMEOUT (10*`CLK_FREQ)
-
-`define SOH 8'h01
-`define EOT 8'h04
-
-`define ACK 8'h06
-`define NAK 8'h15
-
-// TODO: block_num needs to be wider than 8 bits
+// NOTE: defines have been moved to structs
+// (so that they can be accessed by testbenches without duplication)
 
 module xmodem(
-    output logic done,
-    output logic saw_valid_block,      // to scene loader
-    output logic saw_valid_msg_byte,       // to scene loader
-    output logic [7:0] data_byte,  // to scene loader
+    output logic xmodem_done,
+    output logic xmodem_saw_valid_block,      // to scene loader
+    output logic xmodem_saw_valid_msg_byte,       // to scene loader
+    output logic [7:0] xmodem_data_byte,  // to scene loader
     output logic [7:0] sl_block_num, // to scene loader
     output logic tx,
     output logic rts,
@@ -28,6 +15,14 @@ module xmodem(
     input logic rx_pin,
     input logic clk, rst
 );
+
+	logic saw_valid_msg_byte;
+	logic saw_valid_block;
+	logic [7:0] data_byte;
+
+	assign xmodem_saw_valid_msg_byte = saw_valid_msg_byte;
+	assign xmodem_saw_valid_block = saw_valid_block;
+	assign xmodem_data_byte = data_byte;
 
     logic start;
     logic rx_ff, rx;
@@ -44,8 +39,11 @@ module xmodem(
     logic saw_EOT_block;
     logic saw_valid_byte;
     logic saw_msg_byte;
+    logic saw_block;
+    logic valid_block;
 
     assign saw_valid_msg_byte = saw_valid_byte & saw_msg_byte;
+    assign saw_valid_block = saw_block && valid_block;
 
     xmodem_bitlevel_fsmd xbitfsmd(.*);
     xmodem_blocklevel_fsmd xblkfsmd(.*);
@@ -145,11 +143,11 @@ module xmodem_bitlevel_datapath(
 );
 
     logic [3:0] sample_cnt;
-    logic [$clog2(`CYC_PER_BIT)-1:0] cycle_cnt;
+    logic [$clog2(`XM_CYC_PER_BIT)-1:0] cycle_cnt;
     logic [8:0] data;
 
-    assign max_samples = (sample_cnt == `NUM_SAMPLES) ? 1'b1 : 1'b0;
-    assign max_cycles = (cycle_cnt == `CYC_PER_BIT) ? 1'b1 : 1'b0;
+    assign max_samples = (sample_cnt == `XM_NUM_SAMPLES) ? 1'b1 : 1'b0;
+    assign max_cycles = (cycle_cnt == `XM_CYC_PER_BIT) ? 1'b1 : 1'b0;
 
     assign data_byte = data[7:0];
     assign valid_byte = data[8];
@@ -158,23 +156,24 @@ module xmodem_bitlevel_datapath(
     shifter #(9) data_sr(.q(data), .d(rx), .en(take_sample), .clr(1'b0), .clk, .rst);
     counter #(4,4'b0) sample_counter(.cnt(sample_cnt), .inc(take_sample), .clr(clr_sample_cnt), .clk, .rst);
 
-    logic [$clog2(`CYC_PER_BIT)-1:0] next_cycle_cnt;
+    logic [$clog2(`XM_CYC_PER_BIT)-1:0] next_cycle_cnt;
 
     always_comb begin
         if(clr_cycle_cnt)
             next_cycle_cnt = 'b0;
         else if(init_cycle_cnt)
-            next_cycle_cnt = `CYC_PER_BIT >> 1'b1;
+            next_cycle_cnt = `XM_CYC_PER_BIT >> 1'b1;
         else
             next_cycle_cnt = cycle_cnt + 1'b1;
     end
 
-    ff_ar #($clog2(`CYC_PER_BIT), 'b0) cycle_counter(.q(cycle_cnt), .d(next_cycle_cnt), .clk, .rst);
+    ff_ar #($clog2(`XM_CYC_PER_BIT), 'b0) cycle_counter(.q(cycle_cnt), .d(next_cycle_cnt), .clk, .rst);
 
 endmodule: xmodem_bitlevel_datapath
 
 module xmodem_blocklevel_fsmd(
-    output logic saw_valid_block,
+    output logic saw_block,
+    output logic valid_block,
     output logic saw_EOT_block,
     output logic saw_msg_byte,
     output logic [7:0] sl_block_num,
@@ -188,7 +187,7 @@ module xmodem_blocklevel_fsmd(
           en_block_num_err_ff,
           inc_byte_cnt_and_chksum,
           saw_SOH_byte, saw_EOT_byte,
-          saw_128_bytes, saw_block;
+          saw_128_bytes;
 
     xmodem_blocklevel_fsm blkf(.*);
     xmodem_blocklevel_datapath blkd(.*);
@@ -263,7 +262,7 @@ endmodule: xmodem_blocklevel_fsm
 module xmodem_blocklevel_datapath(
     output logic saw_SOH_byte, saw_EOT_byte,
                  saw_128_bytes,
-                 saw_valid_block,
+                 valid_block,
     output logic [7:0] sl_block_num,
     input logic saw_block,
     input logic clr_byte_cnt_and_chksum,
@@ -274,7 +273,6 @@ module xmodem_blocklevel_datapath(
     input logic clk, rst
 );
 
-	logic valid_block;
     logic block_num_err;
     logic chksum_err;
 
@@ -299,7 +297,6 @@ module xmodem_blocklevel_datapath(
     assign chksum_err = (chksum != data_byte) ? 1'b1 : 1'b0;
 
     assign valid_block = ~block_num_err & ~chksum_err;
-    assign saw_valid_block = saw_block && valid_block;
 
     always_comb begin
         if(clr_byte_cnt_and_chksum)
@@ -312,7 +309,7 @@ module xmodem_blocklevel_datapath(
     ff_ar #(8,8'b0) chksum_reg(.q(chksum), .d(next_chksum), .clk, .rst);
 
     ff_ar_en #(8,8'h01) block_num_reg(.q(block_num), .d(data_byte), .en(ld_block_num), .clk, .rst);
-    ff_ar_en #(8,8'h00) prev_block_num_reg(.q(prev_block_num), .d(block_num), .en(saw_valid_block), .clk, .rst);
+    ff_ar_en #(8,8'h00) prev_block_num_reg(.q(prev_block_num), .d(block_num), .en(saw_block & valid_block), .clk, .rst);
 
     ff_ar_en #(1,1'b0) block_num_err_ff(.q(block_num_err), .d(block_num_err_comb), .en(en_block_num_err_ff), .clk, .rst);
     counter #(7) byte_counter(.cnt(byte_cnt), .clr(clr_byte_cnt_and_chksum), .inc(inc_byte_cnt_and_chksum), .clk, .rst);
@@ -321,9 +318,9 @@ endmodule: xmodem_blocklevel_datapath
 
 module xmodem_protocol_fsmd(
     output logic send_ACK, send_NAK,
-    output logic done,
+    output logic xmodem_done,
     input logic start,
-    input logic saw_valid_block, saw_EOT_block,
+    input logic saw_block, valid_block, saw_EOT_block,
     input logic clk, rst
 );
 
@@ -344,7 +341,7 @@ endmodule: xmodem_protocol_fsmd
 module xmodem_protocol_fsm(
     output logic send_ACK,
     output logic send_NAK,
-    output logic done,
+    output logic xmodem_done,
     output logic inc_timeout_NAK_cnt,
     output logic inc_NAK_timer,
     output logic inc_invalid_NAK_cnt,
@@ -352,7 +349,7 @@ module xmodem_protocol_fsm(
     output logic clr_invalid_NAK_cnt,
     output logic clr_NAK_timer,
     input logic start,
-    input logic saw_valid_block, saw_EOT_block, timeout,
+    input logic saw_block, valid_block, saw_EOT_block, timeout,
     input logic time_for_NAK,
     input logic clk, rst
 );
@@ -388,7 +385,7 @@ module xmodem_protocol_fsm(
         clr_invalid_NAK_cnt = 1'b0;
         clr_NAK_timer = 1'b0;
 
-        done = saw_EOT_block;
+        xmodem_done = saw_EOT_block;
 
         case(curr_state)
             A: begin
@@ -402,16 +399,16 @@ module xmodem_protocol_fsm(
                     inc_timeout_NAK_cnt = 1'b1;
                     clr_NAK_timer = 1'b1;
                 end
-                else if(~saw_valid_block) begin
+                else if(~(saw_block & valid_block)) begin
                     inc_NAK_timer = 1'b1;
                 end
 
-                if(saw_valid_block) begin
+                if(saw_block & valid_block) begin
                     send_ACK = 1'b1;
                     clr_timeout_NAK_cnt = 1'b1;
                     clr_invalid_NAK_cnt = 1'b1;
                 end
-                if(saw_valid_block) begin
+                if(saw_block & ~valid_block) begin
                     send_NAK = 1'b1;
                     inc_invalid_NAK_cnt = 1'b1;
                 end
@@ -433,16 +430,16 @@ module xmodem_protocol_datapath(
     input logic clk, rst
 );
 
-    logic [$clog2(`NUM_CYC_TIMEOUT)-1:0] NAK_timer;
-    logic [$clog2(`MAX_RETRY)-1:0] timeout_NAK_cnt;
-    logic [$clog2(`MAX_RETRY)-1:0] invalid_NAK_cnt;
+    logic [$clog2(`XM_NUM_CYC_TIMEOUT)-1:0] NAK_timer;
+    logic [$clog2(`XM_MAX_RETRY)-1:0] timeout_NAK_cnt;
+    logic [$clog2(`XM_MAX_RETRY)-1:0] invalid_NAK_cnt;
 
-    assign time_for_NAK = (NAK_timer == `NUM_CYC_TIMEOUT) ? 1'b1 : 1'b0;
-    assign timeout = (timeout_NAK_cnt == `MAX_RETRY) || (invalid_NAK_cnt == `MAX_RETRY) ? 1'b1 : 1'b0;
+    assign time_for_NAK = (NAK_timer == `XM_NUM_CYC_TIMEOUT) ? 1'b1 : 1'b0;
+    assign timeout = (timeout_NAK_cnt == `XM_MAX_RETRY) || (invalid_NAK_cnt == `XM_MAX_RETRY) ? 1'b1 : 1'b0;
 
-    counter #($clog2(`MAX_RETRY)) timeout_counter(.cnt(timeout_NAK_cnt), .clr(clr_timeout_NAK_cnt), .inc(inc_timeout_NAK_cnt), .clk, .rst);
-    counter #($clog2(`MAX_RETRY)) invalid_counter(.cnt(invalid_NAK_cnt), .clr(clr_invalid_NAK_cnt), .inc(inc_invalid_NAK_cnt), .clk, .rst);
-    counter #($clog2(`NUM_CYC_TIMEOUT)) NAK_timer_counter(.cnt(NAK_timer), .clr(clr_NAK_timer), .inc(inc_NAK_timer), .clk, .rst);
+    counter #($clog2(`XM_MAX_RETRY)) timeout_counter(.cnt(timeout_NAK_cnt), .clr(clr_timeout_NAK_cnt), .inc(inc_timeout_NAK_cnt), .clk, .rst);
+    counter #($clog2(`XM_MAX_RETRY)) invalid_counter(.cnt(invalid_NAK_cnt), .clr(clr_invalid_NAK_cnt), .inc(inc_invalid_NAK_cnt), .clk, .rst);
+    counter #($clog2(`XM_NUM_CYC_TIMEOUT)) NAK_timer_counter(.cnt(NAK_timer), .clr(clr_NAK_timer), .inc(inc_NAK_timer), .clk, .rst);
 
 endmodule: xmodem_protocol_datapath
 
@@ -529,7 +526,7 @@ module xmodem_transmitter_datapath(
     input logic clk, rst
 );
 
-    logic [$clog2(`CYC_PER_BIT)-1:0] cyc_cnt;
+    logic [$clog2(`XM_CYC_PER_BIT)-1:0] cyc_cnt;
     logic [3:0] bit_cnt;
     logic [9:0] ACK_bits;
     logic [9:0] NAK_bits;
@@ -537,13 +534,13 @@ module xmodem_transmitter_datapath(
 
     assign tx = (ACK_or_NAK == 1'b1) ? ACK_bits[0] : NAK_bits[0];
 
-    assign bit_sent = (cyc_cnt == `CYC_PER_BIT) ? 1'b1 : 1'b0;
+    assign bit_sent = (cyc_cnt == `XM_CYC_PER_BIT) ? 1'b1 : 1'b0;
     assign byte_sent = (bit_cnt == 4'd10) ? 1'b1 : 1'b0;
 
     ff_ar_en #(1,1'b0) ACK_or_NAK_ff(.q(ACK_or_NAK), .d(send_ACK), .en(ld_ACK_or_NAK_ff), .clk, .rst);
     shifter #(10,{`ACK,1'b0,1'b1}) ACK_sr(.q(ACK_bits), .d(ACK_bits[0]), .en(rot_and_inc_bit_cnt), .clr(1'b0), .clk, .rst);
     shifter #(10,{`NAK,1'b0,1'b1}) NAK_sr(.q(NAK_bits), .d(NAK_bits[0]), .en(rot_and_inc_bit_cnt), .clr(1'b0), .clk, .rst);
-    counter #($clog2(`CYC_PER_BIT)) cyc_counter(.cnt(cyc_cnt), .clr(clr_cyc_cnt), .inc(inc_cyc_cnt), .clk, .rst);
+    counter #($clog2(`XM_CYC_PER_BIT)) cyc_counter(.cnt(cyc_cnt), .clr(clr_cyc_cnt), .inc(inc_cyc_cnt), .clk, .rst);
     counter #(4) bit_counter(.cnt(bit_cnt), .clr(clr_bit_cnt), .inc(rot_and_inc_bit_cnt), .clk, .rst);
 
 endmodule: xmodem_transmitter_datapath

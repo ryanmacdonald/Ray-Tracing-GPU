@@ -10,6 +10,9 @@ default: trtr.sv
 trtr:
 	$(CC) $(FLAGS) -top trtr_tb COMMON/*v COMMON/altfp*/*.v RAYTRACER/int/* PRG/*v TBs/trtr_tb.sv PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv trtr.sv 
 
+t32:
+	$(CC) $(FLAGS) -top t32_tb COMMON/*v COMMON/altfp*/*.v TBs/t32_tb.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v SDRAM/submodules/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/temporary_scene_retriever.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv t32.sv
+
 raystore:
 	$(CC) $(FLAGS) -top raystore_tb COMMON/*v COMMON/altfp*/*.v RAYTRACER/raystore/*v PRG/*v
 
@@ -57,7 +60,7 @@ camera:
 	$(CC) $(FLAGS) -top tb_camera COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v CAMERA/*.sv
 
 sdram:
-	$(CC) $(FLAGS) -top top COMMON/*v SDRAM/* SDRAM/submodules/* SDRAM/qsys_sdram_mem_model/synthesis/submodules/* 
+	$(CC) $(FLAGS) -top top COMMON/*v SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v
 
 
 

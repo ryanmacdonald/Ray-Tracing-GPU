@@ -2,6 +2,8 @@
 `define maxTrans 64
 
 
+`timescale 1ns / 1ps
+
 module top();
 
 	logic clk, rst_l, read_l, write_l;
@@ -16,7 +18,7 @@ module top();
 		rst_l <= 0;
 		@(posedge clk);
 		rst_l <= 1;
-		@(posedge clk);
+		repeat(100000) @(posedge clk);
 		write_l <= 0;
 		@(posedge clk);
 		write_l <= 1;
@@ -35,7 +37,7 @@ module top();
 
 	end
 
-	always #5 clk = ~clk;
+	always #10 clk = ~clk;
 
 endmodule: top
 
@@ -67,19 +69,23 @@ module trans_model(input logic clk, rst_l,
 
 	     // Interface from caches to SDRAM controller
 	     logic[`numcaches-1:0][24:0] addr_cache_to_sdram;
-	     logic[`numcaches-1:0][31:0] writeData;
+	     logic[24:0] addr_sl_to_sdram;
+	     logic[31:0] writeData;
 	     logic[`numcaches-1:0][$clog2(`maxTrans)-1:0] transSize;
-	     logic[`numcaches-1:0] readReq, writeReq;
+	     logic[`numcaches-1:0] readReq;
+	     logic  writeReq;
 
 	     logic[`numcaches-1:0] readValid_out;
 	     logic[`numcaches-1:0][31:0] readData;
-	     logic[`numcaches-1:0] doneRead, doneWrite;
+	     logic[`numcaches-1:0] doneRead;
+	     logic doneWrite;
 						
-		  sdram mem(.*);
+		  memory_request_arbiter mra(.*);
 		  qsys_sdram_mem_model_sdram_partner_module_0 model(.clk(clk),.*);
 	
 			always_comb begin
 				addr_cache_to_sdram[0] = 25'hA5A5A5;
+				addr_sl_to_sdram = 25'hA5A5A5;
 				writeData  = 'h0;
 				transSize = 'h0;
 				writeReq = 'h0;
@@ -98,16 +104,15 @@ module trans_model(input logic clk, rst_l,
 						else nextState = IDLE;
 					end
 					WRITE1:begin	
-						writeReq[2'b0] = 1;
-						transSize[2'b0] = 2;
-						writeData[2'b0] = 32'hDEADBEEF;
+						writeReq = 1;
+						transSize = 2;
+						writeData = 32'hDEADBEEF;
 						nextState = WRITE2;
 					end
 					WRITE2:begin
-						writeReq[2'b0] = 1;
-						transSize[2'b0] = 1;
-						writeData[2'b0] = 32'hFEEDBABE;
-						if(doneWrite[2'b0] == 1) nextState = IDLE;
+						writeReq = 1;	
+						writeData = 32'hFEEDBABE;
+						if(doneWrite == 1) nextState = IDLE;
 						else nextState = WRITE2;
 					end
 					READ1:begin
