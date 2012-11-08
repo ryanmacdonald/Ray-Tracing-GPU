@@ -101,12 +101,15 @@ module int_unit(
   leaf_info_t larb_fifo_in, larb_fifo_out;
   
   logic is_last;
+  logic is_occ_hit;
+  assign is_occ_hit = int_pipe_out.ray_info.is_occular & hit & t_int_lt1;
+
   assign is_last = (int_pipe_out.ln_tri.lnum_left == 0) ;
   
   always_comb begin
     list_fifo_in.ray_info = int_pipe_out.ray_info;
     list_fifo_in.triID = int_pipe_out.triID;
-    list_fifo_in.hit = hit;
+    list_fifo_in.hit = hit | is_occ_hit;
     list_fifo_in.is_last = is_last ;
     list_fifo_in.t_int = t_int;
     list_fifo_in.uv = uv;
@@ -124,7 +127,7 @@ module int_unit(
   `endif
 
   assign list_wrreq = pipe_ds_valid & (hit | is_last);
-  assign larb_wrreq = pipe_ds_valid & (~is_last);
+  assign larb_wrreq = pipe_ds_valid & (~is_last) & (~is_occ_hit);
 
   altbramfifo_w144_d45 list_fifo(
 	.clock (clk),

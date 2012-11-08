@@ -55,7 +55,9 @@ module temporary_scene_retriever(input logic clk, rst,
 					else begin
 						//$display("3");
 						inc = 1;
-						pbData.color = readData[23:0];
+						pbData.color.red = readData[7:0];
+						pbData.color.green = readData[15:8];
+						pbData.color.blue = readData[23:16];
 						pbData.pixelID = cnt;
 						pb_we = 1;
 						nextState = ACTIVE;

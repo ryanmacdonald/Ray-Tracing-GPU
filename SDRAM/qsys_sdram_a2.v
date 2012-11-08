@@ -174,9 +174,9 @@ module sdram_a2 (
 		
 
 	// NOTE: this is a hack to make za_valid coincide with za_data during simulation
-	logic za_valid_pre_ff;
+	wire za_valid_pre_ff;
 	`ifdef SYNTH
-	assign za_valid = za_vaid_pre_ff;
+	assign za_valid = za_valid_pre_ff;
 	`else
 	ff_ar #(1,1'b0) za_valid_ff(.q(za_valid), .d(za_valid_pre_ff), .clk(clk_clk), .rst(~reset_reset_n));
 	`endif 
@@ -222,7 +222,7 @@ module sdram_a2 (
 
 	// SKETCHY AS FUCK
 	// #delay is totally hacked to make za_valid coincide with za_data
-	always_ff @(posedge clk_clk or negedge clk_clk) begin
+	always @(clk_clk) begin // used to be posedge or negedge
 		altpll_0_c0_clk <= #0 clk_clk;
 	end
 	`endif

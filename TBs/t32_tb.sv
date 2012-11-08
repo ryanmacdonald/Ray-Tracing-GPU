@@ -106,6 +106,8 @@ module t32_tb;
 //            message[j] = $random % 8'hFF;
             message[j] = j;
 
+//		message[0:15] =  'h1000_1a1a_1100_1b1b_1600_1f1f_1a00_2323;
+
 //        send_block(message,8'd1,1); // send message with error
 //        repeat (5000) @(posedge clk); // wait for NAK
 
@@ -113,7 +115,8 @@ module t32_tb;
 
         send_EOT();
 
-        repeat (500000) @(posedge clk); // wait for things to finish up
+		repeat(`VGA_CYC25_PER_SCREEN*2) @(posedge clk);
+		repeat(100) @(posedge clk);
 
         $finish;
     end
@@ -150,16 +153,16 @@ module t32_tb;
 
     task send_byte(input [7:0] data);
 
-        repeat(434) @(posedge clk);
+        repeat(`XM_CYC_PER_BIT) @(posedge clk);
 
         rx_pin <= 1'b0; // indicates start
 
         for(j=0; j<8; j++) begin
-            repeat(434) @(posedge clk);
+            repeat(`XM_CYC_PER_BIT) @(posedge clk);
             rx_pin <= data[j]; // first data bit
         end
 
-        repeat(434) @(posedge clk);
+        repeat(`XM_CYC_PER_BIT) @(posedge clk);
         rx_pin <= 1'b1; // end of byte
 
     endtask: send_byte

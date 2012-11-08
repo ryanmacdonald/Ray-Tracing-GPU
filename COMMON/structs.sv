@@ -1,5 +1,6 @@
 `default_nettype none
 // uncomment the following line when synthesizing to board
+// HEY, YOU!!!! Go check out the README file for all the steps for synthesis (there are multiple)
 // `define SYNTH
 
 `define FP_1 32'h3F80_0000
@@ -14,6 +15,56 @@
 
 // Epsilon = 10^-20 for now?
 `define EPSILON 32'h1E3C_E508
+
+////////////////////// Defines for XMODEM //////////////////////
+`define CLK_FREQ        50000000
+//`define BAUD_RATE       115200
+`ifdef SYNTH
+    `define XM_CYC_PER_BIT     9'd434 // TODO: define in terms of CLK_FREQ and BAUD
+`else
+    `define XM_CYC_PER_BIT     9'd30 // TODO: define in terms of CLK_FREQ and BAUD
+`endif
+
+`define XM_NUM_SAMPLES     4'd10
+
+`define XM_MAX_RETRY       4'd10
+`define XM_NUM_CYC_TIMEOUT (10*`CLK_FREQ)
+
+`define SOH 8'h01
+`define EOT 8'h04
+
+`define ACK 8'h06
+`define NAK 8'h15
+////////////////////// End of Defines for XMODEM //////////////////////
+
+
+////////////////////// Defines for VGA //////////////////////
+`ifdef SYNTH
+	`define VGA_NUM_ROWS        10'd480
+	`define VGA_NUM_COLS        10'd640
+`else // use a very low resolution in simulation
+	`define VGA_NUM_ROWS        10'd9
+	`define VGA_NUM_COLS        10'd12
+`endif
+
+// following in terms of 25 MHz clock
+`define VGA_HS_TDISP        `VGA_NUM_COLS
+`define VGA_HS_TPW          10'd96
+`define VGA_HS_TFP          10'd16
+`define VGA_HS_TBP          10'd48
+`define VGA_HS_OFFSET      (`VGA_HS_TPW + `VGA_HS_TBP)
+`define VGA_HS_TS           (`VGA_HS_OFFSET+`VGA_HS_TDISP+`VGA_HS_TFP)
+
+// following in terms of lines
+`define VGA_VS_TDISP        `VGA_NUM_ROWS
+`define VGA_VS_TPW          10'd2
+`define VGA_VS_TFP          10'd10
+`define VGA_VS_TBP          10'd29
+`define VGA_VS_OFFSET      (`VGA_VS_TPW + `VGA_VS_TBP)
+`define VGA_VS_TS           (`VGA_VS_OFFSET+`VGA_VS_TDISP+`VGA_VS_TFP)
+
+`define VGA_CYC25_PER_SCREEN  1*(`VGA_VS_TS * `VGA_HS_TS) // 1* to cast as 32 bit integer
+////////////////////// End of Defines for VGA //////////////////////
 
 typedef struct packed {
   logic sign;
@@ -38,10 +89,17 @@ typedef struct packed {
   logic [19:0] ID;
 } triID_t;
 
+typedef struct packed {
+  logic [8:0] ID;
+} rayID_t;
+
+
  // maximum of 512 rays at a time in the pipeline TODO ?? 
 typedef struct packed {
   logic is_occular;
-  logic [8:0] rayID; 
+  logic [2:0] ss_num;
+  logic [1:0] ss_wptr;
+  rayID_t rayID;
 } ray_info_t;
 
 typedef struct packed {
@@ -238,7 +296,7 @@ typedef struct packed {
 } trav_to_ss_t ;
 
 typedef struct packed {
-  ray_info_t ray_info;
+  rayID_t rayID;
   float_t t_max_leaf;
 } trav_to_list_t ;
 
@@ -255,7 +313,6 @@ typedef struct packed {
  // float_t t_max_leaf;
   ln_tri_t ln_tri;
 } leaf_info_t;
-
 
     
 // lcache_to_rs
@@ -290,11 +347,12 @@ typedef struct packed {
 } icache_to_int_t ;
 
 typedef struct packed {
-	ray_vec_t ray_vec;
+    ray_vec_t ray_vec;
 } pcalc_to_rs_t;
 
 
 // int_to_list_t
+// Assuming for now that we only have radiance rays
 typedef struct packed {
   ray_info_t ray_info;
   triID_t triID;
@@ -305,12 +363,22 @@ typedef struct packed {
 
 } int_to_list_t ;
 
+// This is for hits 
 typedef struct packed {
-	ray_info_t ray_info;
+	rayID_t rayID;
+  bari_uv_t uv;
+  float_t t_int;
 } list_to_rs_t;
 
+
 typedef struct packed {
-	ray_info_t ray_info;
+  ray_info_t ray_info;
+  float_t t_max_leaf;
+} list_to_ss;
+
+
+typedef struct packed {
+	rayID_t rayID;
 	ray_vec_t ray_vec;
 } rs_to_pcalc_t;
 

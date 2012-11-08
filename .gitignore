@@ -2,7 +2,7 @@
 *.swp
 simv
 ucli.key
-inter.vpd
+*inter.vpd*
 simv.vdb
 session*
 .restartSimSession.tcl.old

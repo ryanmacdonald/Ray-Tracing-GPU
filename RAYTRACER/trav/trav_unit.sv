@@ -133,7 +133,7 @@ module trav_unit(
   always_comb begin
     if(trav_to_list_stall) to_list_buf_n = to_list_buf;
     else begin
-      to_list_buf_n.ray_info = leaf_fifo_out.ray_info;
+      to_list_buf_n.rayID = leaf_fifo_out.ray_info.rayID;
       to_list_buf_n.t_max_leaf = leaf_fifo_out.t_max;
     end
   end
@@ -376,10 +376,19 @@ module trav_unit(
   // TODO sketchy!! maybe
   assign tarb_valid_n = (tarb_valid & trav_to_tarb_stall) | (good_to_tarb & trav_fifo_re);
   
+  logic [1:0] next_ss_wptr;
+  logic [2:0] next_ss_num;
+
+  assign next_ss_wptr = trav_fifo_out.ray_info.ss_wptr + push_valid;
+  assign next_ss_num = push_valid ? (trav_fifo_out.ray_info.ss_num == 3'h4 ? 3'h4 : 
+                                     trav_fifo_out.ray_info.ss_num + 1'b1 ) : trav_fifo_out.ray_info.ss_num ;
   always_comb begin
     if(tarb_valid & trav_to_tarb_stall) tarb_buf_n = tarb_buf;
     else begin
-      tarb_buf_n.ray_info = trav_fifo_out.ray_info ;
+      tarb_buf_n.ray_info.rayID = trav_fifo_out.ray_info.rayID ;
+      tarb_buf_n.ray_info.is_occular = trav_fifo_out.ray_info.is_occular;
+      tarb_buf_n.ray_info.ss_num = next_ss_num;
+      tarb_buf_n.ray_info.ss_wptr = next_ss_wptr;
       tarb_buf_n.nodeID = trav_node_ID;
       tarb_buf_n.restnode_search = trav_fifo_out.restnode_search & ~push_valid;
       tarb_buf_n.t_max = trav_t_max ;
