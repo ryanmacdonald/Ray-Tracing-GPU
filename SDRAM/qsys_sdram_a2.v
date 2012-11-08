@@ -30,7 +30,8 @@ module sdram_a2 (
 		input  wire[24:0] addr_in,
 		input  wire[31:0] data_in,
 		output wire[31:0] za_data,
-		input  wire[$clog2(`maxTrans)-1: 0] size,	
+		input  wire[$clog2(`maxTrans)-1: 0] size,
+		output wire	      doneWrite,	
 		output reg	      readValid,	
 
 		input  wire  reset_reset_n, // reset.reset_n
@@ -77,7 +78,7 @@ module sdram_a2 (
 	//	 reading and writing
 	always @* begin
 		nextCount = count; re_n = 1; we_n = 1;
-		readValid = za_valid; 	
+		readValid = za_valid; doneWrite = 0;	
 		nextAddr = 0; nextData = 0; nextCount = 0;
 		case(state)
 			`IDLE:begin
@@ -119,6 +120,7 @@ module sdram_a2 (
 					nextState = `IDLE;
 				end
 			end
+			// Only support 1 word writes
 			`WRITE:begin
 				we_n = 0;
 				if(za_waitrequest) begin
@@ -129,12 +131,17 @@ module sdram_a2 (
 					nextState = `WRITE;
 				end
 				// Only support 1 word writes as of now
-				else if(count == 1) begin	
+				else if(count == 1) begin
+					doneWrite = 1;	
 					nextCount = 0;
 					nextAddr = 0;
 					nextData = 0;
 					nextState = `IDLE;
 				end
+				else begin
+					nextState = `WRITE;
+				end
+				/*
 				else if(count < size) begin
 					nextCount = count + 1'b1;
 					nextAddr = addr + 1'b1;
@@ -147,7 +154,7 @@ module sdram_a2 (
 					nextAddr = 0;
 					nextData = 0;
 					nextState = `IDLE;
-				end
+				end */
 			end
 			default: begin 
 				nextCount = 0;

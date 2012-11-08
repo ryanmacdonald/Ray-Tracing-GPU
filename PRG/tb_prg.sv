@@ -3,12 +3,12 @@
 
 module tb_prg;
 
-	logic clk, rst,v0,v1,v2, done,start, frame_done, ready, idle, rayReady;
+	logic clk, rst,v0,v1,v2, done,start, ready, idle, rayReady;
 	logic[1:0] cntV,cnt_nV;
 	logic int_to_prg_stall;
 	vector_t E, U, V, W;
 	float_t D, pw;
-	ray_t prg_data;
+	prg_ray_t prg_data;
 
 
 	assign cnt_nV =  ((cntV == 2'b10) ? 2'b0 : cntV + 1'b1);
@@ -24,14 +24,14 @@ module tb_prg;
 
 	initial begin
 
-			$monitor($time," \nray_t(%b) rayID = %d\ndata.dir.x = %f\ndata.dir.y = %f\ndata.dir.z = %f", rayReady,prg_data.rayID,prg_data.dir.x,prg_data.dir.y,prg_data.dir.z);
+			$monitor($time," \nray_t(%b) rayID = %d\ndata.dir.x = %f\ndata.dir.y = %f\ndata.dir.z = %f", rayReady,prg_data.pixelID,prg_data.dir.x,prg_data.dir.y,prg_data.dir.z);
 
 		rst <= 0; clk <= 0;
 		E.x <= `FP_0; E.y <= `FP_0; E.z <= `FP_0;
 		U.x <= `FP_1; U.y <= `FP_0; U.z <= `FP_0;
 		V.x <= `FP_0; V.y <= `FP_1; V.z <= `FP_0;
 		W.x <= `FP_0; W.y <= `FP_0; W.z <= `FP_1;
-		frame_done <= 1; start <= 0;
+		start <= 0;
 		int_to_prg_stall <= 0;
 		D <= 32'h42C80000;
 		pw <= `FP_1;
@@ -52,11 +52,13 @@ module tb_prg;
 
 		int_to_prg_stall <= 0;
 
-		repeat(100) @(posedge clk);
+		while(~done)
+			@(posedge clk);
 
 		$finish;
 
 	end
+	
 
 	always #5 clk = ~clk;
 

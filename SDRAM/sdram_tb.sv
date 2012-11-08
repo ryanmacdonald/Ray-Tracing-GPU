@@ -69,11 +69,12 @@ module trans_model(input logic clk, rst_l,
 
 	     // Interface from caches to SDRAM controller
 	     logic[`numcaches-1:0][24:0] addr_cache_to_sdram;
-	     logic[24:0] addr_sl_to_sdram;
+	     logic[24:0] sl_addr;
 	     logic[31:0] writeData;
 	     logic[`numcaches-1:0][$clog2(`maxTrans)-1:0] transSize;
 	     logic[`numcaches-1:0] readReq;
 	     logic  writeReq;
+	     logic doneWrite_out;
 
 	     logic[`numcaches-1:0] readValid_out;
 	     logic[`numcaches-1:0][31:0] readData;

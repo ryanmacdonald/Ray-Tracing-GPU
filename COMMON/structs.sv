@@ -129,6 +129,12 @@ typedef struct packed{
   logic[18:0] pixelID;
 } pixelID_t;
 
+typedef struct packed{
+  pixelID_t  pixelID;
+  vector_t origin;
+  vector_t dir;
+} prg_ray_t;
+
 typedef struct packed {
   color_t color;
   pixelID_t pixelID;
