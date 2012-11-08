@@ -71,7 +71,7 @@ module t_minus_32_days(
     // Write Interface
     logic[31:0] writeData;
     logic  writeReq;
-    logic doneWrite;
+    logic doneWrite_out;
 
 
     // FBH signal declarations

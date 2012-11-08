@@ -86,7 +86,7 @@ module trans_model(input logic clk, rst_l,
 	
 			always_comb begin
 				addr_cache_to_sdram[0] = 25'hA5A5A5;
-				addr_sl_to_sdram = 25'hA5A5A5;
+				sl_addr = 25'hA5A5A5;
 				writeData  = 'h0;
 				transSize = 'h0;
 				writeReq = 'h0;

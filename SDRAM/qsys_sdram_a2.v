@@ -31,7 +31,7 @@ module sdram_a2 (
 		input  wire[31:0] data_in,
 		output wire[31:0] za_data,
 		input  wire[$clog2(`maxTrans)-1: 0] size,
-		output wire	      doneWrite,	
+		output reg	      doneWrite,	
 		output reg	      readValid,	
 
 		input  wire  reset_reset_n, // reset.reset_n
