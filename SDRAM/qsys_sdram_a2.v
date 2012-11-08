@@ -71,9 +71,8 @@ module sdram_a2 (
 	reg[ 1:0] state, nextState;
 	//reg writeValid, readValid;	
 
-	// TODO: test arbitrary length reads and writes
-	// TODO: figure out if burst length configurable and implement
-	// TODO: write arbiter for SDRAM ctrl
+
+	// TODO: figure out if burst length configurable and implement-> probs no
 	// TODO: figure out if latency changes based on consecutive address
 	//	 reading and writing
 	always @* begin
