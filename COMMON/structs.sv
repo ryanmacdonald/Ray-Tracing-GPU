@@ -1,7 +1,6 @@
 `default_nettype none
 // uncomment the following line when synthesizing to board
-// HEY, YOU!!!! Go check out the README file for all the steps for synthesis (there are multiple)
- `define SYNTH
+// `define SYNTH
 
 `define FP_1 32'h3F80_0000
 `define FP_0 32'h0
@@ -89,17 +88,10 @@ typedef struct packed {
   logic [19:0] ID;
 } triID_t;
 
-typedef struct packed {
-  logic [8:0] ID;
-} rayID_t;
-
-
  // maximum of 512 rays at a time in the pipeline TODO ?? 
 typedef struct packed {
   logic is_occular;
-  logic [2:0] ss_num;
-  logic [1:0] ss_wptr;
-  rayID_t rayID;
+  logic [8:0] rayID; 
 } ray_info_t;
 
 typedef struct packed {
@@ -128,12 +120,6 @@ typedef struct packed {
 typedef struct packed{
   logic[18:0] pixelID;
 } pixelID_t;
-
-typedef struct packed{
-  pixelID_t  pixelID;
-  vector_t origin;
-  vector_t dir;
-} prg_ray_t;
 
 typedef struct packed {
   color_t color;
@@ -257,10 +243,10 @@ typedef struct packed {
   logic restnode_search;
   float_t t_max;
   float_t t_min;
-  /*union packed {
+  union packed {
     leaf_node_t leaf_node;
     norm_node_t norm_node;
-  } tree_node; */
+  } tree_node;
 
 } tcache_to_trav_t ;
 
@@ -302,7 +288,7 @@ typedef struct packed {
 } trav_to_ss_t ;
 
 typedef struct packed {
-  rayID_t rayID;
+  ray_info_t ray_info;
   float_t t_max_leaf;
 } trav_to_list_t ;
 
@@ -319,6 +305,7 @@ typedef struct packed {
  // float_t t_max_leaf;
   ln_tri_t ln_tri;
 } leaf_info_t;
+
 
     
 // lcache_to_rs
@@ -358,7 +345,6 @@ typedef struct packed {
 
 
 // int_to_list_t
-// Assuming for now that we only have radiance rays
 typedef struct packed {
   ray_info_t ray_info;
   triID_t triID;
@@ -369,23 +355,13 @@ typedef struct packed {
 
 } int_to_list_t ;
 
-// This is for hits 
 typedef struct packed {
-	rayID_t rayID;
-  bari_uv_t uv;
-  float_t t_int;
+    ray_info_t ray_info;
 } list_to_rs_t;
 
-
 typedef struct packed {
-  ray_info_t ray_info;
-  float_t t_max_leaf;
-} list_to_ss;
-
-
-typedef struct packed {
-	rayID_t rayID;
-	ray_vec_t ray_vec;
+    ray_info_t ray_info;
+    ray_vec_t ray_vec;
 } rs_to_pcalc_t;
 
 /*

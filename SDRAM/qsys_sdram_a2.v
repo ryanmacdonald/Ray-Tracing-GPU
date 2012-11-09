@@ -23,7 +23,11 @@ module sdram_a2 (
 		output wire           zs_ras_n,
 		output wire           zs_we_n,
 		
+		`ifdef SYNTH
 		output wire altpll_0_c0_clk,
+		`else
+		output reg altpll_0_c0_clk,
+		`endif
 
 		// Interface from caches
 		input  wire read, write,
@@ -57,8 +61,6 @@ module sdram_a2 (
 	wire za_valid;
 	wire za_waitrequest;
 	
-	assign write_error = ~we_n && (data != addr);
-	
 	wire [7:0] reg_data, reg_data_next;
 	//assign LEDs = reg_data;
 	
@@ -75,6 +77,8 @@ module sdram_a2 (
 	reg[$clog2(`maxTrans)-1:0] count, nextCount;
 	reg[ 1:0] state, nextState;
 	//reg writeValid, readValid;	
+
+	assign write_error = ~we_n && (data != addr);
 
 	// TODO: test arbitrary length reads and writes
 	// TODO: figure out if burst length configurable and implement

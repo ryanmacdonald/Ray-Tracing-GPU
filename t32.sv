@@ -51,8 +51,8 @@ module t_minus_32_days(
 	 
 	 //temp error signal
 	 logic read_error;
-	 assign LEDR[0] = write_error;
 	 logic write_error;
+	 assign LEDR[0] = write_error;
 
     logic xmodem_done, sl_done;
     logic xmodem_saw_valid_block;
