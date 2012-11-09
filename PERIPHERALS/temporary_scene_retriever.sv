@@ -14,6 +14,7 @@ module temporary_scene_retriever(input logic clk, rst,
 				 input logic readValid,
 
 				 // Interface with pixel buffer
+				 output logic read_error,
 				 output pixel_buffer_entry_t pbData,
 				 output logic pb_we,
 				 input logic pb_full
@@ -24,6 +25,9 @@ module temporary_scene_retriever(input logic clk, rst,
 	logic done, inc;
 
 	logic[$clog2(`num_rays)-1:0] cnt, nextCnt;
+
+	// temporary: being used for DRAM testing
+	assign read_error = (readData[24:0] != cnt) & readValid;
 
 	assign nextCnt = done ? 0 : cnt + 1;
 	ff_ar_en #(19,0) counter(.q(cnt),.d(nextCnt),.en(inc),.clk,.rst);
