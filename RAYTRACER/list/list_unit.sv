@@ -80,10 +80,15 @@ module list_unit(
   logic list_pipe_valid_ds, list_pipe_stall_ds;
   logic [2:0] num_in_list_fifo;
 
-  assign list_pipe_in = ;
-  assign list_pipe_valid_us = ;
+  always_comb begin
+    list_pipe_in.uv = int_to_list_data.uv;
+    list_pipe_in.triID = int_to_list_data.triID;
+  end
+  assign list_pipe_valid_us = int_to_list_valid;
+  assign int_to_list_stall = list_pipe_stall_us;
   assign list_pipe_stall_ds = ; // need to move down down down to the burning ring of fire
   
+
   pipe_valid_stall #(.WIDTH($bits(list_pipe_in)), .DEPTH(4)) list_pipe_inst(
     .clk, .rst,
     .us_valid(list_pipe_valid_us),
@@ -104,8 +109,8 @@ module list_unit(
   logic [8:0] addr_t_cur;
   logic wren_t_cur;
   
-  assign wrdata_t_cur = ;
-  assign addr_t_cur = ;
+  assign wrdata_t_cur = ; // later !
+  assign addr_t_cur = int_to_list_data.ray_info.rayID;
   assign wren_t_cur = ;
 
   bram_512x33 t_cur_bram(
@@ -122,13 +127,18 @@ module list_unit(
     logic is_last;
     logic hit_in;
     logic t_int_in;
-  } listbuf_in, listbuf_out;
+  } listbuf_in, listbuf_out, list_buf;
   
-  assign listbuf_in = ;
+  always_comb begin
+    listbuf_in.is_last = int_to_list.is_last;
+    listbuf_in.hit_in = int_to_list.hit_in;
+    listbuf_in.t_int_in  = int_to_list.t_int;
+  end
 
-  buf_t3 #(.LAT(2), .WIDTH($bits(float_t))) 
+  buf_t3 #(.LAT(2), .WIDTH($bits(listbuf_in))) 
     listbuf_buf11(.data_in(listbuf_in), .data_out(listbuf_out), .clk, .rst);
 
+  ff_ar #($bits(list_buf),'h0) list_buf_reg(.d(listbuf_out), .q(list_buf), .clk, .rst);
 
 //------------------------------------------------------------------
   logic leaf_read_valid, leaf_read_valid_n;
@@ -136,6 +146,8 @@ module list_unit(
   
   assign leaf_read_valid_n = ;
   assign leaf_read_addr_n = ;
+  assign trav0_to_list_stall = ;
+  assign trav1_to_list_stall = ;
 
   ff_ar #(1,1'b0) leaf_read_valid_reg(.d(leaf_read_valid_n), .q(leaf_read_valid), .clk, .rst);
   ff_ar #($bits(rayID_t),'h0) leaf_read_addr_reg(.d(leaf_read_addr_n), .q(leaf_read_addr), .clk, .rst);
@@ -162,7 +174,7 @@ module list_unit(
 
 
     // TODO create my own fucking bram
-   raystore_blkram rbram(
+   leaf_max rbram(
   .aclr(rst),
   .address_a(addrA_leaf_max),
   .address_b(addrB_leaf_max),
@@ -250,6 +262,7 @@ module list_unit(
   assign addr_int_info = ;
   assign wren_int_info = ;
 
+/*
   bram_84xx512 int_info_bram(
   .aclr(rst),
   .address(addr_int_info),
@@ -257,7 +270,7 @@ module list_unit(
   .data(wrdata_int_info),
   .wren(wren_int_info),
   .q(rddata_int_info),
-
+*/
 
 
 //------------------------------------------------------------------
