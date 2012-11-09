@@ -11,11 +11,11 @@
 
   
   Operations on the stack
-    Push(new_SE): stack[ss_wptr] <= new_SE ;
+    Push(new_SE): ElemCount <= ElemCount + 1 ; // saturate at 4
+                : SE0 <= new_SE; SE1 <= SE0; SE2 <= SE1; SE3 <= SE2;
     
-    Pop         : ss_wptr <= ss_wptr - 1
-                : ss_num <= ss_num-1;
-                return stack[ss_wptr -1]
+    Pop         : ElemCount <= ElemCOunt -1 ; // minimum of 0
+                : Outout <= SE0; SE0 <= SE1; SE1 <= SE2; SE2 <= SE3;  SE3 <= XX 
     
   ----------------------------------------------------------------------
 
@@ -40,13 +40,19 @@
     sceneint_to_ss (1 input port)
       write(t_max_scene)
 
-    list_to_ss (1 input port) // stack pop
-        if(ElemCount !=0 ) {
-            ss_to_tarb <= Pop; (t_max <= SE.t_max, t_min <= t_max_leaf)
+    list_to_ss (1 input port) // Either a leaf node miss or a hit
+        if(hit) {
+            Clear shortstack;
+            if(shadow_ray) {
+                ss_to_shader <= shadow_ray_hit
+            }
+        }
+        else if(ElemCount !=0 ) {
+            ss_to_tarb <= Pop; (t_max <= t_max, t_min <= t_max_leaf)
         }
         else {// ElemCount == 0
             if(t_max_leaf < t_max_scene) { // Need to restart
-                ss_to_tarb <= Read restartnode (t_max <= restart.t_max, t_min <= t_max_leaf)
+                ss_to_tarb <= Read restartnode (t_max <= t_max, t_min <= t_max_leaf)
             }
             else (t_max >= t_max_scene) { // Was a total miss. TODO t_max == t_max_scene will PROBABLY happen
                ss_to_shader <= Miss 
@@ -61,3 +67,6 @@ module shortstack(
 
   );
 
+
+  // Make sure that the entire stack gets cleared when a new ray comes.  And that no rays are using a stack
+  // that just had a hit.

@@ -9,7 +9,7 @@ module prg_top(input logic clk, rst,
 	       input float_t pw,
 	       input logic int_to_prg_stall,
 	       output logic ready, done,
-	       output prg_ray_t prg_data);
+	       output ray_t prg_data);
 	
 	`ifndef SYNTH
 	shortreal px_q,py_q,pz_q;
@@ -27,7 +27,7 @@ module prg_top(input logic clk, rst,
 	logic[9:0] x, nextX;
 	logic[8:0] y, nextY;
 	
-	prg_ray_t prg_out;
+	ray_t prg_out;
 
 	
 	//fifo #(.WIDTH($bits(ray_t)),.K(4)) q(.clk,.rst,.data_in(prg_out),.we(rb_we),.re(rb_re),
@@ -46,7 +46,7 @@ module prg_top(input logic clk, rst,
 	assign nextX = (x == 'd639) ? 0 : x + 1;
 	assign nextY = (x == 'd639) ? y - 1 : y;
 
-	assign count_en = ~int_to_prg_stall && v2;
+	assign count_en = ~int_to_prg_stall && v0; //removed && v2
 
 	assign rb_we = rayReady;
 	assign rb_re = ~rb_empty && ~int_to_prg_stall && v0;

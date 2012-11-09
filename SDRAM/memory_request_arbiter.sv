@@ -20,10 +20,12 @@ module memory_request_arbiter(
 	     // Write Interface
 	     input  logic[24:0] sl_addr,
 	     input  logic[31:0] writeData,
-	     input  logic  writeReq,
-	     output logic doneWrite_out,
+	     input logic  writeReq,
+	     output logic doneWrite,
 	
 	     input  logic clk, rst,
+		  //temp write_error output
+		  output wire write_error,
 
 	     // Interface from SDRAM controller to SDRAM chip
 	     output wire  [ 12: 0] zs_addr,
@@ -48,7 +50,6 @@ module memory_request_arbiter(
 	logic[31:0] data_in, za_data;
 	logic[$clog2(`maxTrans)-1:0] size;
 	logic ready, readValid, writeValid;
-	logic doneWrite;
 
 	// TODO: declare and connect signals
 	sdram_a2 sdram_ctrl(.*,.clk_clk(clk),.reset_reset_n(~rst),.altpll_0_c0_clk(sdram_clk));
@@ -58,14 +59,14 @@ module memory_request_arbiter(
 	ff_ar_en #($clog2(`numcaches),0) cp(.q(currC),.d(nextC),.en(~busy),.clk,.rst);
 	
 	// Transaction counter
-	assign nextCnt = (doneRead[currC] || doneWrite_out) ? 6'b0 : cnt + 6'b1;
+	assign nextCnt = (doneRead[currC] || doneWrite) ? 6'b0 : cnt + 6'b1;
 	ff_ar_en #($clog2(`maxTrans),0) tc(.q(cnt),.d(nextCnt),.en(inc),.clk,.rst);	
 
 	assign size = transSize[currC];
 
 	always_comb begin
 		busy = 1; read = 0; write = 0; addr_in = 'h0; data_in = 'h0;
-		readData = 'h0; doneWrite_out = 'h0; readValid_out = 'h0;
+		readData = 'h0; doneWrite = 'h0; readValid_out = 'h0;
 		inc = 0; doneRead = 'h0;
 		case(state)		
 			IDLE:begin
@@ -118,10 +119,10 @@ module memory_request_arbiter(
 				data_in = writeData;
 				inc = 1;
 				// Cannot support write 1 word now
-				if(doneWrite) begin
+				if(cnt == 1) begin
 					busy = 0;
 //					$display("WRITE case 1\n");
-					doneWrite_out = 1;
+					doneWrite = 1;
 					nextState = IDLE;
 				end
 				else begin

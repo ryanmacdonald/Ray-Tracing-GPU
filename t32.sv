@@ -48,6 +48,11 @@ module t_minus_32_days(
 
     logic rst;
     logic start_btn;
+	 
+	 //temp error signal
+	 logic read_error;
+	 assign LEDR[0] = write_error;
+	 logic write_error;
 
     logic xmodem_done, sl_done;
     logic xmodem_saw_valid_block;
@@ -71,7 +76,7 @@ module t_minus_32_days(
     // Write Interface
     logic[31:0] writeData;
     logic  writeReq;
-    logic doneWrite_out;
+    logic doneWrite;
 
 
     // FBH signal declarations

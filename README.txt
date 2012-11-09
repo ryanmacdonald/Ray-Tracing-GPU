@@ -1,67 +1,8 @@
-================================================================================
-* Project README                                                               *
-================================================================================
-* Paul Kennedy                                                                 *
-* Ross Daly                                                                    *
-* Ryan Macdonald                                                               *
-================================================================================
-
-SYNTHESIS INSTRUCTIONS
-================================================================================
-In order to synthesize correctly, do the following:
-* Move COMMON files to top of file list in Quartus
-* Uncomment `define SYNTH in structs file
-* Add `default_nettype wire to alt_mf.v (make this permanent?)
-* Comment out any unions (TODO: figure out another solution to unions)
-
-TODO:
-================================================================================
-* Change to 16 bit color
-* Implement double frame buffer
-* Determine the cause of the random wrong pixels for t32
-* Write caches and cache miss handlers
-* Write arbiters (T-arb, L-arb. others?)
-* Continue generating scene file
-
-
-Byte arrangement in files, serial, and memory
-================================================================================
-
-Files:
---------------
-
-B0 B1 B2 B3 ...
-
-i.e. if you do:
-
-	while((i = fgetc()) != EOF) {
-		printf("%c",i);
-	}
-
-You will see the characters for: B0, B1, B2, ...
-Use hexdump as follows for viewing contents as they will be transferred:
-
-hexdump -C foo.bin
-
-XMODEM:
---------------
-Time:  00 01 02 03 04 ...
-Data:  B0 B1 B2 B3 B4 ...
-
-SDRAM:
---------------
-Data bus [31:0]: {B3, B2, B1, B0}
-
-SRAM:
---------------
-Data bus [15:0]: {B0, B1}
-
-Addr Data
-0000 {B0, B1}
-0001 {B2, B3}
+Project README
+========================================
 
 Ray Tracing Algorithm Pseudo-Code
-================================================================================
+========================================
 
 void raytrace(Scene* scene) {
 	for(row = 0; row < num_rows; row++)

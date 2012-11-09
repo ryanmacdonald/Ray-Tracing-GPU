@@ -29,6 +29,7 @@
 //
 //END_MODULE_NAME--------------------------------------------------------------
 
+`default_nettype wire
 
 `timescale 1 ps / 1 ps
 module lcell (in, out);
@@ -47036,7 +47037,7 @@ endmodule // ALTSYNCRAM
 //                    RAM with 1 write port and 2 read ports.
 //
 // Limitation       : This megafunction is provided only for backward 
-//                    compatibility in Stratix designs; instead, Altera® 
+//                    compatibility in Stratix designs; instead, Alteraï¿½ 
 //                    recommends using the altsyncram megafunction.
 //
 //                    In MAX 3000, and MAX 7000 devices, 
