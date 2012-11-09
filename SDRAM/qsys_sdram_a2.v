@@ -23,17 +23,19 @@ module sdram_a2 (
 		output wire           zs_ras_n,
 		output wire           zs_we_n,
 		
-		output reg altpll_0_c0_clk,
+		output wire altpll_0_c0_clk,
 
 		// Interface from caches
 		input  wire read, write,
 		input  wire[24:0] addr_in,
 		input  wire[31:0] data_in,
 		output wire[31:0] za_data,
-		input  wire[$clog2(`maxTrans)-1: 0] size,
-		output reg	      doneWrite,	
+		input  wire[$clog2(`maxTrans)-1: 0] size,	
 		output reg	      readValid,	
 
+		// temp write error flag
+		output wire write_error,
+		
 		input  wire  reset_reset_n, // reset.reset_n
 		input  wire  clk_clk        //   clk.clk
 	);
@@ -55,6 +57,8 @@ module sdram_a2 (
 	wire za_valid;
 	wire za_waitrequest;
 	
+	assign write_error = ~we_n && (data != addr);
+	
 	wire [7:0] reg_data, reg_data_next;
 	//assign LEDs = reg_data;
 	
@@ -72,13 +76,14 @@ module sdram_a2 (
 	reg[ 1:0] state, nextState;
 	//reg writeValid, readValid;	
 
-
-	// TODO: figure out if burst length configurable and implement-> probs no
+	// TODO: test arbitrary length reads and writes
+	// TODO: figure out if burst length configurable and implement
+	// TODO: write arbiter for SDRAM ctrl
 	// TODO: figure out if latency changes based on consecutive address
 	//	 reading and writing
 	always @* begin
 		nextCount = count; re_n = 1; we_n = 1;
-		readValid = za_valid; doneWrite = 0;	
+		readValid = za_valid; 	
 		nextAddr = 0; nextData = 0; nextCount = 0;
 		case(state)
 			`IDLE:begin
@@ -120,7 +125,6 @@ module sdram_a2 (
 					nextState = `IDLE;
 				end
 			end
-			// Only support 1 word writes
 			`WRITE:begin
 				we_n = 0;
 				if(za_waitrequest) begin
@@ -131,17 +135,12 @@ module sdram_a2 (
 					nextState = `WRITE;
 				end
 				// Only support 1 word writes as of now
-				else if(count == 1) begin
-					doneWrite = 1;	
+				else if(count == 1) begin	
 					nextCount = 0;
 					nextAddr = 0;
 					nextData = 0;
 					nextState = `IDLE;
 				end
-				else begin
-					nextState = `WRITE;
-				end
-				/*
 				else if(count < size) begin
 					nextCount = count + 1'b1;
 					nextAddr = addr + 1'b1;
@@ -154,7 +153,7 @@ module sdram_a2 (
 					nextAddr = 0;
 					nextData = 0;
 					nextState = `IDLE;
-				end */
+				end
 			end
 			default: begin 
 				nextCount = 0;

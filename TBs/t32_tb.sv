@@ -102,20 +102,9 @@ module t32_tb;
 
         repeat (100) @(posedge clk);
 
-		// each 32 bit word is set equal to the address
-		for(j=0; j<128; j++) begin
-			if(j%4==0)
-	            message[j] = j[7:0]/4;
-			if(j%4==1)
-	            message[j] = j[15:8]/4;
-			if(j%4==2)
-	            message[j] = j[23:16]/4;
-			if(j%4==3)
-	            message[j] = j[31:24]/4;
-		end
-
-//		for(j=0; j<128; j++) begin
+        for(j=0; j<128; j++)
 //            message[j] = $random % 8'hFF;
+            message[j] = j;
 
 //		message[0:15] =  'h1000_1a1a_1100_1b1b_1600_1f1f_1a00_2323;
 

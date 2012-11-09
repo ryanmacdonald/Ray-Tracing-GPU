@@ -41,13 +41,13 @@ trav:
 	$(CC) $(FLAGS) -top tb_trav_unit COMMON/*v COMMON/altfp*/*.v COMMON/altb*/*/*v RAYTRACER/trav/*.sv RAYTRACER/raystore/*v
 
 prg_int: 
-	$(CC) $(FLAGS) -top tb_int_prg COMMON/*v COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv TBs/tb_int_prg.sv
+	$(CC) $(FLAGS) -top tb_int_prg COMMON/*v  COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv TBs/tb_int_prg.sv
 
 prg:
 	$(CC) $(FLAGS) -top tb_prg COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v PRG/*.sv
 
 prg_int_stall:
-	$(CC) $(FLAGS) -top tb_prg COMMON/*v COMMON/altbram_fifo/*/*v PERIPHERALS/*.sv COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv TBs/*.sv
+	$(CC) $(FLAGS) -top tb_prg_int_stall COMMON/*v COMMON/altbram_fifo/*/*v PERIPHERALS/*.sv COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv TBs/*.sv
 
 cam:
 	$(CC) $(FLAGS) -top  camera_controller COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v CAMERA/camera_controller.sv

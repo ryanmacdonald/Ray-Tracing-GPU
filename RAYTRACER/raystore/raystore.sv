@@ -344,7 +344,7 @@ module raystore(
 
 	rs_to_pcalc_t f3_data_in;
 
-	assign f3_data_in.rayID  = pvs3_data_out.list_to_rs.rayID;
+	assign f3_data_in.ray_info  = pvs3_data_out.list_to_rs.ray_info;
 	// TODO: other things for list_to_rs struct...
 
 	assign f3_data_in.ray_vec = (pvs3_data_out.data_sel) ? rd_data1 : rd_data0;
@@ -376,7 +376,7 @@ module raystore(
 			2'b00: addr0 = trav_to_rs0.ray_info.rayID;
 			2'b01: addr0 = trav_to_rs1.ray_info.rayID;
 			2'b10: addr0 = lcache_to_rs.ray_info.rayID;
-			2'b11: addr0 = list_to_rs.rayID;
+			2'b11: addr0 = list_to_rs.ray_info.rayID;
 		endcase
 	end
 
@@ -385,7 +385,7 @@ module raystore(
 			2'b00: addr1 = trav_to_rs0.ray_info.rayID;
 			2'b01: addr1 = trav_to_rs1.ray_info.rayID;
 			2'b10: addr1 = lcache_to_rs.ray_info.rayID;
-			2'b11: addr1 = list_to_rs.rayID;
+			2'b11: addr1 = list_to_rs.ray_info.rayID;
 		endcase
 	end
 

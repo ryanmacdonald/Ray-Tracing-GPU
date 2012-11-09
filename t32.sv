@@ -48,8 +48,11 @@ module t_minus_32_days(
 
     logic rst;
     logic start_btn;
-
-    logic read_error; // being used for DRAM testing
+	 
+	 //temp error signal
+	 logic read_error;
+	 assign LEDR[0] = write_error;
+	 logic write_error;
 
     logic xmodem_done, sl_done;
     logic xmodem_saw_valid_block;
@@ -73,7 +76,7 @@ module t_minus_32_days(
     // Write Interface
     logic[31:0] writeData;
     logic  writeReq;
-    logic doneWrite_out;
+    logic doneWrite;
 
 
     // FBH signal declarations
@@ -86,8 +89,6 @@ module t_minus_32_days(
     assign stripes_sel = switches[0];
     assign rst = ~btns[3];
     assign start_btn = btns[0];
-
-    assign LEDR[0] = read_error;
 
     assign writeReq = sl_we;
     assign writeData = sl_io;
@@ -110,8 +111,7 @@ module t_minus_32_days(
                   .readAddr(addr_cache_to_sdram[0]),
                   .readData(readData[0]),.readSize(transSize[0]),
                   .readDone(doneRead[0]),.readValid(readValid_out[0]),
-                  .pbData(pb_data_in),.pb_we(pb_we),.pb_full(pb_full),
-                  .read_error(read_error)); // read_error being used for DRAM testing
+                  .pbData(pb_data_in),.pb_we(pb_we),.pb_full(pb_full));
 
     fifo #(.WIDTH($bits(pixel_buffer_entry_t)),.K(5)) pb(.clk,.rst,
                                                          .data_in(pb_data_in),

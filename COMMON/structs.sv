@@ -1,7 +1,7 @@
 `default_nettype none
 // uncomment the following line when synthesizing to board
 // HEY, YOU!!!! Go check out the README file for all the steps for synthesis (there are multiple)
-// `define SYNTH
+ `define SYNTH
 
 `define FP_1 32'h3F80_0000
 `define FP_0 32'h0
@@ -257,10 +257,10 @@ typedef struct packed {
   logic restnode_search;
   float_t t_max;
   float_t t_min;
-  union packed {
+  /*union packed {
     leaf_node_t leaf_node;
     norm_node_t norm_node;
-  } tree_node;
+  } tree_node; */
 
 } tcache_to_trav_t ;
 
