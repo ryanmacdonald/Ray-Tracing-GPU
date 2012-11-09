@@ -85,7 +85,7 @@ typedef struct packed {
 } vector_t;
 
 typedef struct packed {
-  logic [19:0] ID;
+  logic [15:0] ID;
 } triID_t;
 
  // maximum of 512 rays at a time in the pipeline TODO ?? 
