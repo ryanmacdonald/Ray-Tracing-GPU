@@ -72,31 +72,34 @@ module list_unit(
   );
 
   struct packed {
+    ray_info_t ray_info;
     bari_uv_t uv;
     triID_t triID;
-  } list_pipe_in, list_pipe_out;
+    logic is_last;
+  } list_VSpipe_in, list_VSpipe_out;
 
-  logic list_pipe_valid_us, list_pipe_stall_us;
-  logic list_pipe_valid_ds, list_pipe_stall_ds;
+  logic list_VSpipe_valid_us, list_VSpipe_stall_us;
+  logic list_VSpipe_valid_ds, list_VSpipe_stall_ds;
   logic [2:0] num_in_list_fifo;
 
   always_comb begin
-    list_pipe_in.uv = int_to_list_data.uv;
-    list_pipe_in.triID = int_to_list_data.triID;
+    list_VSpipe_in.ray_info = int_to_list_data.ray_info;
+    list_VSpipe_in.uv = int_to_list_data.uv;
+    list_VSpipe_in.triID = int_to_list_data.triID;
+    list_VSpipe_in.is_last = int_to_list_data.is_last;
   end
-  assign list_pipe_valid_us = int_to_list_valid;
-  assign int_to_list_stall = list_pipe_stall_us;
-  assign list_pipe_stall_ds = ; // need to move down down down to the burning ring of fire
+  assign list_VSpipe_valid_us = int_to_list_valid;
+  assign int_to_list_stall = list_VSpipe_stall_us;
   
 
-  pipe_valid_stall #(.WIDTH($bits(list_pipe_in)), .DEPTH(4)) list_pipe_inst(
+  pipe_valid_stall #(.WIDTH($bits(list_VSpipe_in)), .DEPTH(4)) list_VSpipe_inst(
     .clk, .rst,
-    .us_valid(list_pipe_valid_us),
-    .us_data(list_pipe_in),
-    .us_stall(list_pipe_stall_us),
-    .ds_valid(list_pipe_valid_ds),
-    .ds_data(list_pipe_out),
-    .ds_stall(list_pipe_stall_ds),
+    .us_valid(list_VSpipe_valid_us),
+    .us_data(list_VSpipe_in),
+    .us_stall(list_VSpipe_stall_us),
+    .ds_valid(list_VSpipe_valid_ds),
+    .ds_data(list_VSpipe_out),
+    .ds_stall(list_VSpipe_stall_ds),
     .num_in_fifo(num_in_list_fifo) );
 
 
@@ -104,18 +107,17 @@ module list_unit(
   struct packed {
     logic hit_cur;
     float_t t_cur;
-  } wrdata_t_cur, rddata_t_cur;
+  } wrdata_t_cur, rddata_t_cur, rddata_t_cur_buf;
 
-  logic [8:0] addr_t_cur;
+  rayID_t raddr_t_cur, waddr_t_cur;
   logic wren_t_cur;
   
-  assign wrdata_t_cur = ; // later !
-  assign addr_t_cur = int_to_list_data.ray_info.rayID;
-  assign wren_t_cur = ;
+  assign raddr_t_cur = int_to_list_data.ray_info.rayID;
 
-  bram_512x33 t_cur_bram(
-  .aclr(rst),
-  .address(addr_t_cur),
+  bram_dual_rw_512x33 t_cur_bram(
+  //.aclr(rst),
+  .raddress(raddr_t_cur),
+  .waddress(waddr_t_cur),
   .clock(clk),
   .data(wrdata_t_cur),
   .wren(wren_t_cur),
@@ -124,30 +126,26 @@ module list_unit(
 //------------------------------------------------------------------
 
   struct {
-    logic is_last;
     logic hit_in;
     logic t_int_in;
-  } listbuf_in, listbuf_out, list_buf;
+  } listbuf_in, listbuf_out, listbuf_s3;
   
   always_comb begin
-    listbuf_in.is_last = int_to_list.is_last;
-    listbuf_in.hit_in = int_to_list.hit_in;
-    listbuf_in.t_int_in  = int_to_list.t_int;
+    listbuf_in.hit_in = int_to_list_data.hit_in;
+    listbuf_in.t_int_in  = int_to_list_data.t_int;
   end
 
   buf_t3 #(.LAT(2), .WIDTH($bits(listbuf_in))) 
     listbuf_buf11(.data_in(listbuf_in), .data_out(listbuf_out), .clk, .rst);
 
-  ff_ar #($bits(list_buf),'h0) list_buf_reg(.d(listbuf_out), .q(list_buf), .clk, .rst);
+  ff_ar #($bits(listbuf_s3),'h0) listbuf_s3_reg(.d(listbuf_out), .q(listbuf_s3), .clk, .rst);
 
 //------------------------------------------------------------------
   logic leaf_read_valid, leaf_read_valid_n;
   rayID_t leaf_read_addr, leaf_read_addr_n;
   
-  assign leaf_read_valid_n = ;
-  assign leaf_read_addr_n = ;
-  assign trav0_to_list_stall = ;
-  assign trav1_to_list_stall = ;
+  assign leaf_read_valid_n = int_to_list_valid & ~int_to_list_stall & int_to_list_data.is_last;
+  assign leaf_read_addr_n = int_to_list_data.ray_info.rayID ;
 
   ff_ar #(1,1'b0) leaf_read_valid_reg(.d(leaf_read_valid_n), .q(leaf_read_valid), .clk, .rst);
   ff_ar #($bits(rayID_t),'h0) leaf_read_addr_reg(.d(leaf_read_addr_n), .q(leaf_read_addr), .clk, .rst);
@@ -157,24 +155,42 @@ module list_unit(
 
 
 //------------------------------------------------------------------
-  logic [8:0] addrA_leaf_max, addrB_leaf_max;
+  rayID_t addrA_leaf_max, addrB_leaf_max;
   float_t wrdataA_leaf_max;
   float_t wrdataB_leaf_max;
   logic wrenA_leaf_max, wrenB_leaf_max;
   float_t rddataA_leaf_max;
   float_t rddataB_leaf_max;
 
+	logic  rrp;
+	logic leaf_contend;
+	assign leaf_contend = trav0_to_list_valid & trav1_to_list_valid & leaf_read_valid;
+	counter #(.W(1), .RV(1'b0)) tmax_leaf_arb_pointer(.cnt(rrp), .clr(1'b0), .inc(leaf_contend), .clk, .rst);
+
+
   // reading always has addrA priority
   assign addrA_leaf_max = leaf_read_valid ? leaf_read_addr : trav0_to_list_data.rayID ;
-  assign wrdataA_leaf_max = ;
-  assign wrenA_leaf_max = ;
-  assign addrB_leaf_max = ;
-  assign wrdataB_leaf_max = ;
-  assign wrenB_leaf_max = ;
+  assign wrdataA_leaf_max = trav0_to_list_data.t_max_leaf;
+  assign wrenA_leaf_max = ~leaf_read_valid & trav0_to_list_valid;
+  always_comb begin
+    case({leaf_read_valid,trav0_to_list_valid,trav1_to_list_valid})
+      3'b111 : addrB_leaf_max = rrp ? trav1_to_list_data.rayID : trav0_to_list_data.rayID ;
+      3'b110 : addrB_leaf_max = trav0_to_list_data.rayID ;
+      3'b101 : addrB_leaf_max = trav1_to_list_data.rayID ;
+      3'b011 : addrB_leaf_max = trav1_to_list_data.rayID ;
+      3'b001 : addrB_leaf_max = trav1_to_list_data.rayID ;
+    endcase
+  end
+  assign addrB_leaf_max = (leaf_read_valid & trav0_to_list_valid & (~trav1_to_list_valid | ~rrp) ? 
+                          trav0_to_list_data.rayID : trav1_to_list_data.rayID ;
+
+  assign wrdataB_leaf_max = 'h0 ;
+  assign wrenB_leaf_max = 'h0 ; 
+  assign trav0_to_list_stall = leaf_contend & rrp
+  assign trav1_to_list_stall = leaf_contend & ~rrp;
 
 
-    // TODO create my own fucking bram
-   leaf_max rbram(
+  bram_dual_2port_512x32 leaf_max_bram(
   .aclr(rst),
   .address_a(addrA_leaf_max),
   .address_b(addrB_leaf_max),
@@ -187,28 +203,18 @@ module list_unit(
   .q_b(rddataB_leaf_max));
 
 
-//------------------------------------------------------------------
-
-
-  float_t t_int_in_s3, t_int_in_s3_n;
-  assign t_int_in_s3_n = ;
-  ff_ar #($bits(float_t),'h0) t_int_in_s3_buf(.d(t_int_in_s3_n), .q(t_int_in_s3), .clk, .rst);
-
-
 
 //------------------------------------------------------------------
 
-  float_t t_cur_s3, t_cur_s3_n;
-  assign t_cur_s3_n = ;
-  ff_ar #($bits(float_t),'h0) t_cur_s3_buf(.d(t_cur_s3_n), .q(t_cur_s3), .clk, .rst);
+  ff_ar #($bits(rddata_t_cur_buf),'h0) t_cur_s3_buf(.d(rddata_t_cur), .q(rddata_t_cur_buf), .clk, .rst);
 
   
 //------------------------------------------------------------------
 
   float_t inA_comp_t_int, inB_comp_t_int;
   logic out_agb_comp_t_int;
-  assign inA_comp_t_int = ;
-  assign inB_comp_t_int = ;
+  assign inA_comp_t_int = listbuf_out.t_int_in;
+  assign inB_comp_t_int = rddata_t_cur.t_cur;
   altfp_compare comp_t_int (
   .aclr(rst),
   .clock(clk ),
@@ -217,6 +223,11 @@ module list_unit(
   //.aeb(out_aeb_comp_t_int),
 	.agb(out_agb_comp_t_int) );
 
+  logic choose_t_in;
+  assign choose_t_in =  listbuf_s3.hit & (out_agb_comp_t_int | rddata_t_cur_buf.hit_cur);
+
+  float_t t_int_win;
+  assign t_int_win = choose_t_in ? listbuf.t_cur_in : rddata_t_cur_buf.t_cur ;
 
 //------------------------------------------------------------------
   
@@ -224,8 +235,8 @@ module list_unit(
   logic out_agb_comp_leaf_max;
   logic out_aeb_comp_leaf_max;
   
-  assign inA_comp_leaf_max = ;
-  assign inB_comp_leaf_max = ;
+  assign inA_comp_leaf_max = t_int_win;
+  assign inB_comp_leaf_max = rddataA_leaf_max;
   altfp_compare comp_leaf_max (
   .aclr(rst),
   .clock(clk ),
@@ -238,14 +249,23 @@ module list_unit(
 //------------------------------------------------------------------
 
   float_t t_leaf_max_s4, t_leaf_max_s4_n;
-  assign t_leaf_max_s4_n = ;
+  assign t_leaf_max_s4_n = rddataA_leaf_max;
   ff_ar #($bits(float_t),'h0) t_leaf_max_s4_buf(.d(t_leaf_max_s4_n), .q(t_leaf_max_s4), .clk, .rst);
 
 //------------------------------------------------------------------
 
   float_t t_best_s4, t_best_s4_n;
-  assign t_best_s4_n = ;
+  assign t_best_s4_n = t_int_win;
   ff_ar #($bits(float_t),'h0) t_best_s4_buf(.d(t_best_s4_n), .q(t_best_s4), .clk, .rst);
+
+  logic cur_hit_s4, cur_hit_s4_n;
+  assign cur_hit_s4_n = listbuf_s3.hit | rddata_t_cur_buf.hit_cur ;
+  ff_ar #(1,'h0) cur_hit_s4_buf(.d(cur_hit_s4_n), .q(cur_hit_s4), .clk, .rst);
+
+  logic choose_t_in_s4, choose_t_in_s4_n;
+  assign choose_t_in_s4_n = choose_t_in;
+  ff_ar #(1,'h0) choose_t_in_s4_buf(.d(choose_t_in_s4_n), .q(choose_t_in_s4), .clk, .rst);
+
 
 //------------------------------------------------------------------
   // Bari, triID (intersection) ports
@@ -255,23 +275,32 @@ module list_unit(
     triID_t triID;
   } wrdata_int_info, rddata_int_info;
 
-  logic [8:0] addr_int_info;
+  rayID_t raddr_int_info, waddr_int_info;
   logic wren_int_info;
-  
-  assign wrdata_int_info = ;
-  assign addr_int_info = ;
-  assign wren_int_info = ;
+  always_comb begin
+    wrdata_int_info.uv = list_VSpipe_out.uv;
+    wrdata_int_info.triID = list_VSpipe_out.triID;
+  end
+  assign waddr_int_info = list_VSpipe_out.ray_info.rayID;
+  assign wren_int_info = choose_t_in_s4 ;
 
-/*
-  bram_84xx512 int_info_bram(
+  
+  bram_dual_rw_512x80 int_info_bram(
   .aclr(rst),
   .address(addr_int_info),
   .clock(clk),
   .data(wrdata_int_info),
   .wren(wren_int_info),
-  .q(rddata_int_info),
-*/
+  .q(rddata_int_info) );
 
+
+  assign wren_t_cur = choose_t_in_s4 ;
+  always_comb begin
+    wrdata_t_cur.hit_cur = cur_hit_s4;
+    wrdata_t_cur.t_cur = t_best_s4 ;
+  end
+
+  
 
 //------------------------------------------------------------------
  
@@ -287,10 +316,12 @@ module list_unit(
   logic last_fifo_re;
   logic last_fifo_we;
   logic [2:0] num_in_last_fifo;
-
-  assign last_fifo_in = ;
-  assign last_fifo_we = ;
-  assign last_fifo_re = ;
+  always_comb begin
+    last_fifo_in.ray_info = list_VSpipe.ray_info ;
+    last_fifo_in.is_hit = cur_hit_s4 & (~out_agb_comp_leaf_max | out_aeb_comp_leaf_max) ; // Only if there is a hit LESS than t_max_leaf
+    last_fifo_in.t = last_fifo_in.is_hit ? t_best_s4 : t_leaf_max_s4 ;
+  end
+  assign last_fifo_we = list_VSpipe_valid_ds & list_VSpipe_out.is_last;
 
   fifo #(.K(2), .WIDTH($bits(last_fifo_in)) ) last_fifo_inst(
     .clk, .rst,
@@ -310,77 +341,105 @@ module list_unit(
 //------------------------------------------------------------------
   // pipe_valid_stall for int_info
   struct packed {
-    bari_uv_t uv;
-    triID_t triID;
-  } int_pipe_in, int_pipe_out;
+    rayID_t rayID;
+    float_t t_int;
+  } int_VSpipe_in, int_VSpipe_out;
 
-  logic int_pipe_valid_us, int_pipe_stall_us;
-  logic int_pipe_valid_ds, int_pipe_stall_ds;
+  logic int_VSpipe_valid_us, int_VSpipe_stall_us;
+  logic int_VSpipe_valid_ds, int_VSpipe_stall_ds;
   logic [2:0] num_in_int_fifo;
+  logic hit_stall;
 
-  assign int_pipe_in = ;
-  assign int_pipe_valid_us = ;
-  assign int_pipe_stall_ds = ; // need to move down down down to the burning ring of fire
-  
-  pipe_valid_stall #(.WIDTH($bits(int_pipe_in)), .DEPTH(2)) pipe_inst(
+  always_comb begin
+    int_VSpipe_in.rayID = last_fifo_out.ray_info.rayID;
+    int_VSpipe_in.t_int = last_fifo_out.t;
+  end
+  assign int_VSpipe_valid_us = ~last_fifo_empty & last_fifo_data.is_hit & ~int_VSpipe_stall_us;
+  assign int_VSpipe_stall_ds = list_to_rs_stall ; 
+  assign hit_stall = ~last_fifo_empty & last_fifo_data.is_hit & int_VSpipe_stall_us ;
+
+  pipe_valid_stall #(.WIDTH($bits(int_VSpipe_in)), .DEPTH(2)) pipe_inst(
     .clk, .rst,
-    .us_valid(int_pipe_valid_us),
-    .us_data(int_pipe_in),
-    .us_stall(int_pipe_stall_us),
-    .ds_valid(int_pipe_valid_ds),
-    .ds_data(int_pipe_out),
-    .ds_stall(int_pipe_stall_ds),
+    .us_valid(int_VSpipe_valid_us),
+    .us_data(int_VSpipe_in),
+    .us_stall(int_VSpipe_stall_us),
+    .ds_valid(int_VSpipe_valid_ds),
+    .ds_data(int_VSpipe_out),
+    .ds_stall(int_VSpipe_stall_ds),
     .num_in_fifo(num_in_int_fifo) );
 
+// Reading from int_into_ram
+
+  assign raddr_int_info = last_fifo_out.ray_info.rayID;
 
 //------------------------------------------------------------------
-  // fifo for intersection
-  struct packed {
-    ray_info_t ray_info;
-    logic is_hit;
-    float_t t_int;
-  } last_fifo_in, last_fifo_out;
+  // fifo for hits
+  list_to_rs_t int_fifo_in, int_fifo_out;
 
-  // fifo to accumulate Definite misses and definite hits
-  logic last_fifo_full;
-  logic last_fifo_empty;
-  logic last_fifo_re;
-  logic last_fifo_we;
-  logic [2:0] num_in_last_fifo;
+  logic int_fifo_full;
+  logic int_fifo_empty;
+  logic int_fifo_re;
+  logic int_fifo_we;
+  logic [2:0] num_in_int_fifo;
+  
+  always_comb begin
+    int_fifo_in.rayID = int_VSpipe_out.rayID;
+    int_fifo_in.t_int = int_VSpipe_out.t_int;
+    int_fifo_in.uv = rddata_int_info.uv;
+    int_fifo_in.triID = rddata_int_info.triID;
+  end
+  assign int_fifo_we = int_VSpipe_valid_ds;
+  assign int_fifo_re = ~int_fifo_empty & ~list_to_rs_stall;
 
-  assign last_fifo_in = ;
-  assign last_fifo_we = ;
-  assign last_fifo_re = ;
-
-  fifo #(.K(2), .WIDTH($bits(last_fifo_in)) ) last_fifo_inst(
+  fifo #(.K(2), .WIDTH($bits(int_fifo_in)) ) int_fifo_inst(
     .clk, .rst,
-    .data_in(last_fifo_in),
-    .data_out(last_fifo_out),
-    .full(last_fifo_full),
-    .empty(last_fifo_empty),
-    .re(last_fifo_re),
-    .we(last_fifo_we),
-    .num_in_fifo(num_in_last_fifo) );
+    .data_in(int_fifo_in),
+    .data_out(int_fifo_out),
+    .full(int_fifo_full),
+    .empty(int_fifo_empty),
+    .re(int_fifo_re),
+    .we(int_fifo_we),
+    .num_in_fifo(num_in_int_fifo) );
 
 
 //------------------------------------------------------------------
 
   // output logic for intersection 
-  assign trav_to_rs_valid = ;
-  assign trav_to_rs_data = ;
+  assign list_to_rs_valid = ~int_fifo_empty;
+  assign list_to_rs_data = int_fifo_out;
 
 
 //------------------------------------------------------------------
   // Buffer for misses and output logic
+  logic miss_stall;
   
-  trav_to_ss_t to_ss, to_ss_n;
-  assign to_ss_n = ;
-  ff_ar #($bits(trav_to_ss),'h0) to_ss_buf(.d(to_ss_n), .q(to_ss), .clk, .rst);
- 
-  assign trav_to_ss_valid = ;
-  assign trav_to_ss_data = ;
+  logic valid_miss;
+  assign valid_miss = ~last_fifo_empty & ~last_fifo_out.hit & (~to_ss_valid | ~list_to_ss_stall ;
 
+  list_to_ss_t to_ss, to_ss_n;
+  logic t_ss_valid, to_ss_valid_n;
+  always_comb begin
+    if( valid_miss) begin
+      to_ss_n.ray_info = last_fifo_out.ray_info;
+      to_ss_n.t_max_leaf = last_fifo_out.t;
+    end
+    else to_ss_n = to_ss ;
+  assign to_ss_valid_n = (~to_ss_valid | ~list_to_ss_stall) ? (~last_fifo_empty & ~last_fifo_out.hit) : to_ss_valid ;
+  ff_ar #($bits(list_to_ss_t),'h0) to_ss_buf(.d(to_ss_n), .q(to_ss), .clk, .rst);
+  ff_ar #(1,'h0) to_ss_valid_buf(.d(to_ss_valid_n), .q(to_ss_valid), .clk, .rst);
+ 
+  assign list_to_ss_valid = to_ss_valid ;
+  assign list_to_ss_data = to_ss ;
+  assign miss_stall = ~last_fifo_empty & ~last_fifo_out.hit & to_ss_valid & list_to_ss_stall ;
 
 //------------------------------------------------------------------
+
+  assign last_fifo_re = valid_miss | int_VS_valid_us ;
+  
+  `ifndef SYNTH
+    always assert(!(valid_miss & int_VS_valid_us));
+    always assert(!(miss_stall & hit_stall));
+  `endif
+  assign list_VSpipe_stall_ds = miss_stall | hit_stall ;
 
 endmodule
