@@ -374,6 +374,7 @@ typedef struct packed {
 	rayID_t rayID;
   bari_uv_t uv;
   float_t t_int;
+  triID_t triID;
 } list_to_rs_t;
 
 
