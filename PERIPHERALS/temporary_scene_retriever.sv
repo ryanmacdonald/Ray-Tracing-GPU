@@ -16,18 +16,12 @@ module temporary_scene_retriever(input logic clk, rst,
 				 // Interface with pixel buffer
 				 output pixel_buffer_entry_t pbData,
 				 output logic pb_we,
-				 input logic pb_full,
-				 
-				 // Temp Error signal
-				 output logic read_error
+				 input logic pb_full
 				);
 
 	enum logic {IDLE,ACTIVE} state, nextState;
 
 	logic done, inc;
-	
-	// temporary: being used for DRAM testing
-	assign read_error = (readData[24:0] != cnt) & readValid;
 
 	logic[$clog2(`num_rays)-1:0] cnt, nextCnt;
 
