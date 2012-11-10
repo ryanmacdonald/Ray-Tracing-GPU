@@ -98,6 +98,16 @@ typedef struct packed {
   logic [18:0] ID;
 } nodeID_t;
 
+typedef struct packed{
+logic[18:0] pixelID;
+} pixelID_t;
+
+typedef struct packed{
+  pixelID_t pixelID;
+  vector_t origin;
+  vector_t dir;
+} prg_ray_t;
+
 typedef struct packed {
   ray_info_t ray_info;
   vector_t origin;
@@ -117,9 +127,7 @@ typedef struct packed {
 
 } color_t ;
 
-typedef struct packed{
-  logic[18:0] pixelID;
-} pixelID_t;
+
 
 typedef struct packed {
   color_t color;

@@ -8,12 +8,12 @@ module tb_int_prg;
 	logic clk, rst, v0, v1, v2, start, rayReady, done;
 	vector_t E, U, V, W;
 	float_t pw;
-	ray_t prg_data;
+	prg_ray_t prg_data;
 	
 	logic full, we;
-	rayID_t rayID;
+	pixelID_t pixelID;
 	color_t color_out;
-  pixel_buffer_entry_t pixel_entry_out;
+ 	pixel_buffer_entry_t pixel_entry_out;
 
 	prg       fuck(.*);
 	int_wrap   int_inst(.valid_in(rayReady),.ray_in(prg_data),.v0(v1), .v1(v2), .v2(v0), .*);
