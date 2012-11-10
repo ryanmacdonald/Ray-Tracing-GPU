@@ -356,7 +356,10 @@ typedef struct packed {
 } int_to_list_t ;
 
 typedef struct packed {
-    ray_info_t ray_info;
+	rayID_t rayID;
+  bari_uv_t uv;
+  float_t t_int;
+  triID_t triID;
 } list_to_rs_t;
 
 typedef struct packed {
