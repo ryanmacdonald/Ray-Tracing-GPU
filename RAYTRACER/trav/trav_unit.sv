@@ -133,7 +133,7 @@ module trav_unit(
   always_comb begin
     if(trav_to_list_stall) to_list_buf_n = to_list_buf;
     else begin
-      to_list_buf_n.ray_info = leaf_fifo_out.ray_info;
+      to_list_buf_n.rayID = leaf_fifo_out.ray_info.rayID;
       to_list_buf_n.t_max_leaf = leaf_fifo_out.t_max;
     end
   end

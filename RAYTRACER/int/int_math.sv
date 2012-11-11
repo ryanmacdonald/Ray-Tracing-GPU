@@ -248,7 +248,7 @@ module int_math(
   .clock(clk ),
   .dataa(inA_comp1 ),
   .datab(inB_comp1 ),
-  //.aeb(out_aeb_comp1),
+  .aeb(),
 	.agb(out_agb_comp1) );
 
   
@@ -264,7 +264,7 @@ module int_math(
   .clock(clk ),
   .dataa(inA_comp_ep ),
   .datab(inB_comp_ep ),
-  //.aeb(out_aeb_comp_ep),
+  .aeb(),
 	.agb(out_agb_comp_ep) );
  
 
@@ -278,7 +278,7 @@ module int_math(
   .clock(clk ),
   .dataa(inA_comp_shadow ),
   .datab(inB_comp_shadow ),
-  //.aeb(out_aeb_comp_shadow),
+  .aeb(),
 	.agb(out_agb_comp_shadow) );
 
   assign t_int_lt1 = out_agb_comp_shadow;

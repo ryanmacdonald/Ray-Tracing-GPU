@@ -88,10 +88,14 @@ typedef struct packed {
   logic [15:0] ID;
 } triID_t;
 
- // maximum of 512 rays at a time in the pipeline TODO ?? 
+typedef struct packed {
+  logic [8:0] ID;
+} rayID_t;
+
+
 typedef struct packed {
   logic is_occular;
-  logic [8:0] rayID; 
+  rayID_t rayID; 
 } ray_info_t;
 
 typedef struct packed {
@@ -131,14 +135,6 @@ typedef struct packed {
   float_t v;
 } bari_uv_t;
 
-/*
-typedef struct packed {
- triID_t triID;
-  float_t t_int; // time intersection
-  bari_uv_t uv; // uv of baricentric coordinates
-
-} intersection_t;
-*/
 
 typedef struct packed {
   float_t m11;
@@ -158,28 +154,6 @@ typedef struct packed {
   vector_t translate;
 
 } int_cacheline_t;
-
-/*
-typedef struct packed {
-  logic tri1_valid;
-  float_t t_max;
-  triID_t tri0_ID;
-  triID_t tri1_ID;
-  ray_info_t ray_info;
-} int_pipe1_t;
-
-
-typedef struct packed {
-  float_t t_int0;
-  float_t t_int1;
-  logic t_sel; // triangle value that has smaller tint
-  logic t_val0;
-  logic t_val1;
-  triID_t tri0_ID;
-  triID_t tri1_ID;
-  ray_info_t ray_info;
-} int_pipe2_t;
-*/
 
 // for each key, key[0] is the press pulse and key[1] is release pulse
 typedef struct packed {
@@ -288,7 +262,7 @@ typedef struct packed {
 } trav_to_ss_t ;
 
 typedef struct packed {
-  ray_info_t ray_info;
+  rayID_t rayID;
   float_t t_max_leaf;
 } trav_to_list_t ;
 
@@ -363,7 +337,13 @@ typedef struct packed {
 } list_to_rs_t;
 
 typedef struct packed {
-    ray_info_t ray_info;
+	ray_info_t ray_info;
+  float_t t_max_leaf;
+} list_to_ss_t;
+
+
+typedef struct packed {
+    rayID_t rayID;
     ray_vec_t ray_vec;
 } rs_to_pcalc_t;
 
