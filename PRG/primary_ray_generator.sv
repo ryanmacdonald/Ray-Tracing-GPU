@@ -30,7 +30,7 @@ module prg(input logic clk, rst,
 	   input float_t pw,
 	   input logic x_y_valid,
 	   output logic idle, rayReady, done,
-	   output ray_t prg_data);
+	   output prg_ray_t prg_data);
 
 `ifndef SYNTH
 	shortreal px,py,pz;
@@ -39,7 +39,7 @@ module prg(input logic clk, rst,
 	assign pz = $bitstoshortreal(prg_data.dir.z);
 `endif
 	logic start_prg;
-	logic[38:0] rayValid;
+	logic[37:0] rayValid;
 
 	sync_to_v #(2) sv(.synced_signal(start_prg),.clk,.rst,.v0,.v1,.v2,.signal_to_sync(start));	
 
@@ -54,7 +54,7 @@ module prg(input logic clk, rst,
 	// RayID
 	logic[$clog2(`num_rays)-1:0] rayID,nextrayID;
 
-	assign prg_data.rayID  = rayID;
+	assign prg_data.pixelID  = rayID;
 	assign prg_data.origin = E;
 	assign prg_data.dir    = prayD;
 
@@ -153,8 +153,8 @@ module prg(input logic clk, rst,
 
 	
 	// Shift reg for valid bit
-
-	shifter #(39,39'd0) rv(.q(rayValid),.d(x_y_valid),.en(~idle),.clr(1'b0),.clk,.rst);
+	// The strange reset value is for the very first ray's valid signal
+	shifter #(38,38'h2000000000) rv(.q(rayValid),.d(x_y_valid),.en(~idle),.clr(1'b0),.clk,.rst);
 
 
 	////// NEXTSTATE AND OUTPUT LOGIC //////
@@ -183,24 +183,31 @@ module prg(input logic clk, rst,
 					nextState = IDLE;
 				end
 				else if(v0) begin
-					if(cnt >= 6'd39 || rayID > 0) begin
-						nextCnt = 0;
-						if(rayValid[0]) rayReady = 1;
-						nextrayID = rayID + 1'b1;
-					end
-					next_u_dist = add_1_result;
-					nextState = ACTIVE;
-				end
-				else if(v1) begin
-				/*	if(cnt >= 6'd39 || rayID > 0) begin
+					/*if(cnt >= 6'd39 || rayID > 0) begin
 						nextCnt = 0;
 						if(rayValid[0]) rayReady = 1;
 						nextrayID = rayID + 1'b1;
 					end*/
+					next_u_dist = add_1_result;
+					nextState = ACTIVE;
+				end
+				else if(v1) begin
+					if(cnt >= 6'd37 || rayID > 0) begin
+						nextCnt = 0;
+						if(rayValid[0]) begin 
+							rayReady = 1;
+							nextrayID = rayID + 1'b1;
+						end
+					end
 					next_v_dist = add_1_result;
 					nextState = ACTIVE;
 				end
 				else if(v2) begin
+					/*if(cnt >= 6'd38 || rayID > 0) begin
+						nextCnt = 0;
+						if(rayValid[0]) rayReady = 1;
+						nextrayID = rayID + 1'b1;
+					end*/
 					nextState = ACTIVE;
 				end
 				else nextState = ACTIVE;

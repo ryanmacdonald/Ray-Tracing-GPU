@@ -12,7 +12,6 @@ module camera_controller(
   output vector_t E, U, V, W
 
   );
-
   // left right U
   // left = key_d   0
   // right = key_a  1
@@ -25,6 +24,12 @@ module camera_controller(
   // in = W_key     4
   // out = S_key    5
   
+  `ifndef SYNTH
+  shortreal Ex,Ey,Ez;
+  assign Ex = $bitstoshortreal(E.x);
+  assign Ey = $bitstoshortreal(E.y);
+  assign Ez = $bitstoshortreal(E.z);
+  `endif
 
   logic[1:0] CS0, NS0;
 
@@ -55,7 +60,7 @@ module camera_controller(
       2'b10 : begin
         NS0 = rendering ? 2'b10 : 2'b00 ;
       end
-		default: NS0 = 2'b00;
+      default: NS0 = 2'b00;
     endcase
   end
 

@@ -102,6 +102,16 @@ typedef struct packed {
   logic [18:0] ID;
 } nodeID_t;
 
+typedef struct packed{
+  logic[18:0] pixelID;
+} pixelID_t;
+
+typedef struct packed{
+  pixelID_t pixelID;
+  vector_t origin;
+  vector_t dir;
+} prg_ray_t;
+
 typedef struct packed {
   ray_info_t ray_info;
   vector_t origin;
@@ -113,17 +123,11 @@ typedef struct packed {
   vector_t dir;
 } ray_vec_t;
 
-
 typedef struct packed {
   logic [7:0] red;
   logic [7:0] green;
   logic [7:0] blue;
-
 } color_t ;
-
-typedef struct packed{
-  logic[18:0] pixelID;
-} pixelID_t;
 
 typedef struct packed {
   color_t color;
@@ -151,7 +155,7 @@ typedef struct packed {
 
 typedef struct packed {
   m3x3_t matrix;
-  vector_t translate;
+  vector_t translate;	logic v0, v1, v2;
 
 } int_cacheline_t;
 
@@ -330,7 +334,13 @@ typedef struct packed {
 } int_to_list_t ;
 
 typedef struct packed {
-	rayID_t rayID;
+
+  rayID_t rayID;
+	logic [8:0] ID;
+} rayID_t;
+
+typedef struct packed {
+  rayID_t rayID;
   bari_uv_t uv;
   float_t t_int;
   triID_t triID;

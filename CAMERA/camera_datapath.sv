@@ -8,7 +8,12 @@
 `define INIT_CAM_Z 32'hC1200000
 
 // move_scale = 1/50Mhz
-`define move_scale 32'h32ABCC77
+`ifndef SYNTH
+`define move_scale 32'h3F800000
+`else
+`define move_scale 32'h32ABCC77 
+`endif
+
 
 `define UNEG 3'b001
 `define UPOS 3'b000
@@ -26,13 +31,13 @@ module camera_datapath (input logic clk, rst,
 			input logic[2:0] key,
 			input logic[31:0] cnt,
 			output vector_t E, U, V, W);
-/*
+
 `ifndef SYNTH
 	shortreal nc_x,nc_y,nc_z;
 	assign nc_x = $bitstoshortreal(nextCam.x);
 	assign nc_y = $bitstoshortreal(nextCam.y);
 	assign nc_z = $bitstoshortreal(nextCam.z);	
-`endif*/
+`endif
 
 	logic[31:0] move_val, move_val_n;
 	logic[2:0] last_key;
