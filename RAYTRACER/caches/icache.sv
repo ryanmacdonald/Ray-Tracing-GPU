@@ -1,4 +1,4 @@
-module icache(
+module cache(
 	output logic us_stall,
 	input logic re,
 	input logic [] addr,
