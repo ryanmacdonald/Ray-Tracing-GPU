@@ -28,6 +28,9 @@ tuv_calc:
 t_comp: 
 	$(CC) $(FLAGS) -top tb_t_comp COMMON/*v COMMON/altfp_comp/altfp_comp.v RAYTRACER/int/p_calc.sv RAYTRACER/int/t_comp.sv RAYTRACER/int/TBs/tb_t_comp.sv
 
+scene_int:
+	$(CC) $(FLAGS) -top tb_scene_int COMMON/*v COMMON/altfp_compare/altfp_compare.v COMMON/altfp_add/altfp_add.v COMMON/altfp_div/altfp_div.v RAYTRACER/scene_int/*v
+
 int_math: 
 	$(CC) $(FLAGS) -top tb_int_math COMMON/*v COMMON/altfp*/*.v RAYTRACER/int/*.sv RAYTRACER/int/TBs/tb_int_math.sv
 

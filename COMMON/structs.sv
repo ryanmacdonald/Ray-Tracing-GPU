@@ -99,7 +99,7 @@ typedef struct packed {
 } nodeID_t;
 
 typedef struct packed{
-logic[18:0] pixelID;
+  logic[18:0] pixelID;
 } pixelID_t;
 
 typedef struct packed{
@@ -119,15 +119,11 @@ typedef struct packed {
   vector_t dir;
 } ray_vec_t;
 
-
 typedef struct packed {
   logic [7:0] red;
   logic [7:0] green;
   logic [7:0] blue;
-
 } color_t ;
-
-
 
 typedef struct packed {
   color_t color;
@@ -364,7 +360,7 @@ typedef struct packed {
 } int_to_list_t ;
 
 typedef struct packed {
-	rayID_t rayID;
+  //rayID_t rayID;
   bari_uv_t uv;
   float_t t_int;
   triID_t triID;
