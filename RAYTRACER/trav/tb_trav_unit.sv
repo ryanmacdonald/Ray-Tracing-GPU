@@ -142,9 +142,12 @@ module tb_trav_unit();
     return l;
   endfunction
 
-  task send_to_trav(int rayID, int nodeID, logic restnode_search, shortreal t_max, shortreal t_min, norm_node_t tree_node);
+  task send_to_trav(int rayID, int nodeID, logic restnode_search, shortreal t_max, shortreal t_min, norm_node_t tree_node, int ss_wptr, int ss_num);
    // @(posedge clk);
     tcache_to_trav_data.ray_info.rayID <= rayID;
+    tcache_to_trav_data.ray_info.is_shadow <= 0;
+    tcache_to_trav_data.ray_info.ss_wptr <= ss_wptr;
+    tcache_to_trav_data.ray_info.ss_num <= ss_num;
     tcache_to_trav_data.nodeID <= nodeID;
     tcache_to_trav_data.restnode_search <= restnode_search;
     tcache_to_trav_data.t_max <= to_bits(t_max);
@@ -173,8 +176,8 @@ module tb_trav_unit();
     raystore_write_data <= 'bx;
 
 	// write the test ray vector into the ray store
-    ray_vec.origin = create_vec(0,8,1);
-    ray_vec.dir = create_vec(1,-1,0);
+    ray_vec.origin = create_vec(0,0,8);
+    ray_vec.dir = create_vec(-1,-1,-1);
     @(posedge clk);
     raystore_we <= 1'b1;
     raystore_write_addr <= 'd6;
@@ -197,26 +200,27 @@ module tb_trav_unit();
     repeat(10) @(posedge clk);
 
     @(posedge clk);
-    norm_node = create_norm_node(2'b00, 5, 12, 0,0);
-    send_to_trav(6, 2, 1, 10, 0, norm_node);
-    norm_node = create_norm_node(2'b01, 5, 12, 1,0);
-    send_to_trav(6, 2, 1, 10, 0, norm_node);
+    norm_node = create_norm_node(2'b10, 5, 12, 0,0);
+    send_to_trav(6, 2, 1, 10, 0, norm_node,0,0);
+    norm_node = create_norm_node(2'b10, 5, 12, 1,0);
+    send_to_trav(6, 2, 1, 10, 0, norm_node,1,2);
     norm_node = create_norm_node(2'b10, 5, 12, 0,1);
-    send_to_trav(6, 2, 1, 10, 0, norm_node);
+    send_to_trav(6, 2, 1, 10, 0, norm_node,1,4);
 
-    norm_node = create_norm_node(2'b00, 5, 12, 0,0);
+/*
+    norm_node = create_norm_node(2'b10, 5, 12, 0,0);
     send_to_trav(7, 2, 1, 10, 0, norm_node);
-    norm_node = create_norm_node(2'b01, 5, 12, 1,0);
+    norm_node = create_norm_node(2'b10, 5, 12, 1,0);
     send_to_trav(7, 2, 1, 10, 0, norm_node);
     norm_node = create_norm_node(2'b10, 5, 12, 0,1);
     send_to_trav(7, 2, 1, 10, 0, norm_node);
-    
+*/    
     leaf_node = create_leaf_node(5, 8);
-    send_to_trav(3, 2, 1, 4, 0, leaf_node);
+    send_to_trav(3, 2, 1, 4, 0, leaf_node,2,4);
     leaf_node = create_leaf_node(2, 9);
-    send_to_trav(4, 2, 1, 13, 0, leaf_node);
+    send_to_trav(4, 2, 1, 13, 0, leaf_node,1,0);
     leaf_node = create_leaf_node(7, 1);
-    send_to_trav(5, 2, 1, 0.05, 0, leaf_node);
+    send_to_trav(5, 2, 1, 0.05, 0, leaf_node,2,3);
    
     
     tcache_to_trav_valid <= 0;

@@ -94,8 +94,10 @@ typedef struct packed {
 
 
 typedef struct packed {
-  logic is_occular;
-  rayID_t rayID; 
+  logic is_shadow;
+  logic [1:0] ss_wptr;
+  logic [2:0] ss_num;
+  rayID_t rayID;
 } ray_info_t;
 
 typedef struct packed {
@@ -332,12 +334,6 @@ typedef struct packed {
   bari_uv_t uv;
 
 } int_to_list_t ;
-
-typedef struct packed {
-
-  rayID_t rayID;
-	logic [8:0] ID;
-} rayID_t;
 
 typedef struct packed {
   rayID_t rayID;

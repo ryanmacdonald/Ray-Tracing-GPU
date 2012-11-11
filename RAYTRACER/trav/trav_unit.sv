@@ -373,13 +373,25 @@ module trav_unit(
   logic good_to_tarb;
   assign good_to_tarb = ~trav_fifo_empty & ~pop_valid;
 
+
+  logic [1:0] ss_wptr_next;
+  logic [2:0] ss_num_next;
+  assign ss_wptr_next = push_valid ? (trav_fifo_out.ray_info.ss_wptr + 1'b1) : 
+                                      trav_fifo_out.ray_info.ss_wptr ;
+  assign ss_num_next = push_valid ? (trav_fifo_out.ray_info.ss_num == 3'h4 ? 3'h4 : 
+                                     trav_fifo_out.ray_info.ss_num + 1'b1) :
+                                     trav_fifo_out.ray_info.ss_num ;
+
   // TODO sketchy!! maybe
   assign tarb_valid_n = (tarb_valid & trav_to_tarb_stall) | (good_to_tarb & trav_fifo_re);
   
   always_comb begin
     if(tarb_valid & trav_to_tarb_stall) tarb_buf_n = tarb_buf;
     else begin
-      tarb_buf_n.ray_info = trav_fifo_out.ray_info ;
+      tarb_buf_n.ray_info.rayID = trav_fifo_out.ray_info.rayID ;
+      tarb_buf_n.ray_info.is_shadow = trav_fifo_out.ray_info.is_shadow ;
+      tarb_buf_n.ray_info.ss_wptr = ss_wptr_next;
+      tarb_buf_n.ray_info.ss_num = ss_num_next ;
       tarb_buf_n.nodeID = trav_node_ID;
       tarb_buf_n.restnode_search = trav_fifo_out.restnode_search & ~push_valid;
       tarb_buf_n.t_max = trav_t_max ;
