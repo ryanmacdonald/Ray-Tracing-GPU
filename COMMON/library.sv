@@ -359,4 +359,51 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
 
 endmodule
 
+module lshape #(parameter SIDE_W = 10, UNSTALL_W = 100, DEPTH = 20)
+  (
 
+  input logic clk, rst,
+  input logic us_valid,
+  input logic [SIDE_W-1:0] us_side_data,
+  output logic us_stall,
+  
+  input logic [UNSTALL_W-1:0] us_unstall_data,
+
+  output logic empty,
+  output logic [SIDE_W + UNSTALL_W-1:0] ds_data,
+  input logic rdreq,
+  input logic ds_stall
+  
+  );
+  
+  logic ds_valid;
+  logic [SIDE_W-1:0] sb_to_fifo;
+  logic full;
+  logic [$clog2(DEPTH+2)-1:0] num_in_fifo;
+    
+  `ifndef SYNTH
+    always @(*) assert(!(full & ds_valid));
+  `endif
+
+
+  pipe_valid_stall #(.WIDTH(SIDE_W), .DEPTH(20)) pipe_inst(
+    .clk, .rst,
+    .us_valid,
+    .us_data(us_side_data),
+    .us_stall,
+    .ds_valid,
+    .ds_data(sb_to_fifo),
+    .ds_stall,
+    .num_in_fifo );
+
+  fifo #(.K($clog2(DEPTH)-1), .WIDTH(SIDE_W+UNSTALL_W)) fifo_inst(
+    .data_in({sb_to_fifo,us_unstall_data}),
+    .data_out(ds_data),
+    .full,
+    .empty,
+    .re(rdreq),
+    .we(ds_valid),
+    .num_in_fifo,
+    .clk, .rst);
+
+endmodule

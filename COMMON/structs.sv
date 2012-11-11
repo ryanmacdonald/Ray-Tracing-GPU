@@ -159,7 +159,7 @@ typedef struct packed {
 
 typedef struct packed {
   m3x3_t matrix;
-  vector_t translate;
+  vector_t translate;	logic v0, v1, v2;
 
 } int_cacheline_t;
 
@@ -360,7 +360,13 @@ typedef struct packed {
 } int_to_list_t ;
 
 typedef struct packed {
-  //rayID_t rayID;
+
+  rayID_t rayID;
+	logic [8:0] ID;
+} rayID_t;
+
+typedef struct packed {
+  rayID_t rayID;
   bari_uv_t uv;
   float_t t_int;
   triID_t triID;
