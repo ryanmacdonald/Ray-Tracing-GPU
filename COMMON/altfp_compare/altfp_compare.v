@@ -357,7 +357,7 @@ module altfp_compare (
 	clock,
 	dataa,
 	datab,
-	//aeb,
+	aeb,
 	agb);
 	//alb);
 
@@ -365,7 +365,7 @@ module altfp_compare (
 	input	  clock;
 	input	[31:0]  dataa;
 	input	[31:0]  datab;
-	//output	  aeb;
+	output	  aeb;
 	output	  agb;
 	//output	  alb;
 

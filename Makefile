@@ -68,6 +68,9 @@ camera:
 sdram:
 	$(CC) $(FLAGS) -top top COMMON/*v SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v
 
+list: 
+	$(CC) $(FLAGS) -top tb_list_unit COMMON/*v COMMON/altfp*/*.v COMMON/bram/*.v  RAYTRACER/list/*.sv
+
 lshape:
 	$(CC) $(FLAGS) -top lshape_tb COMMON/*v TBs/lshape_tb.sv
 
