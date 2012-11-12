@@ -286,7 +286,6 @@ typedef struct packed {
   ln_tri_t ln_tri;
 } leaf_info_t;
 
-
     
 // lcache_to_rs
 typedef struct packed {
