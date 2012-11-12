@@ -212,6 +212,72 @@ module fifo(clk, rst,
 
 endmodule
 
+module no_duplicates_fifo
+  #(parameter WIDTH = 32, K = 2) (
+  input  logic clk, rst,
+  input  logic [WIDTH-1:0] data_in,
+  input  logic we,
+  input  logic re,
+  output logic exists_in_fifo,
+  output logic full,
+  output logic empty,
+  output logic [WIDTH-1:0] data_out,
+  output logic [K:0] num_in_fifo);
+
+  logic write_allowed, read_allowed;
+
+  logic [K:0] rPtr, rPtr_n;
+  logic [K:0] wPtr, wPtr_n;
+  logic [K:0] cnt, cnt_n;
+
+  assign num_in_fifo = cnt;
+
+  // actual queue
+  logic [(1<<K) - 1:0][WIDTH:0] queue; // extra bit for valid bit
+  logic [(1<<K) - 1:0][WIDTH:0] queue_n;
+
+  //output assigns
+  assign data_out = queue[rPtr[K-1:0]];
+  assign empty = (rPtr == wPtr) ;
+  assign full = (rPtr == {~wPtr[K],wPtr[K-1:0]} );
+
+  assign write_allowed = we & ~full ;
+  assign read_allowed = re & ~empty ;
+
+  always_comb begin
+    case({write_allowed,read_allowed})
+      2'b00 : cnt_n = cnt;
+      2'b01 : cnt_n = cnt - 1'b1 ;
+      2'b10 : cnt_n = cnt + 1'b1 ;
+      2'b11 : cnt_n = cnt;
+    endcase
+  end
+
+  always_comb begin
+    queue_n = queue ;
+    if(write_allowed) queue_n[wPtr[K-1:0]] = {1'b1,data_in}; // set valid bit
+    if(read_allowed) queue_n[rPtr[K-1:0]] = 'h0; // clear valid bit
+  end
+ 
+  assign rPtr_n = read_allowed ? rPtr + 1'b1 : rPtr ;
+  assign wPtr_n = write_allowed ? wPtr + 1'b1 : wPtr ;
+
+  ff_ar #(K+1,'h0) ff_r(.q(rPtr), .d(rPtr_n), .clk, .rst);
+  ff_ar #(K+1,'h0) ff_w(.q(wPtr), .d(wPtr_n), .clk, .rst);
+  ff_ar #((1<<K)*(WIDTH+1),'h0) ff_q(.q(queue), .d(queue_n), .clk, .rst); 
+  ff_ar #(K+1,'h0) ff_cnt(.q(cnt), .d(cnt_n), .clk, .rst);
+
+  int i;
+  always_comb begin
+  	exists_in_fifo = 1'b0;
+	for(i=0; i < (1<<K); i++) begin
+		if(queue[i] == {1'b1,data_in})
+			exists_in_fifo = 1'b1;
+	end
+  end
+
+endmodule
+
 
 /* This has the 3 types of buffers  
   t3: data 3/3 of clocks

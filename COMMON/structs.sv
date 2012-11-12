@@ -360,8 +360,6 @@ typedef struct packed {
 } int_to_list_t ;
 
 typedef struct packed {
-
-  rayID_t rayID;
 	logic [8:0] ID;
 } rayID_t;
 
