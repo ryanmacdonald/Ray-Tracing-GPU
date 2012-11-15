@@ -101,7 +101,7 @@ typedef struct packed {
 } ray_info_t;
 
 typedef struct packed {
-  logic [18:0] ID;
+  logic [15:0] ID;
 } nodeID_t;
 
 typedef struct packed{
