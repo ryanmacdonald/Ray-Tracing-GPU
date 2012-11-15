@@ -1,3 +1,5 @@
+`default_nettype none
+
 `define SIDE_W 4
 `define ADDR_W 8
 `define RDATA_W 16
@@ -8,6 +10,9 @@
 `define BLK_W 1
 
 `define DEPTH 2
+`define RIF_DEPTH (`DEPTH+2)
+`define HDF_DEPTH (`DEPTH+2)
+`define MRF_DEPTH (`DEPTH+2)
 
 typedef struct packed {
 	logic [`SIDE_W-1:0] side;
@@ -59,6 +64,7 @@ module cache(
 	logic [`ADDR_W-1:0] raddr;
 	logic [`RDATA_W-1:0] wdata;
 	logic cache_we;
+	logic [`TAG_W-1:0] pipe_tag;
 
 	// outputs of cache storage
 	logic [`RDATA_W-1:0] rdata;
@@ -86,24 +92,35 @@ module cache(
 	logic mrf_empty;
 	logic [`ADDR_W-1:0] mrf_data_out;
 	logic mrf_re;
-	logic exists_in_mrf; // TODO: module does not output this. wrapper?
+	logic exists_in_mrf;
 
 // hit data fifo
 	// upstream
 	hdf_data_t hdf_data_in;
 	logic hdf_we;
-	logic [$clog2(`DEPTH+2)-1:0] hdf_num_in_fifo;
+	logic [$clog2(`HDF_DEPTH+2)-1:0] hdf_num_in_fifo;
 
 	// downstream
 	logic hdf_empty;
 	hdf_data_t hdf_data_out;
 	logic hdf_re;
 
+// reissue fifo buffer
+	rif_data_t rif_buf_data_in;
+	logic rif_buf_we;
+	logic [$clog2(`RIF_DEPTH+2)-1:0] rif_buf_num_in_fifo;
+
+	// downstream
+	logic rif_buf_empty;
+	rif_data_t rif_buf_data_out;
+	logic rif_buf_re;
+
 // reissue fifo
 	// upstream
 	rif_data_t rif_data_in;
 	logic rif_we;
-	logic [$clog2(`DEPTH+2)-1:0] rif_num_in_fifo;
+	logic [$clog2(`RIF_DEPTH+2)-1:0] rif_num_in_fifo;
+	logic rif_full;
 
 	// downstream
 	logic rif_empty;
@@ -121,20 +138,24 @@ module cache(
 	assign ds_valid = ~hdf_empty;
 
 	// cache storage assignments
+	assign pipe_tag = pvs_ds_data.addr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W+`BLK_W]; // just tag
 	assign raddr = (rif_re) ? rif_data_out.addr: us_addr;
 	assign waddr = rif_data_out.addr;
 	assign wdata = from_mh_data;
 	assign cache_we = rif_re;
 
 	// PVS assignments
-	assign pvs_ds_stall = ds_stall;
+//	assign pvs_ds_stall = (ds_stall & hit & pvs_ds_valid) | (~rif_empty & ~rif_re);
+//	assign pvs_ds_stall = (ds_stall & hit & pvs_ds_valid);
+//	assign pvs_ds_stall = (ds_stall & hit & pvs_ds_valid) | (~rif_empty & rif_wait_flag & ~from_mh_valid);
+	assign pvs_ds_stall = ds_stall & rif_full;
 	assign pvs_us_valid = rif_re | (us_valid & ~pvs_us_stall);
 	assign pvs_us_data.side = (rif_re) ? rif_data_out.side : us_sb_data;
 	assign pvs_us_data.addr = (rif_re) ? rif_data_out.addr : us_addr;
-	assign pvs_num_in_fifo = (hdf_num_in_fifo > rif_num_in_fifo) ? hdf_num_in_fifo : rif_num_in_fifo;
+	assign pvs_num_in_fifo = (hdf_num_in_fifo > rif_buf_num_in_fifo) ? hdf_num_in_fifo : rif_buf_num_in_fifo;
 
 	// MRF assignments
-	assign mrf_we = pvs_ds_valid & miss & ~exists_in_mrf; // TODO: define exists_in_mrf
+	assign mrf_we = pvs_ds_valid & miss & ~exists_in_mrf;
 	assign mrf_re = ~from_mh_stall;
 	assign mrf_data_in = pvs_ds_data.addr;
 
@@ -144,13 +165,23 @@ module cache(
 	assign hdf_we = pvs_ds_valid & hit;
 	assign hdf_re = ~ds_stall;
 
+	// RIF buffer assignments
+	assign rif_buf_we = pvs_ds_valid & miss;
+	assign rif_buf_re = ~rif_buf_empty & ~rif_full;
+	assign rif_buf_data_in.addr = pvs_ds_data.addr;
+	assign rif_buf_data_in.side = pvs_ds_data.side;
+	assign rif_buf_data_in.flag = ~exists_in_mrf;
+
 	// RIF assignments
 	assign rif_wait_flag = rif_data_out.flag;
 	assign rif_re = ~rif_empty & ~pvs_us_stall & (~rif_wait_flag | from_mh_valid);
-	assign rif_we = pvs_ds_valid & miss;
-	assign rif_data_in.addr = pvs_ds_data.addr;
+//	assign rif_re = ~rif_empty & ~(ds_stall & hit & pvs_ds_valid) & (~rif_wait_flag | from_mh_valid);
+//	assign rif_we = pvs_ds_valid & miss;
+	assign rif_we = rif_buf_re;
+	assign rif_data_in = rif_buf_data_out;
+/*	assign rif_data_in.addr = pvs_ds_data.addr;
 	assign rif_data_in.side = pvs_ds_data.side;
-	assign rif_data_in.flag = ~exists_in_mrf;
+	assign rif_data_in.flag = ~exists_in_mrf; */
 
 /************** module instantiations **************/
 
@@ -169,7 +200,7 @@ module cache(
 		.num_in_fifo(pvs_num_in_fifo)
 	);
 
-	no_duplicates_fifo #(.WIDTH(`ADDR_W), .K($clog2(`DEPTH)))
+	fifo #(.WIDTH(`ADDR_W), .K($clog2(`MRF_DEPTH)))
 	MRF(
 		.clk, .rst,
 		.data_in(mrf_data_in),
@@ -179,10 +210,10 @@ module cache(
 		.empty(mrf_empty),
 		.data_out(mrf_data_out),
 		.num_in_fifo(),
-		.exists_in_fifo(exists_in_mrf)
+		.exists_in_fifo(exists_in_mrf),
 	);
 
-	fifo #(.WIDTH($bits(hdf_data_t)), .K($clog2(`DEPTH)))
+	fifo #(.WIDTH($bits(hdf_data_t)), .K($clog2(`HDF_DEPTH)))
 	HDF(
 		.clk, .rst,
 		.data_in(hdf_data_in),
@@ -191,19 +222,36 @@ module cache(
 		.full(),
 		.empty(hdf_empty),
 		.data_out(hdf_data_out),
-		.num_in_fifo(hdf_num_in_fifo)
+		.num_in_fifo(hdf_num_in_fifo),
+		.exists_in_fifo()
 	);
 
+	// TODO: assign all the I/O for this module
+	// TODO: handle the pvs_ds_stall signal appropriately
 	fifo #(.WIDTH($bits(rif_data_t)), .K($clog2(`DEPTH)))
+	RIF_buffer(
+		.clk, .rst,
+		.data_in(rif_buf_data_in),
+		.we(rif_buf_we),
+		.re(rif_buf_re),
+		.full(),
+		.empty(rif_buf_empty),
+		.data_out(rif_buf_data_out),
+		.num_in_fifo(rif_buf_num_in_fifo),
+		.exists_in_fifo()
+	);
+
+	fifo #(.WIDTH($bits(rif_data_t)), .K($clog2(`RIF_DEPTH)))
 	RIF(
 		.clk, .rst,
 		.data_in(rif_data_in),
 		.we(rif_we),
 		.re(rif_re),
-		.full(),
+		.full(rif_full),
 		.empty(rif_empty),
 		.data_out(rif_data_out),
-		.num_in_fifo(rif_num_in_fifo)
+		.num_in_fifo(rif_num_in_fifo),
+		.exists_in_fifo()
 	);
 
 endmodule
@@ -215,6 +263,7 @@ module cache_storage(
 	input logic cache_we,
 	input logic [`ADDR_W-1:0] raddr,
 	// downstream side
+	input logic [`TAG_W-1:0] pipe_tag,
 	output  logic [`RDATA_W-1:0] rdata,
 	output logic miss,
 	output logic hit,
@@ -235,12 +284,13 @@ module cache_storage(
 	logic [`RDATA_W-1:0] rdata0a, rdata0b, rdata0c, rdata1a, rdata1b, rdata1c;
 
 	logic [`TAG_W-1:0] tag0a, tag0b, tag0c, tag1a, tag1b, tag1c;
-	logic [`TAG_W-1:0] rd_tag, wr_tag;
+//	logic [`TAG_W-1:0] rd_tag, wr_tag; 
+	logic [`TAG_W-1:0] wr_tag; 
 	logic [`INDEX_W-1:0] rd_index, wr_index;
 
 	logic valid0a, valid0b, valid0c, valid1a, valid1b, valid1c;
 
-	assign rd_tag = raddr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W+`BLK_W];
+//	assign rd_tag = raddr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W+`BLK_W];
 	assign rd_index = raddr[`INDEX_W+`BLK_W-1:`BLK_W];
 
 	assign wr_tag = waddr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W+`BLK_W];
@@ -308,8 +358,8 @@ module cache_storage(
 		end
 	end
 
-	assign hit0 = (rd_tag == tag0b) && valid0b; // changed from c
-	assign hit1 = (rd_tag == tag1b) && valid1b; // changed from c
+	assign hit0 = (pipe_tag == tag0b) && valid0b; // changed from c; pipe_tag used to be rd_tag
+	assign hit1 = (pipe_tag == tag1b) && valid1b; // changed from c
 
 	assign rdata = hit0 ? rdata0b : rdata1b; // changed from b
 
@@ -318,7 +368,6 @@ module cache_storage(
 
 // TODO:
 //  * instantiate and wire block rams
-//  * define hit and miss signals
 //  * implement some replacement policy
 //  * think about byte enable for tagstore
 

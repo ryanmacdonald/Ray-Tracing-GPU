@@ -40,21 +40,45 @@ module cache_tb;
 	end
 
 	initial begin
+		forever begin
+			@(posedge clk);
+			if(ds_valid)
+				$display("data: %h",ds_data);
+		end
+	end
+
+	integer a;
+
+	initial begin
 		us_valid <= 1'b0;
 		us_addr <= 'b0;
 		us_sb_data <= 'b0;
 		ds_stall <= 1'b0;
 
-		@(posedge clk);
-		us_valid <= 1'b1;
-		us_addr <= $random;
+		a = $random;
+		repeat(10) do_read(a, $random);
 
-		@(posedge clk)
-		us_valid <= 1'b0;
+		repeat(20) do_read($random, $random);
 
-		repeat(50) @(posedge clk);
+		repeat(500) @(posedge clk);
 		$finish;
 	end
+
+	task do_read(input [`ADDR_W-1:0] addr, input logic [`SIDE_W-1:0] side);
+		@(posedge clk);
+		us_valid <= 1'b1;
+		us_addr <= addr;
+		us_sb_data <= side;
+
+		@(posedge clk);
+		while(us_stall) begin
+			@(posedge clk);
+		end
+
+		$display("reading from: %h (tag+index: %h). us_sb_data: %h",us_addr,us_addr[`TAG_W+`INDEX_W+`BLK_W-1:`BLK_W], us_sb_data);
+		$display("\t(DRAM: %h)",m.memory[us_addr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W]]);
+		us_valid <= 1'b0;
+	endtask
 
 	cache c(.*);
 	miss_handler_model m(.*);
@@ -75,14 +99,16 @@ module miss_handler_model(
 	output logic                from_mh_stall
 );
 
+	parameter NUM_STAGES = 8;
+
 	// TODO: model stalls back to cache
 
 	parameter NUM_ADDR = 1<<(`TAG_W+`INDEX_W);
 
 	logic [`RDATA_W-1:0] memory [NUM_ADDR];
 
-	logic [`RDATA_W-1:0] stage0, stage1, stage2, stage3, stage4;
-	logic v0, v1, v2, v3, v4;
+	logic [`RDATA_W-1:0] stages [NUM_STAGES];
+	logic [NUM_STAGES-1:0] v;
 
 	assign from_mh_stall = 1'b0;
 
@@ -95,19 +121,13 @@ module miss_handler_model(
 			for(i=0; i< NUM_ADDR; i++)
 				memory[i] <= $random;
 			from_mh_valid <= 1'b0;
-			v0 <= 1'b0;
-			v1 <= 1'b0;
-			v2 <= 1'b0;
-			v3 <= 1'b0;
-			v4 <= 1'b0;
+			v <= 'b0;
 		end
 		else begin
-			{v0, stage0} <= {to_mh_valid, memory[mem_addr]};
-			{v1, stage1} <= {v0, stage0};
-			{v2, stage2} <= {v1, stage1};
-			{v3, stage3} <= {v2, stage2};
-			{v4, stage4} <= {v3, stage3};
-			{from_mh_valid,from_mh_data} <= {v4,stage4};
+			{v[0], stages[0]} <= {to_mh_valid, memory[mem_addr]};
+			for(i=0; i < NUM_STAGES-1; i++)
+				{v[i+1], stages[i+1]} <= {v[i], stages[i]};
+			{from_mh_valid,from_mh_data} <= {v[NUM_STAGES-1],stages[NUM_STAGES-1]};
 		end
 	end
 
