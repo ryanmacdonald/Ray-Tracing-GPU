@@ -1,6 +1,6 @@
 `default_nettype none
 
-`define SIDE_W 4
+`define SIDE_W 8
 `define ADDR_W 8
 `define RDATA_W 16
 

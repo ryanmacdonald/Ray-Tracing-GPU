@@ -43,18 +43,26 @@ module cache_tb;
 
 	//////////////// stimuli initial blocks ////////////////
 
-	int num_reads = 0;
+	int num_reads = 30;
+	logic [$bits(hdf_data_t)-1:0] read_table [30];
+	logic [$bits(hdf_data_t)-1:0] issue_table [30];
+
+	integer a,pre_id, post_id;
+	int num_reads_done = 0;
 	initial begin
 		forever begin
 			@(posedge clk);
 			if(ds_valid & ~ds_stall) begin
 				$display("data: %h",ds_data);
-				num_reads++;
+				post_id = ds_data[`SIDE_W-1:0];
+				read_table[post_id] = ds_data;
+				num_reads_done++;
 			end
 		end
 	end
 
-	integer a,id;
+	integer i;
+	integer all_equal;
 
 	initial begin
 		us_valid <= 1'b0;
@@ -62,23 +70,47 @@ module cache_tb;
 		us_sb_data <= 'b0;
 		ds_stall <= 1'b0;
 
-		id=0;
+		pre_id=0;
+		all_equal = 1;
 
 		a = $random;
 		@(posedge clk);
-		repeat(10) do_read(a, id);
-		id++;
+		repeat(10) begin
+			do_read(a, pre_id);
+			pre_id++;
+		end
 		us_valid <= 1'b0;
 
 		@(posedge clk);
 		repeat(20) begin
-			do_read($random, id[`SIDE_W-1:0]);
-			id++;
+			do_read($random, pre_id[`SIDE_W-1:0]);
+			pre_id++;
 		end
 		us_valid <= 1'b0;
 
 		repeat(500) @(posedge clk);
+
 		$display("num_reads: %d",num_reads);
+		$display("read table:");
+		for(i=0; i<num_reads; i++) begin
+			$display("%h: %h",i,read_table[i]);
+		end
+		$display("issue table:");
+		for(i=0; i<num_reads; i++) begin
+			if(issue_table[i] != read_table[i]) begin
+				all_equal = 0;
+				$display("%h: %h *",i,issue_table[i]);
+			end
+			else begin
+				$display("%h: %h",i,issue_table[i]);
+			end
+		end
+
+		if(!all_equal)
+			$display("NOT ALL READS RETURNED CORRECT DATA");
+		else
+			$display("ALL READS RETURNED CORRECT DATA :)");
+
 		$finish;
 	end
 
@@ -95,13 +127,16 @@ module cache_tb;
 
 	//////////////// tasks ////////////////
 
+	int data;
 	task do_read(input [`ADDR_W-1:0] addr, input logic [`SIDE_W-1:0] side);
 //		@(posedge clk);
 		us_valid <= 1'b1;
 		us_addr <= addr;
 		us_sb_data <= side;
 
-		$display("side: %h addr: %h (t+i: %h). DRAM: %h",side, addr,addr[`TAG_W+`INDEX_W+`BLK_W-1:`BLK_W],m.memory[addr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W]]);
+		data = m.memory[addr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W]];
+		issue_table[side] = {data, side};
+		$display("side: %h addr: %h (t+i: %h). DRAM: %h",side, addr,addr[`TAG_W+`INDEX_W+`BLK_W-1:`BLK_W],data);
 
 		@(posedge clk);
 		while(us_stall) begin
