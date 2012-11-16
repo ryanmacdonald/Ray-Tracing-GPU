@@ -78,6 +78,12 @@ typedef struct packed {
 } float24_t;
 
 typedef struct packed {
+  logic sign;
+  logic [7:0] exp;
+  logic [18:0] man;
+} float28_t;
+
+typedef struct packed {
   float_t x;
   float_t y;
   float_t z;
@@ -190,11 +196,11 @@ typedef struct packed {
 
 typedef struct packed {
   logic [1:0] node_type;
-  float24_t split; // probably needs to be 25 bits
+  float28_t split; // probably needs to be 25 bits
   nodeID_t right_ID;
   logic low_empty;
   logic high_empty;
-  logic reserve;
+//  logic reserve;
 
 } norm_node_t;
 
