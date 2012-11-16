@@ -10,9 +10,8 @@
 `define BLK_W 1
 
 `define DEPTH 2
-`define RIF_DEPTH (`DEPTH+2)
-`define HDF_DEPTH (`DEPTH+2)
-`define MRF_DEPTH (`DEPTH+2)
+`define RIF_DEPTH (`DEPTH+3)
+`define MRF_DEPTH (`DEPTH+3)
 
 typedef struct packed {
 	logic [`SIDE_W-1:0] side;
@@ -81,7 +80,7 @@ module cache(
 	logic pvs_ds_stall;
 	logic pvs_ds_valid;
 	pvs_data_t pvs_ds_data;
-	logic [$clog2(`DEPTH+2)-1:0] pvs_num_in_fifo;
+	logic [$clog2(`DEPTH+2):0] pvs_num_left_in_fifo;
 
 // miss request fifo
 	// inputs
@@ -98,7 +97,7 @@ module cache(
 	// upstream
 	hdf_data_t hdf_data_in;
 	logic hdf_we;
-	logic [$clog2(`HDF_DEPTH+2)-1:0] hdf_num_in_fifo;
+	logic [$clog2(`DEPTH+2):0] hdf_num_left_in_fifo;
 
 	// downstream
 	logic hdf_empty;
@@ -108,7 +107,6 @@ module cache(
 // reissue fifo buffer
 	rif_data_t rif_buf_data_in;
 	logic rif_buf_we;
-	logic [$clog2(`RIF_DEPTH+2)-1:0] rif_buf_num_in_fifo;
 
 	// downstream
 	logic rif_buf_empty;
@@ -119,7 +117,6 @@ module cache(
 	// upstream
 	rif_data_t rif_data_in;
 	logic rif_we;
-	logic [$clog2(`RIF_DEPTH+2)-1:0] rif_num_in_fifo;
 	logic rif_full;
 
 	// downstream
@@ -130,8 +127,8 @@ module cache(
 
 /************** continuous assigns **************/
 
-	assign us_stall = us_valid & (rif_re | pvs_us_stall);
-	assign to_mh_stall = from_mh_valid & pvs_us_stall;
+	assign us_stall = rif_re | rif_full | pvs_us_stall;
+	assign to_mh_stall = from_mh_valid & ~rif_re;
 	assign to_mh_addr = mrf_data_out;
 	assign to_mh_valid = ~mrf_empty;
 	assign ds_data = hdf_data_out;
@@ -145,14 +142,11 @@ module cache(
 	assign cache_we = rif_re;
 
 	// PVS assignments
-//	assign pvs_ds_stall = (ds_stall & hit & pvs_ds_valid) | (~rif_empty & ~rif_re);
-//	assign pvs_ds_stall = (ds_stall & hit & pvs_ds_valid);
-//	assign pvs_ds_stall = (ds_stall & hit & pvs_ds_valid) | (~rif_empty & rif_wait_flag & ~from_mh_valid);
-	assign pvs_ds_stall = ds_stall & rif_full;
-	assign pvs_us_valid = rif_re | (us_valid & ~pvs_us_stall);
+	assign pvs_ds_stall = ds_stall;
+	assign pvs_us_valid = (us_valid & ~rif_full) | rif_re;
 	assign pvs_us_data.side = (rif_re) ? rif_data_out.side : us_sb_data;
 	assign pvs_us_data.addr = (rif_re) ? rif_data_out.addr : us_addr;
-	assign pvs_num_in_fifo = (hdf_num_in_fifo > rif_buf_num_in_fifo) ? hdf_num_in_fifo : rif_buf_num_in_fifo;
+	assign pvs_num_left_in_fifo = hdf_num_left_in_fifo;
 
 	// MRF assignments
 	assign mrf_we = pvs_ds_valid & miss & ~exists_in_mrf;
@@ -175,13 +169,8 @@ module cache(
 	// RIF assignments
 	assign rif_wait_flag = rif_data_out.flag;
 	assign rif_re = ~rif_empty & ~pvs_us_stall & (~rif_wait_flag | from_mh_valid);
-//	assign rif_re = ~rif_empty & ~(ds_stall & hit & pvs_ds_valid) & (~rif_wait_flag | from_mh_valid);
-//	assign rif_we = pvs_ds_valid & miss;
 	assign rif_we = rif_buf_re;
 	assign rif_data_in = rif_buf_data_out;
-/*	assign rif_data_in.addr = pvs_ds_data.addr;
-	assign rif_data_in.side = pvs_ds_data.side;
-	assign rif_data_in.flag = ~exists_in_mrf; */
 
 /************** module instantiations **************/
 
@@ -197,7 +186,7 @@ module cache(
 		.ds_data(pvs_ds_data),
 		.ds_stall(pvs_ds_stall),
 
-		.num_in_fifo(pvs_num_in_fifo)
+		.num_left_in_fifo(pvs_num_left_in_fifo)
 	);
 
 	fifo #(.WIDTH(`ADDR_W), .K($clog2(`MRF_DEPTH)))
@@ -209,11 +198,11 @@ module cache(
 		.full(),
 		.empty(mrf_empty),
 		.data_out(mrf_data_out),
-		.num_in_fifo(),
-		.exists_in_fifo(exists_in_mrf),
+		.num_left_in_fifo(),
+		.exists_in_fifo(exists_in_mrf)
 	);
 
-	fifo #(.WIDTH($bits(hdf_data_t)), .K($clog2(`HDF_DEPTH)))
+	fifo #(.WIDTH($bits(hdf_data_t)), .K($clog2(`DEPTH+2)))
 	HDF(
 		.clk, .rst,
 		.data_in(hdf_data_in),
@@ -222,13 +211,11 @@ module cache(
 		.full(),
 		.empty(hdf_empty),
 		.data_out(hdf_data_out),
-		.num_in_fifo(hdf_num_in_fifo),
+		.num_left_in_fifo(hdf_num_left_in_fifo),
 		.exists_in_fifo()
 	);
 
-	// TODO: assign all the I/O for this module
-	// TODO: handle the pvs_ds_stall signal appropriately
-	fifo #(.WIDTH($bits(rif_data_t)), .K($clog2(`DEPTH)))
+	fifo #(.WIDTH($bits(rif_data_t)), .K($clog2(`DEPTH+2)))
 	RIF_buffer(
 		.clk, .rst,
 		.data_in(rif_buf_data_in),
@@ -237,7 +224,7 @@ module cache(
 		.full(),
 		.empty(rif_buf_empty),
 		.data_out(rif_buf_data_out),
-		.num_in_fifo(rif_buf_num_in_fifo),
+		.num_left_in_fifo(),
 		.exists_in_fifo()
 	);
 
@@ -250,7 +237,7 @@ module cache(
 		.full(rif_full),
 		.empty(rif_empty),
 		.data_out(rif_data_out),
-		.num_in_fifo(rif_num_in_fifo),
+		.num_left_in_fifo(),
 		.exists_in_fifo()
 	);
 
@@ -281,18 +268,15 @@ module cache_storage(
 	logic [`TAG_W:0] tagstore0 [1<<(`INDEX_W)]; // no -1 because one bit is needed for valid
 	logic [`TAG_W:0] tagstore1 [1<<(`INDEX_W)];
 
-	logic [`RDATA_W-1:0] rdata0a, rdata0b, rdata0c, rdata1a, rdata1b, rdata1c;
+	logic [`RDATA_W-1:0] rdata0a, rdata0b, rdata1a, rdata1b;
 
-	logic [`TAG_W-1:0] tag0a, tag0b, tag0c, tag1a, tag1b, tag1c;
-//	logic [`TAG_W-1:0] rd_tag, wr_tag; 
+	logic [`TAG_W-1:0] tag0a, tag0b, tag1a, tag1b;
 	logic [`TAG_W-1:0] wr_tag; 
 	logic [`INDEX_W-1:0] rd_index, wr_index;
 
-	logic valid0a, valid0b, valid0c, valid1a, valid1b, valid1c;
+	logic valid0a, valid0b, valid1a, valid1b;
 
-//	assign rd_tag = raddr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W+`BLK_W];
 	assign rd_index = raddr[`INDEX_W+`BLK_W-1:`BLK_W];
-
 	assign wr_tag = waddr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W+`BLK_W];
 	assign wr_index = waddr[`INDEX_W+`BLK_W-1:`BLK_W];
 
@@ -307,8 +291,6 @@ module cache_storage(
 			valid1a <= 1'b0;
 			valid0b <= 1'b0;
 			valid1b <= 1'b0;
-//			valid0c <= 1'b0;
-//			valid1c <= 1'b0;
 			for(i=0; i < 1<<`INDEX_W; i++) begin
 				tagstore0[i][`TAG_W] <= 1'b0;
 				tagstore1[i][`TAG_W] <= 1'b0;
@@ -347,21 +329,15 @@ module cache_storage(
 			rdata0b <= rdata0a;
 			rdata1b <= rdata1a;
 
-//			rdata0c <= rdata0b;
-//			rdata1c <= rdata1b;
-
 			{valid0b,tag0b} <= {valid0a, tag0a};
 			{valid1b,tag1b} <= {valid1a, tag1a};
-
-//			{valid0c,tag0c} <= {valid0b, tag0b};
-//			{valid1c,tag1c} <= {valid1b, tag1b};
 		end
 	end
 
-	assign hit0 = (pipe_tag == tag0b) && valid0b; // changed from c; pipe_tag used to be rd_tag
-	assign hit1 = (pipe_tag == tag1b) && valid1b; // changed from c
+	assign hit0 = (pipe_tag == tag0b) && valid0b;
+	assign hit1 = (pipe_tag == tag1b) && valid1b;
 
-	assign rdata = hit0 ? rdata0b : rdata1b; // changed from b
+	assign rdata = hit0 ? rdata0b : rdata1b;
 
 	assign hit = hit0 | hit1;
 	assign miss = ~hit;

@@ -28,6 +28,8 @@ module cache_tb;
 	logic                         ds_valid;
 	logic                         ds_stall;
 
+	//////////////// rst/clk initial blocks ////////////////
+
 	initial begin
 		clk <= 1'b0;
 		rst <= 1'b0;
@@ -39,15 +41,20 @@ module cache_tb;
 		forever #(`CLOCK_PERIOD/2) clk = ~clk;
 	end
 
+	//////////////// stimuli initial blocks ////////////////
+
+	int num_reads = 0;
 	initial begin
 		forever begin
 			@(posedge clk);
-			if(ds_valid)
+			if(ds_valid & ~ds_stall) begin
 				$display("data: %h",ds_data);
+				num_reads++;
+			end
 		end
 	end
 
-	integer a;
+	integer a,id;
 
 	initial begin
 		us_valid <= 1'b0;
@@ -55,30 +62,56 @@ module cache_tb;
 		us_sb_data <= 'b0;
 		ds_stall <= 1'b0;
 
-		a = $random;
-		repeat(10) do_read(a, $random);
+		id=0;
 
-		repeat(20) do_read($random, $random);
+		a = $random;
+		@(posedge clk);
+		repeat(10) do_read(a, id);
+		id++;
+		us_valid <= 1'b0;
+
+		@(posedge clk);
+		repeat(20) begin
+			do_read($random, id[`SIDE_W-1:0]);
+			id++;
+		end
+		us_valid <= 1'b0;
 
 		repeat(500) @(posedge clk);
+		$display("num_reads: %d",num_reads);
 		$finish;
 	end
 
+
+	initial begin
+		forever begin
+			@(posedge clk);
+			if(ds_valid)
+				ds_stall = {$random} % 2;
+			else
+				ds_stall = 1'b0;
+		end
+	end
+
+	//////////////// tasks ////////////////
+
 	task do_read(input [`ADDR_W-1:0] addr, input logic [`SIDE_W-1:0] side);
-		@(posedge clk);
+//		@(posedge clk);
 		us_valid <= 1'b1;
 		us_addr <= addr;
 		us_sb_data <= side;
+
+		$display("side: %h addr: %h (t+i: %h). DRAM: %h",side, addr,addr[`TAG_W+`INDEX_W+`BLK_W-1:`BLK_W],m.memory[addr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W]]);
 
 		@(posedge clk);
 		while(us_stall) begin
 			@(posedge clk);
 		end
 
-		$display("reading from: %h (tag+index: %h). us_sb_data: %h",us_addr,us_addr[`TAG_W+`INDEX_W+`BLK_W-1:`BLK_W], us_sb_data);
-		$display("\t(DRAM: %h)",m.memory[us_addr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W]]);
-		us_valid <= 1'b0;
+//		us_valid <= 1'b0;
 	endtask
+
+	//////////////// modules ////////////////
 
 	cache c(.*);
 	miss_handler_model m(.*);
@@ -99,9 +132,7 @@ module miss_handler_model(
 	output logic                from_mh_stall
 );
 
-	parameter NUM_STAGES = 8;
-
-	// TODO: model stalls back to cache
+	parameter NUM_STAGES = 80;
 
 	parameter NUM_ADDR = 1<<(`TAG_W+`INDEX_W);
 
@@ -110,10 +141,10 @@ module miss_handler_model(
 	logic [`RDATA_W-1:0] stages [NUM_STAGES];
 	logic [NUM_STAGES-1:0] v;
 
-	assign from_mh_stall = 1'b0;
-
 	logic [`TAG_W+`INDEX_W-1:0] mem_addr;
 	assign mem_addr = to_mh_addr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W];
+
+	assign from_mh_stall = to_mh_stall & from_mh_valid;
 
 	integer i;
 	always_ff @(posedge clk, posedge rst) begin
@@ -124,10 +155,12 @@ module miss_handler_model(
 			v <= 'b0;
 		end
 		else begin
-			{v[0], stages[0]} <= {to_mh_valid, memory[mem_addr]};
-			for(i=0; i < NUM_STAGES-1; i++)
-				{v[i+1], stages[i+1]} <= {v[i], stages[i]};
-			{from_mh_valid,from_mh_data} <= {v[NUM_STAGES-1],stages[NUM_STAGES-1]};
+			if(~to_mh_stall || ~from_mh_valid) begin
+				{v[0], stages[0]} <= {to_mh_valid, memory[mem_addr]};
+				for(i=0; i < NUM_STAGES-1; i++)
+					{v[i+1], stages[i+1]} <= {v[i], stages[i]};
+				{from_mh_valid,from_mh_data} <= {v[NUM_STAGES-1],stages[NUM_STAGES-1]};
+			end
 		end
 	end
 

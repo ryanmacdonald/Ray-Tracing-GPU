@@ -152,19 +152,18 @@ module sync_to_v
 endmodule
 
 // depth 2^k
-module fifo(clk, rst,
-            data_in, we, re, full, empty, data_out, num_left_in_fifo);
-  parameter WIDTH = 32;
-  parameter K = 2;
-  input clk, rst;
-  input [WIDTH-1:0] data_in;
-  input we;
-  input re;
-  output full;
+module fifo
+#(  parameter WIDTH = 32, K = 2, EARLY_BY = 0)
+(
+  input logic clk, rst,
+  input logic [WIDTH-1:0] data_in,
+  input logic we,
+  input logic re,
+  output logic full,
   output logic exists_in_fifo,
-  output empty;
-  output [WIDTH-1:0] data_out ;
-  output [K:0] num_left_in_fifo;
+  output logic empty,
+  output logic [WIDTH-1:0] data_out,
+  output logic [K:0] num_left_in_fifo);
 
   logic write_allowed, read_allowed;
 
@@ -207,7 +206,7 @@ module fifo(clk, rst,
   ff_ar #(K+1,'h0) ff_r(.q(rPtr), .d(rPtr_n), .clk, .rst);
   ff_ar #(K+1,'h0) ff_w(.q(wPtr), .d(wPtr_n), .clk, .rst);
   ff_ar #((1<<K)*WIDTH,'h0) ff_q(.q(queue), .d(queue_n), .clk, .rst); 
-  ff_ar #(K+1,DEPTH) ff_zero_cnt(.q(zero_cnt), .d(zero_cnt_n), .clk, .rst);
+  ff_ar #(K+1,(1<<K)) ff_zero_cnt(.q(zero_cnt), .d(zero_cnt_n), .clk, .rst);
 
   int i;
   always_comb begin
@@ -338,7 +337,7 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
   output logic [WIDTH-1:0] ds_data,
   input logic ds_stall,
 
-  input logic [$clog2(DEPTH+2)-1:0] num_left_in_fifo
+  input logic [$clog2(DEPTH+2):0] num_left_in_fifo
 
   );
 
@@ -350,7 +349,7 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
 
   buf_t3 #(.LAT(DEPTH), .WIDTH(WIDTH)) data_buf(.clk,.rst,.data_in(us_data),.data_out(ds_data));
 
-  logic [$clog2(DEPTH+2)-1:0] one_cnt, one_cnt_n;
+  logic [$clog2(DEPTH+2):0] one_cnt, one_cnt_n;
   always_comb begin
     case({valid_buf_n[DEPTH-1],valid_buf[0]})
       2'b00 : one_cnt_n = one_cnt;
@@ -360,7 +359,7 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
     endcase
   end
 
-  ff_ar #($clog2(DEPTH+2),0) cnt_inst(.d(one_cnt_n),.q(one_cnt),.clk,.rst);
+  ff_ar #($clog2(DEPTH+2)+1,0) cnt_inst(.d(one_cnt_n),.q(one_cnt),.clk,.rst);
 
   assign us_stall = ds_stall & (one_cnt >= num_left_in_fifo); // Used to & with us_valid
 
@@ -386,7 +385,7 @@ module lshape #(parameter SIDE_W = 10, UNSTALL_W = 100, DEPTH = 20)
   logic ds_valid;
   logic [SIDE_W-1:0] sb_to_fifo;
   logic full;
-  logic [$clog2(DEPTH+2)-1:0] num_left_in_fifo;
+  logic [$clog2(DEPTH+2):0] num_left_in_fifo;
     
   `ifndef SYNTH
     always @(*) assert(!(full & ds_valid));
