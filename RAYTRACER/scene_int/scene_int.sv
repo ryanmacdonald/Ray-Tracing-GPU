@@ -20,20 +20,22 @@ module scene_int(input prg_ray_t ray,
 
 
 	
-	float_t dataa_add1, datab_add1, result_add1;
-	assign dataa_add1 = v0 ? ray.dir.x : (v1 ? ray.dir.y : ray.dir.z);
+	float_t dataa_add1_pos, dataa_add1_neg, datab_add1, result_add1;
+	assign dataa_add1_pos = v0 ? ray.origin.x : (v1 ? ray.origin.y : ray.origin.z);
+	assign dataa_add1_neg = {~dataa_add1_pos.sign,dataa_add1_pos[30:0]};
 	assign datab_add1 = v0 ? xmin : (v1 ? ymin : zmin);
 	altfp_add add1(.aclr(rst),.clock(clk),
-		       .dataa(dataa_add1),.datab(datab_add1),.nan(),
+		       .dataa(dataa_add1_neg),.datab(datab_add1),.nan(),
 		       .overflow(),.result(result_add1),
 	 	       .underflow(),.zero());
 
 
-	float_t dataa_add2, datab_add2, result_add2;
-	assign dataa_add2 = v0 ? ray.dir.x : (v1? ray.dir.y: ray.dir.z);
+	float_t dataa_add2_pos, datab_add2, dataa_add2_neg, result_add2;
+	assign dataa_add2_pos = v0 ? ray.origin.x : (v1? ray.origin.y: ray.origin.z);
+	assign dataa_add2_neg = {~dataa_add2_pos.sign,dataa_add2_pos[30:0]};
 	assign datab_add2 = v0 ? xmax : (v1 ? ymax : zmax);
 	altfp_add add2(.aclr(rst),.clock(clk),
-		       .dataa(dataa_add2),.datab(datab_add2),.nan(),
+		       .dataa(dataa_add2_neg),.datab(datab_add2),.nan(),
 		       .overflow(),.result(result_add2),
 		       .underflow(),.zero());
 
@@ -57,7 +59,7 @@ module scene_int(input prg_ray_t ray,
 	logic[6:0] raydir;
 	logic raydir_n, shifter_en;
 	assign raydir_n = v0 ? ray.dir.x.sign : (v1 ? ray.dir.y.sign : ray.dir.z.sign);
-	assign shifter_en = 1'b1; //TODO: change enable on shifter
+	assign shifter_en = 1'b1; 
 	shifter #(7,0) rd(.q(raydir),.d(raydir_n),.en(shifter_en),.clr(),.clk(clk),.rst(rst));
 	
 
