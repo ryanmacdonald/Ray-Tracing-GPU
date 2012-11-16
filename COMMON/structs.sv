@@ -223,10 +223,7 @@ typedef struct packed {
   logic restnode_search;
   float_t t_max;
   float_t t_min;
-  union packed {
-    leaf_node_t leaf_node;
-    norm_node_t norm_node;
-  } tree_node;
+  norm_node_t tree_node; // cant have a damn struct bitch altera
 
 } tcache_to_trav_t ;
 
