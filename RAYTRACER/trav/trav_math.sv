@@ -142,7 +142,7 @@ module trav_math(
   .clock(clk ),
   .dataa(inA_maxmid ),
   .datab(inB_maxmid ),
-  //.aeb(out_aeb_comp1),
+  .aeb(),
 	.agb(max_g_mid) );
 
   
@@ -157,7 +157,7 @@ module trav_math(
   .clock(clk ),
   .dataa(inA_midmin ),
   .datab(inB_midmin ),
-  //.aeb(out_aeb_comp1),
+  .aeb(),
 	.agb(mid_g_min) );
 
 

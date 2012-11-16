@@ -1,0 +1,92 @@
+reading from: 24 (tag+index: 12). us_sb_data: 1
+        (DRAM: 7b0d)
+reading from: 24 (tag+index: 12). us_sb_data: b
+        (DRAM: 7b0d)
+reading from: 24 (tag+index: 12). us_sb_data: e
+        (DRAM: 7b0d)
+reading from: 24 (tag+index: 12). us_sb_data: c
+        (DRAM: 7b0d)
+reading from: 24 (tag+index: 12). us_sb_data: a
+        (DRAM: 7b0d)
+reading from: 24 (tag+index: 12). us_sb_data: d
+        (DRAM: 7b0d)
+reading from: 24 (tag+index: 12). us_sb_data: 6
+        (DRAM: 7b0d)
+data: 7b0d1
+data: 7b0dd
+reading from: 24 (tag+index: 12). us_sb_data: 7
+        (DRAM: 7b0d)
+data: 7b0db
+data: 7b0d6
+reading from: 24 (tag+index: 12). us_sb_data: 6
+        (DRAM: 7b0d)
+data: 7b0de
+data: 7b0d7
+reading from: 24 (tag+index: 12). us_sb_data: 9
+        (DRAM: 7b0d)
+data: 7b0dc
+data: 7b0d6
+reading from: 94 (tag+index: 4a). us_sb_data: 3
+        (DRAM: cd3d)
+data: 7b0da
+data: 7b0d9
+reading from: 59 (tag+index: 2c). us_sb_data: b
+        (DRAM: 5212)
+data: 7b0dd
+reading from: 4d (tag+index: 26). us_sb_data: 9
+        (DRAM: 8465)
+reading from: 76 (tag+index: 3b). us_sb_data: a
+        (DRAM: cd0d)
+data: 7b0d3
+data: 7b0db
+reading from: 95 (tag+index: 4a). us_sb_data: 6
+        (DRAM: cd3d)
+reading from: f7 (tag+index: 7b). us_sb_data: 9
+        (DRAM: d2aa)
+data: 7b0d9
+data: 7b0d6
+reading from: 88 (tag+index: 44). us_sb_data: 8
+        (DRAM: f176)
+data: 7b0da
+reading from: 2d (tag+index: 16). us_sb_data: 7
+        (DRAM: 7b0d)
+reading from: 08 (tag+index: 04). us_sb_data: c
+        (DRAM: d609)
+data: 7b0d9
+data: 7b0d8
+reading from: 29 (tag+index: 14). us_sb_data: c
+        (DRAM: 7b0d)
+reading from: da (tag+index: 6d). us_sb_data: d
+        (DRAM: 24c6)
+data: 7b0d7
+data: 7b0dc
+reading from: 70 (tag+index: 38). us_sb_data: 3
+        (DRAM: cd0d)
+reading from: 5e (tag+index: 2f). us_sb_data: a
+        (DRAM: 5212)
+data: 7b0dc
+data: 7b0dd
+reading from: 1a (tag+index: 0d). us_sb_data: 9
+        (DRAM: 5663)
+reading from: 96 (tag+index: 4b). us_sb_data: 0
+        (DRAM: cd3d)
+data: 7b0d3
+data: 7b0da
+reading from: b6 (tag+index: 5b). us_sb_data: d
+        (DRAM: f78c)
+reading from: 86 (tag+index: 43). us_sb_data: 8
+        (DRAM: f176)
+data: 7b0d9
+data: 7b0d0
+reading from: db (tag+index: 6d). us_sb_data: f
+        (DRAM: 24c6)
+reading from: fa (tag+index: 7d). us_sb_data: 1
+        (DRAM: d2aa)
+data: 7b0dd
+data: 7b0df
+reading from: a1 (tag+index: 50). us_sb_data: 6
+        (DRAM: 57ed)
+data: 7b0d8
+data: 7b0d1
+data: 7b0d6
+num_reads:          31

@@ -16,6 +16,9 @@ t32:
 raystore:
 	$(CC) $(FLAGS) -top raystore_tb COMMON/*v COMMON/altfp*/*.v RAYTRACER/raystore/*v PRG/*v
 
+cache:
+	$(CC) $(FLAGS) -top cache_tb COMMON/*v RAYTRACER/caches/cache.sv TBs/cache_tb.sv
+
 fbh:
 	$(CC) $(FLAGS) -top fbh_tb COMMON/*v COMMON/altfp*/*v PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/sram.sv TBs/fbh_tb.sv
 
@@ -64,6 +67,9 @@ camera:
 
 sdram:
 	$(CC) $(FLAGS) -top top COMMON/*v SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v
+
+list: 
+	$(CC) $(FLAGS) -top tb_list_unit COMMON/*v COMMON/altfp*/*.v COMMON/bram/*.v  RAYTRACER/list/*.sv
 
 lshape:
 	$(CC) $(FLAGS) -top lshape_tb COMMON/*v TBs/lshape_tb.sv

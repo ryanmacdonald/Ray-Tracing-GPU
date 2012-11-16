@@ -152,28 +152,26 @@ module sync_to_v
 endmodule
 
 // depth 2^k
-module fifo(clk, rst,
-            data_in, we, re, full, empty, data_out, num_in_fifo);
-  parameter WIDTH = 32;
-  parameter K = 2;
-  input clk, rst;
-  input [WIDTH-1:0] data_in;
-  input we;
-  input re;
-  output full;
-  output empty;
-  output [WIDTH-1:0] data_out ;
-  output [K:0] num_in_fifo;
-
-
+module fifo
+#(  parameter WIDTH = 32, K = 2, EARLY_BY = 0)
+(
+  input logic clk, rst,
+  input logic [WIDTH-1:0] data_in,
+  input logic we,
+  input logic re,
+  output logic full,
+  output logic exists_in_fifo,
+  output logic empty,
+  output logic [WIDTH-1:0] data_out,
+  output logic [K:0] num_left_in_fifo);
 
   logic write_allowed, read_allowed;
 
   logic [K:0] rPtr, rPtr_n;
   logic [K:0] wPtr, wPtr_n;
-  logic [K:0] cnt, cnt_n;
+  logic [K:0] zero_cnt, zero_cnt_n;
 
-  assign num_in_fifo = cnt;
+  assign num_left_in_fifo = zero_cnt;
 
   // actual queue
   logic [(1<<K) - 1:0][WIDTH-1:0] queue;
@@ -189,10 +187,10 @@ module fifo(clk, rst,
 
   always_comb begin
     case({write_allowed,read_allowed})
-      2'b00 : cnt_n = cnt;
-      2'b01 : cnt_n = cnt - 1'b1 ;
-      2'b10 : cnt_n = cnt + 1'b1 ;
-      2'b11 : cnt_n = cnt;
+      2'b00 : zero_cnt_n = zero_cnt;
+      2'b01 : zero_cnt_n = zero_cnt + 1'b1 ;
+      2'b10 : zero_cnt_n = zero_cnt - 1'b1 ;
+      2'b11 : zero_cnt_n = zero_cnt;
     endcase
   end
 
@@ -208,10 +206,18 @@ module fifo(clk, rst,
   ff_ar #(K+1,'h0) ff_r(.q(rPtr), .d(rPtr_n), .clk, .rst);
   ff_ar #(K+1,'h0) ff_w(.q(wPtr), .d(wPtr_n), .clk, .rst);
   ff_ar #((1<<K)*WIDTH,'h0) ff_q(.q(queue), .d(queue_n), .clk, .rst); 
-  ff_ar #(K+1,'h0) ff_cnt(.q(cnt), .d(cnt_n), .clk, .rst);
+  ff_ar #(K+1,(1<<K)) ff_zero_cnt(.q(zero_cnt), .d(zero_cnt_n), .clk, .rst);
+
+  int i;
+  always_comb begin
+  	exists_in_fifo = 1'b0;
+	for(i=0; i < (1<<K); i++) begin
+		if(queue[i] == {1'b1,data_in})
+			exists_in_fifo = 1'b1;
+	end
+  end
 
 endmodule
-
 
 /* This has the 3 types of buffers  
   t3: data 3/3 of clocks
@@ -331,7 +337,7 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
   output logic [WIDTH-1:0] ds_data,
   input logic ds_stall,
 
-  input logic [$clog2(DEPTH+2)-1:0] num_in_fifo
+  input logic [$clog2(DEPTH+2):0] num_left_in_fifo
 
   );
 
@@ -343,19 +349,19 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
 
   buf_t3 #(.LAT(DEPTH), .WIDTH(WIDTH)) data_buf(.clk,.rst,.data_in(us_data),.data_out(ds_data));
 
-  logic [$clog2(DEPTH+2)-1:0] zero_cnt, zero_cnt_n;
+  logic [$clog2(DEPTH+2):0] one_cnt, one_cnt_n;
   always_comb begin
     case({valid_buf_n[DEPTH-1],valid_buf[0]})
-      2'b00 : zero_cnt_n = zero_cnt;
-      2'b10 : zero_cnt_n = zero_cnt - 1;
-      2'b01 : zero_cnt_n = zero_cnt + 1;
-      2'b11 : zero_cnt_n = zero_cnt ;
+      2'b00 : one_cnt_n = one_cnt;
+      2'b10 : one_cnt_n = one_cnt + 1;
+      2'b01 : one_cnt_n = one_cnt - 1;
+      2'b11 : one_cnt_n = one_cnt ;
     endcase
   end
 
-  ff_ar #($clog2(DEPTH+2),DEPTH) cnt_inst(.d(zero_cnt_n),.q(zero_cnt),.clk,.rst);
+  ff_ar #($clog2(DEPTH+2)+1,0) cnt_inst(.d(one_cnt_n),.q(one_cnt),.clk,.rst);
 
-  assign us_stall = ds_stall & (zero_cnt <= num_in_fifo); // Used to & with us_valid
+  assign us_stall = ds_stall & (one_cnt >= num_left_in_fifo); // Used to & with us_valid
 
 endmodule
 
@@ -379,7 +385,7 @@ module lshape #(parameter SIDE_W = 10, UNSTALL_W = 100, DEPTH = 20)
   logic ds_valid;
   logic [SIDE_W-1:0] sb_to_fifo;
   logic full;
-  logic [$clog2(DEPTH+2)-1:0] num_in_fifo;
+  logic [$clog2(DEPTH+2):0] num_left_in_fifo;
     
   `ifndef SYNTH
     always @(*) assert(!(full & ds_valid));
@@ -394,7 +400,7 @@ module lshape #(parameter SIDE_W = 10, UNSTALL_W = 100, DEPTH = 20)
     .ds_valid,
     .ds_data(sb_to_fifo),
     .ds_stall,
-    .num_in_fifo );
+    .num_left_in_fifo );
 
   fifo #(.K($clog2(DEPTH)-1), .WIDTH(SIDE_W+UNSTALL_W)) fifo_inst(
     .data_in({sb_to_fifo,us_unstall_data}),
@@ -403,7 +409,7 @@ module lshape #(parameter SIDE_W = 10, UNSTALL_W = 100, DEPTH = 20)
     .empty,
     .re(rdreq),
     .we(ds_valid),
-    .num_in_fifo,
+    .num_left_in_fifo,
     .clk, .rst);
 
 endmodule
