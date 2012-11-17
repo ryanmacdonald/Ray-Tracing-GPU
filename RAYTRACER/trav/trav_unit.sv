@@ -93,7 +93,7 @@ module trav_unit(
     leaf_fifo_in.ln_tri = tcache_data.tree_node.leaf_node.ln_tri ;
   end
 
-  fifo #(.WIDTH($bits(leaf_fifo_in)), .K(2)) leaf_fifo(
+  fifo #(.WIDTH($bits(leaf_fifo_in)), .DEPTH(8)) leaf_fifo(
     .clk, .rst,
     .data_in(leaf_fifo_in),
     .data_out(leaf_fifo_out),
@@ -254,7 +254,7 @@ module trav_unit(
   assign trav_fifo_we = ds_valid_pipe_vs ;
   
 
-  fifo #(.K(4), .WIDTH($bits(trav_fifo_in)) ) trav_fifo_inst(
+  fifo #(.DEPTH(14), .WIDTH($bits(trav_fifo_in)) ) trav_fifo_inst(
     .clk, .rst,
     .data_in(trav_fifo_in),
     .data_out(trav_fifo_out),

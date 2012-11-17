@@ -153,7 +153,7 @@ endmodule
 
 // depth 2^k
 module fifo
-#(  parameter WIDTH = 32, K = 2)
+#(  parameter WIDTH = 32, DEPTH = 10)
 (
   input logic clk, rst,
   input logic [WIDTH-1:0] data_in,
@@ -163,31 +163,41 @@ module fifo
   output logic exists_in_fifo,
   output logic empty,
   output logic [WIDTH-1:0] data_out,
-  output logic [K:0] num_left_in_fifo);
+  output logic [$clog2(DEPTH):0] num_left_in_fifo);
 
-  logic write_allowed, read_allowed;
+  localparam K = $clog2(DEPTH);
 
-  logic [K:0] rPtr, rPtr_n;
-  logic [K:0] wPtr, wPtr_n;
+  logic write_valid, read_valid;
+
+  logic [K-1:0] rPtr, rPtr_n;
+  logic [K-1:0] wPtr, wPtr_n;
   logic [K:0] zero_cnt, zero_cnt_n;
   logic [K:0] one_cnt, one_cnt_n; // TODO: finish this
 
   assign num_left_in_fifo = zero_cnt;
 
   // actual queue
-  logic [(1<<K) - 1:0][WIDTH-1:0] queue;
-  logic [(1<<K) - 1:0][WIDTH-1:0] queue_n;
+  logic [DEPTH-1:0][WIDTH-1:0] queue;
+  logic [DEPTH-1:0][WIDTH-1:0] queue_n;
 
   //output assigns
-  assign data_out = queue[rPtr[K-1:0]];
-  assign empty = (rPtr == wPtr) ;
-  assign full = (rPtr == {~wPtr[K],wPtr[K-1:0]} );
+  assign data_out = queue[rPtr];
+  assign empty = (one_cnt == 'h0 );
+  assign full = (zero_cnt == 'h0);
 
-  assign write_allowed = we & ~full ;
-  assign read_allowed = re & ~empty ;
+  assign write_valid = we & ~full ;
+  assign read_valid = re & ~empty ;
+  always_comb begin
+    case({write_valid,read_valid})
+      2'b00 : one_cnt_n = one_cnt;
+      2'b01 : one_cnt_n = one_cnt - 1'b1 ;
+      2'b10 : one_cnt_n = one_cnt + 1'b1 ;
+      2'b11 : one_cnt_n = one_cnt;
+    endcase
+  end
 
   always_comb begin
-    case({write_allowed,read_allowed})
+    case({write_valid,read_valid})
       2'b00 : zero_cnt_n = zero_cnt;
       2'b01 : zero_cnt_n = zero_cnt + 1'b1 ;
       2'b10 : zero_cnt_n = zero_cnt - 1'b1 ;
@@ -197,25 +207,26 @@ module fifo
 
   always_comb begin
     queue_n = queue ;
-    if(write_allowed) queue_n[wPtr[K-1:0]] = data_in;
-    if(read_allowed) queue_n[rPtr[K-1:0]] = 'h0;
+    if(write_valid) queue_n[wPtr[K-1:0]] = data_in;
+    if(read_valid) queue_n[rPtr[K-1:0]] = 'h0;
   end
  
-  assign rPtr_n = read_allowed ? rPtr + 1'b1 : rPtr ;
-  assign wPtr_n = write_allowed ? wPtr + 1'b1 : wPtr ;
+  assign rPtr_n = read_valid ? (rPtr == DEPTH-1 ? 'h0 : rPtr + 1'b1) : rPtr ;
+  assign wPtr_n = write_valid ? (wPtr == DEPTH-1 ? 'h0 : wPtr + 1'b1) : wPtr ;
 
-  ff_ar #(K+1,'h0) ff_r(.q(rPtr), .d(rPtr_n), .clk, .rst);
-  ff_ar #(K+1,'h0) ff_w(.q(wPtr), .d(wPtr_n), .clk, .rst);
-  ff_ar #((1<<K)*WIDTH,'h0) ff_q(.q(queue), .d(queue_n), .clk, .rst); 
-  ff_ar #(K+1,(1<<K)) ff_zero_cnt(.q(zero_cnt), .d(zero_cnt_n), .clk, .rst);
+  ff_ar #(K,'h0) ff_r(.q(rPtr), .d(rPtr_n), .clk, .rst);
+  ff_ar #(K,'h0) ff_w(.q(wPtr), .d(wPtr_n), .clk, .rst);
+  ff_ar #(DEPTH*WIDTH,'h0) ff_q(.q(queue), .d(queue_n), .clk, .rst); 
+  ff_ar #(K+1,DEPTH) ff_zero_cnt(.q(zero_cnt), .d(zero_cnt_n), .clk, .rst);
+  ff_ar #(K+1,'h0) ff_one_cnt(.q(one_cnt), .d(one_cnt_n), .clk, .rst);
 
   int i;
   always_comb begin
-  	exists_in_fifo = 1'b0;
-	for(i=0; i < (1<<K); i++) begin
-		if(queue[i] == {1'b1,data_in})
-			exists_in_fifo = 1'b1;
-	end
+    exists_in_fifo = 1'b0;
+    for(i=0; i < DEPTH; i++) begin
+      if(queue[i] == data_in)
+        exists_in_fifo = 1'b1;
+    end
   end
 
 endmodule
@@ -403,7 +414,7 @@ module lshape #(parameter SIDE_W = 10, UNSTALL_W = 100, DEPTH = 20)
     .ds_stall,
     .num_left_in_fifo );
 
-  fifo #(.K($clog2(DEPTH)-1), .WIDTH(SIDE_W+UNSTALL_W)) fifo_inst(
+  fifo #(.DEPTH(DEPTH), .WIDTH(SIDE_W+UNSTALL_W)) fifo_inst(
     .data_in({sb_to_fifo,us_unstall_data}),
     .data_out(ds_data),
     .full,

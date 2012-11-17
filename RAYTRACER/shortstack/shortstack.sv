@@ -131,7 +131,7 @@ module shortstack(
 genvar i;
 generate begin
   for(i=0; i<3; i+=1) begin
-  fifo #(.K(2), .WIDTH($bits(stack_read_fifo_in)) ) stack_read_fifo_inst(
+  fifo #(.DEPTH(3), .WIDTH($bits(stack_read_fifo_in)) ) stack_read_fifo_inst(
     .clk, .rst,
     .data_in(stack_read_fifo_in[i]),
     .data_out(stack_read_fifo_out[i]),
@@ -174,7 +174,7 @@ end
 genvar i;
 generate begin
   for(i=0; i<2; i+=1) begin
-  fifo #(.K(2), .WIDTH($bits(stack_write_fifo_in)) ) stack_write_fifo_inst(
+  fifo #(.DEPTH(3), .WIDTH($bits(stack_write_fifo_in)) ) stack_write_fifo_inst(
     .clk, .rst,
     .data_in(stack_write_fifo_in[i]),
     .data_out(stack_write_fifo_out[i]),
@@ -295,7 +295,7 @@ endgenerate
   end
   assign stack_fifo_we = stack_VSpipe_valid_ds;
 
-  fifo #(.K(1), .WIDTH($bits(stack_fifo_in)) ) stack_fifo_inst(
+  fifo #(.DEPTH(2), .WIDTH($bits(stack_fifo_in)) ) stack_fifo_inst(
     .clk, .rst,
     .data_in(stack_fifo_in),
     .data_out(stack_fifo_out),

@@ -174,7 +174,7 @@ module trtr(
 	assign LEDG[0] = render_frame;
 
 
-	fifo #(.K(10), .WIDTH($bits(pixel_buffer_entry_t)))
+	fifo #(.DEPTH(1024), .WIDTH($bits(pixel_buffer_entry_t)))
 		pb_fifo(.clk, .rst, .data_in(pb_data_in), .we(pb_we), .re(pb_re), .full(pb_full), .empty(pb_empty), .data_out(pb_data));
 
 /*    xmodem               xm(.*);

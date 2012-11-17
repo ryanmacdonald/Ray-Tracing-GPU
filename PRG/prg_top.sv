@@ -30,6 +30,7 @@ module prg_top(input logic clk, rst,
 	prg_ray_t prg_out;
 
 	
+  // TODO replace .K with .DEPTH 
 	//fifo #(.WIDTH($bits(ray_t)),.K(4)) q(.clk,.rst,.data_in(prg_out),.we(rb_we),.re(rb_re),
 	//				     .full(rb_full),.empty(rb_empty),.data_out(prg_data));
 
