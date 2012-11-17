@@ -120,6 +120,16 @@ typedef struct packed{
   vector_t dir;
 } prg_ray_t;
 
+typedef struct packed{
+  float_t tmin;
+  float_t tmax;
+  logic miss;
+  rayID_t rayID;
+  vector_t origin;
+  vector_t direction;
+} scene_int_ray_t
+
+
 typedef struct packed {
   ray_info_t ray_info;
   vector_t origin;
