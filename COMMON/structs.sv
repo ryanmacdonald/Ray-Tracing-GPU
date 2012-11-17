@@ -357,6 +357,11 @@ typedef struct packed {
   float_t t_max_leaf;
 } list_to_ss_t;
 
+// Represents misses
+typedef struct packed {
+	rayID_t rayID;
+  logic is_shadow;
+} ss_to_shader_t;
 
 typedef struct packed {
     rayID_t rayID;

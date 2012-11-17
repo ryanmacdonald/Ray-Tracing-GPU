@@ -117,12 +117,18 @@ module shortstack(
   logic [2:0] stack_read_fifo_re;
   logic [2:0] stack_read_fifo_we;
   always_comb begin
-    stack_read_fifo_in.ray_info[0] = trav0_to_ss_data.ray_info;
-    stack_read_fifo_in.t_min[0] =  trav0_to_ss_data.t_max;
-    stack_read_fifo_in.ray_info[1] = trav1_to_ss_data.ray_info;
-    stack_read_fifo_in.t_min[1] =  trav1_to_ss_data.t_max;
-    stack_read_fifo_in.ray_info[2] = list_to_ss_data.ray_info;
-    stack_read_fifo_in.t_min[2] = list_to_ss_data.t_max;
+    stack_read_fifo_in[0].ray_info = trav0_to_ss_data.ray_info;
+    stack_read_fifo_in[0].ray_info.ss_wptr = trav0_to_ss_data.ray_info.ss_wptr - 1'b1;
+    stack_read_fifo_in[0].ray_info.ss_num = trav0_to_ss_data.ray_info.ss_num - 1'b1;
+    stack_read_fifo_in[0].t_min =  trav0_to_ss_data.t_max;
+    stack_read_fifo_in[1].ray_info = trav1_to_ss_data.ray_info;
+    stack_read_fifo_in[1].ray_info.ss_wptr = trav1_to_ss_data.ray_info.ss_wptr - 1'b1;
+    stack_read_fifo_in[1].ray_info.ss_num = trav1_to_ss_data.ray_info.ss_num - 1'b1;
+    stack_read_fifo_in[1].t_min =  trav1_to_ss_data.t_max;
+    stack_read_fifo_in[2].ray_info = list_to_ss_data.ray_info;
+    stack_read_fifo_in[2].ray_info.ss_wptr = list_to_ss_data.ray_info.ss_wptr - 1'b1;
+    stack_read_fifo_in[2].ray_info.ss_num = list_to_ss_data.ray_info.ss_num - 1'b1;
+    stack_read_fifo_in[2].t_min = list_to_ss_data.t_max;
   end
 
   assign stack_read_fifo_we = ;
@@ -139,6 +145,7 @@ generate begin
     .empty(stack_read_fifo_empty[i]),
     .re(stack_read_fifo_re[i]),
     .we(stack_read_fifo_we[i]),
+    .exists_in_fifo(),
     .num_left_in_fifo(),
     .exists_in_fifo());
   end
@@ -161,18 +168,17 @@ end
   logic [1:0] stack_write_fifo_re;
   logic [1:0] stack_write_fifo_we;
   always_comb begin
-    stack_write_fifo_in.rayID[0] = trav0_to_ss_data.ray_info.rayID;
-    stack_write_fifo_in.ss_wptr[0] = trav0_to_ss_data.ray_info.ss_wptr;
-    stack_write_fifo_in.elem.nodeID[0] =  trav0_to_ss_data.push_node_ID;
-    stack_write_fifo_in.elem.t_max[0] =  trav0_to_ss_data.t_max;
-    stack_write_fifo_in.rayID[1] = trav1_to_ss_data.ray_info.rayID;
-    stack_write_fifo_in.ss_wptr[1] = trav1_to_ss_data.ray_info.ss_wptr;
-    stack_write_fifo_in.elem.nodeID[1] =  trav1_to_ss_data.push_node_ID;
-    stack_write_fifo_in.elem.t_max[1] =  trav1_to_ss_data.t_max;
+    stack_write_fifo_in[0].rayID = trav0_to_ss_data.ray_info.rayID;
+    stack_write_fifo_in[0].ss_wptr = trav0_to_ss_data.ray_info.ss_wptr;
+    stack_write_fifo_in[0].elem.nodeID =  trav0_to_ss_data.push_node_ID;
+    stack_write_fifo_in[0].elem.t_max =  trav0_to_ss_data.t_max;
+    stack_write_fifo_in[1].rayID = trav1_to_ss_data.ray_info.rayID;
+    stack_write_fifo_in[1].ss_wptr = trav1_to_ss_data.ray_info.ss_wptr;
+    stack_write_fifo_in[1].elem.nodeID =  trav1_to_ss_data.push_node_ID;
+    stack_write_fifo_in[1].elem.t_max =  trav1_to_ss_data.t_max;
   end
 
   assign stack_write_fifo_re = ;
-  assign stack_write_fifo_we = ;
 
 
 genvar i;
@@ -186,7 +192,8 @@ generate begin
     .empty(stack_write_fifo_empty[i]),
     .re(stack_write_fifo_re[i]),
     .we(stack_write_fifo_we[i]),
-    .num_in_fifo() );
+    .exists_in_fifo(),
+    .num_left_in_fifo() );
   end
 endgenerate
 
@@ -194,17 +201,39 @@ endgenerate
 //------------------------------------------------------------------------
 // Stack instantiations
 
+  logic [2:0] stack_rfifo_valid, stack_rfifo_choice;
   logic [1:0] stack_r_rrptr, stack_r_rrptr_n;
-  assign r_rrptr_n = (|trans_choice) ? (stack_r_rrptr == 2'h2 ? 2''h0 : stack_r_rrptr + 1'b1) : stacK_r_rrptr ;
+  assign stack_r_rrptr_n = (|stack_rfifo_valid) ? (stack_r_rrptr == 2'h2 ? 2''h0 : stack_r_rrptr + 1'b1) : stack_r_rrptr ;
+  
+  
+  
   ff_ar #(2,2'b0) stack_r_rrptr_buf(.d(stack_r_rrptr_n), .q(stack_r_rrptr), .clk, .rst);
   
-  logic [2:0] stack_rfifo_valid, stack_rfifo_choice;
   assign stack_rfifo_valid = ~stack_read_fifo_empty & {3{stack_VSpipe_stall_us}};
+  logic [1:0] stack_r_rrptr1, stack_r_rrptr2;
+  always_comb begin
+    unique case(stack_r_rrptr) 
+      2'b00 : begin
+        stack_r_rrptr1 = 2'b01;
+        stack_r_rrptr2 = 2'b10;
+      end
+      2'b01 : begin
+        stack_r_rrptr1 = 2'b10;
+        stack_r_rrptr2 = 2'b00;
+      end
+      2'b10 : begin
+        stack_r_rrptr1 = 2'b00;
+        stack_r_rrptr2 = 2'b01;
+      end
+    endcase
+  end
+  
+  
   always_comb begin
     stack_rfifo_choice = 'h0;
     stack_rfifo_choice[stack_r_rrptr] = stack_rfifo_valid[stack_r_rrptr];
-    stack_rfifo_choice[stack_r_rrptr+2'b01] = stack_rfifo_valid[stack_r_rrptr+2'b01] & ~stack_rfifo_choice[stack_r_rrptr] ;
-    stack_rfifo_choice[stack_r_rrptr+2'b10] = stack_rfifo_valid[stack_r_rrptr+2'b10] & ~stack_rfifo_choice[stack_r_rrptr] & ~stack_rfifo_chocie[stack_r_rrptr+2'b01];
+    stack_rfifo_choice[stack_r_rrptr1] = stack_rfifo_valid[stack_r_rrptr1] & ~stack_rfifo_valid[stack_r_rrptr] ;
+    stack_rfifo_choice[stack_r_rrptr2] = stack_rfifo_valid[stack_r_rrptr2] & ~stack_rfifo_valid[stack_r_rrptr] & ~stack_rfifo_valid[stack_r_rrptr1];
   end
   
   logic [3:0] stack_read_valid;
@@ -228,7 +257,7 @@ endgenerate
     stack_read_valid[stack_cur_rptr] = 1'b1 ;
   end
   logic stack_is_reading;
-  assign stack_is_reading = |stack_read_valid;
+  assign stack_is_reading = |stack_rfifo_valid;
 
   logic stack_w_rrptr, stack_w_rrptr_n;
   assign w_rrptr_n = ( ) ?  ~stack_w_rrptr : stacK_w_rrptr ;
@@ -257,6 +286,8 @@ endgenerate
                                                        stack_is_reading & stack_wfifo_valid[0]) ;
     end
   end
+
+  assign stack_write_fifo_we = wtack_wfifo_choice;
   // port A = 0, port B = 1
 
   logic stack_w0_port;
@@ -314,23 +345,23 @@ endgenerate
   
 
 
-genvar s;
-generate
-  for(s=0; s<4; s++) begin
-    bram_dual_2port_512x stack_bram(
-    .aclr(rst[i]),
-    .address_a(addrA_stack[i]),
-    .address_b(addrB_stack[i]),
-    .clock(clk[i]),
-    .data_a(wrdataA_stack[i]),
-    .data_b(wrdataB_stack[i]),
-    .wren_a(wrenA_stack[i]),
-    .wren_b(wrenB_stack[i]),
-    .q_a(rddataA_stack[i]),
-    .q_b());
-  end
+  genvar s;
+  generate
+    for(s=0; s<4; s++) begin
+      bram_dual_2port_512x stack_bram(
+      .aclr(rst[i]),
+      .address_a(addrA_stack[i]),
+      .address_b(addrB_stack[i]),
+      .clock(clk[i]),
+      .data_a(wrdataA_stack[i]),
+      .data_b(wrdataB_stack[i]),
+      .wren_a(wrenA_stack[i]),
+      .wren_b(wrenB_stack[i]),
+      .q_a(rddataA_stack[i]),
+      .q_b());
+    end
 
-endgenerate
+  endgenerate
 
 
 
@@ -343,20 +374,20 @@ endgenerate
 
   logic stack_VSpipe_valid_us, stack_VSpipe_stall_us;
   logic stack_VSpipe_valid_ds, stack_VSpipe_stall_ds;
-  logic [2:0] num_in_stack_fifo;
+  logic [2:0] num_left_in_stack_fifo;
   
   always_comb begin
-    unique case(trans_choice);
-      3'b100 : stack_VS_pipe_in = read_fifo_out[2];
-      3'b010 : stack_VS_pipe_in = read_fifo_out[1];
-      3'b001 : stack_VS_pipe_in = read_fifo_out[0];
+    unique case(stack_rfifo_choice);
+      3'b100 : stack_VS_pipe_in = stack_read_fifo_out[2];
+      3'b010 : stack_VS_pipe_in = stack_read_fifo_out[1];
+      3'b001 : stack_VS_pipe_in = stack_read_fifo_out[0];
       3'b000 : stack_VS_pipe_in = `DC;
     endcase
   end
   assign stack_VSpipe_valid_us = stack_is_reading;
   
 
-  pipe_valid_stall #(.WIDTH($bits(stack_VSpipe_in)), .DEPTH(4)) stack_VSpipe_inst(
+  pipe_valid_stall #(.WIDTH($bits(stack_VSpipe_in)), .DEPTH(2)) stack_VSpipe_inst(
     .clk, .rst,
     .us_valid(stack_VSpipe_valid_us),
     .us_data(stack_VSpipe_in),
@@ -364,7 +395,8 @@ endgenerate
     .ds_valid(stack_VSpipe_valid_ds),
     .ds_data(stack_VSpipe_out),
     .ds_stall(stack_VSpipe_stall_ds),
-    .num_in_fifo(num_in_stack_fifo) );
+    .exists_in_fifo(),
+    .num_left_in_fifo(num_left_in_stack_fifo) );
 
 //------------------------------------------------------------------------
 // Stack fifo
@@ -387,7 +419,7 @@ endgenerate
   end
   assign stack_fifo_we = stack_VSpipe_valid_ds;
 
-  fifo #(.DEPTH(2), .WIDTH($bits(stack_fifo_in)) ) stack_fifo_inst(
+  fifo #(.DEPTH(3), .WIDTH($bits(stack_fifo_in)) ) stack_fifo_inst(
     .clk, .rst,
     .data_in(stack_fifo_in),
     .data_out(stack_fifo_out),
@@ -395,7 +427,8 @@ endgenerate
     .empty(stack_fifo_empty),
     .re(stack_fifo_re),
     .we(stack_fifo_we),
-    .num_in_fifo(num_in_stack_fifo) );
+    .exists_in_fifo(),
+    .num_left_in_fifo(num_left_in_stack_fifo) );
 
   assign ss_to_tarb0_valid = ~stack_fifo_empty;
   assign ss_to_tarb0_data = stack_fifo_out;
@@ -404,17 +437,18 @@ endgenerate
 
 
 //------------------------------------------------------------------------------------------------------
-// Restart Patha
+// Restart Path
 //------------------------------------------------------------------------------------------------------
 
 
-// Short Stack Read fifos
+// restart Read fifos
   // 0 == trav0
   // 1 == trav1
   // 2 == list
 
   struct packed {
-    ray_info_t ray_info; // This has wptr representing the readpointer (ss_wptr - 1)
+    rayID_t rayID;
+    logic is_shadow;
     float_t t_min;
   } rest_read_fifo_in[3], rest_read_fifo_out[3];
 
@@ -423,12 +457,15 @@ endgenerate
   logic [2:0] rest_read_fifo_re;
   logic [2:0] rest_read_fifo_we;
   always_comb begin
-    rest_read_fifo_in.ray_info[0] = trav0_to_ss_data.ray_info;
-    rest_read_fifo_in.t_min[0] =  trav0_to_ss_data.t_max;
-    rest_read_fifo_in.ray_info[1] = trav1_to_ss_data.ray_info;
-    rest_read_fifo_in.t_min[1] =  trav1_to_ss_data.t_max;
-    rest_read_fifo_in.ray_info[2] = list_to_ss_data.ray_info;
-    rest_read_fifo_in.t_min[2] = list_to_ss_data.t_max;
+    rest_read_fifo_in[0].rayID = trav0_to_ss_data.rayID;
+    rest_read_fifo_in[0].is_shadow = trav0_to_ss_data.is_shadow;
+    rest_read_fifo_in[0].t_min =  trav0_to_ss_data.t_max;
+    rest_read_fifo_in[1].rayID = trav1_to_ss_data.rayID;
+    rest_read_fifo_in[1].is_shadow = trav1_to_ss_data.is_shadow;
+    rest_read_fifo_in[1].t_min =  trav1_to_ss_data.t_max;
+    rest_read_fifo_in[2].rayID = list_to_ss_data.rayID;
+    rest_read_fifo_in[2].is_shadow = list_to_ss_data.is_shadow;
+    rest_read_fifo_in[2].t_min = list_to_ss_data.t_max;
   end
 
   assign rest_read_fifo_we = ;
@@ -445,13 +482,228 @@ generate begin
     .empty(rest_read_fifo_empty[i]),
     .re(rest_read_fifo_re[i]),
     .we(rest_read_fifo_we[i]),
-    .num_left_in_fifo(),
-    .exists_in_fifo());
+    .exists_in_fifo(),
+    .num_left_in_fifo() );
   end
 end
 
+
+
 //------------------------------------------------------------------------
-// Short Stack write fifos
+  // rest read arbitration logic
+  logic [1:0] rest_r_rrptr, rest_r_rrptr_n;
+  assign rest_r_rrptr_n = (|rest_rfifo_valid) ? (rest_r_rrptr == 2'h2 ? 2''h0 : rest_r_rrptr + 1'b1) : rest_r_rrptr ;
+  ff_ar #(2,2'b0) rest_r_rrptr_buf(.d(rest_r_rrptr_n), .q(rest_r_rrptr), .clk, .rst);
+  
+  logic [2:0] rest_rfifo_valid, rest_rfifo_choice;
+  assign rest_rfifo_valid = ~rest_read_fifo_empty & {3{rest_VSpipe_stall_us}};
+  
+  logic [1:0] rest_r_rrptr1, rest_r_rrptr2;
+  always_comb begin
+    unique case(rest_r_rrptr) 
+      2'b00 : begin
+        rest_r_rrptr1 = 2'b01;
+        rest_r_rrptr2 = 2'b10;
+      end
+      2'b01 : begin
+        rest_r_rrptr1 = 2'b10;
+        rest_r_rrptr2 = 2'b00;
+      end
+      2'b10 : begin
+        rest_r_rrptr1 = 2'b00;
+        rest_r_rrptr2 = 2'b01;
+      end
+    endcase
+  end
+  
+  always_comb begin
+    rest_rfifo_choice = 'h0;
+    rest_rfifo_choice[rest_r_rrptr] = rest_rfifo_valid[rest_r_rrptr];
+    rest_rfifo_choice[rest_r_rrptr1] = rest_rfifo_valid[rest_r_rrptr1] & ~rest_rfifo_valid[rest_r_rrptr] ;
+    rest_rfifo_choice[rest_r_rrptr2] = rest_rfifo_valid[rest_r_rrptr2] & ~rest_rfifo_valid[rest_r_rrptr] & ~rest_rfifo_valid[rest_r_rrptr1];
+  end
+
+  
+  rayID_t rest_cur_raddr;
+  float_t rest_cur_t_min;
+  always_comb begin
+    rest_cur_rptr = 'h0;
+    rest_read_valid = 'h0;
+    case(rest_rfifo_choice)
+      3'b100: begin
+        rest_cur_raddr = rest_read_fifo_out[2].rayID;
+        rest_cur_t_min = rest_read_fifo_out[2].t_min;
+      3'b010: begin
+        rest_cur_raddr = rest_read_fifo_out[1].rayID;
+        rest_cur_t_min = rest_read_fifo_out[1].t_min;
+      3'b001: begin
+        rest_cur_raddr = rest_read_fifo_out[0].rayID;
+        rest_cur_t_min = rest_read_fifo_out[0].t_min;
+      end
+    endcase
+  end
+  logic rest_is_reading;
+  assign rest_is_reading = |rest_rfifo_valid;
+
+
+  float_t wrdata_max_scene, rddata_max_scene;
+  rayID_t raddr_max_scene, waddr_max_scene;
+  logic wren_max_scene;
+  
+  assign wrdata_max_scene = sint_to_ss_data.t_max_scene;
+  assign rdaddr_max_scene = rest_cur_raddr;
+  assign waddr_max_scene = sint_to_ss_data.rayID;
+  assign wren_max_scene = sint_to_ss_valid & ~sint_to_ss_stall;
+  
+  bram_dual_rw_512x32 max_scene_bram(
+  //.aclr(rst),
+  .wraddress(waddr_max_scene),
+  .rdaddress(raddr_max_scene),
+  .clock(clk),
+  .data(wrdata_max_scene),
+  .wren(wren_max_scene),
+  .q(rddata_max_scene) );
+
+
+//------------------------------------------------------------------------
+  // Buffer for t_maxc cur and a compparison against the tmax of the scene
+  float_t minbuf_in, minbuf_out, minbuf_s3;
+  float_t maxscene_s3;
+
+  assign minbuf_in = rest_cur_t_min;
+  buf_t3 #(.LAT(2), .WIDTH($bits(minbuf_in))) 
+    minbuf_buf(.data_in(minbuf_in), .data_out(minbuf_out), .clk, .rst);
+
+  ff_ar #($bits(float_t),'h0) minbuf_s3_reg(.d(minbuf_out), .q(minbuf_s3), .clk, .rst);
+  ff_ar #($bits(float_t),'h0) maxscene_s3_reg(.d(rddata_max_scene), .q(maxscene_s3), .clk, .rst);
+
+  float_t inA_comp_max_scene, inB_comp_max_scene;
+  logic out_agb_comp_max_scene;
+  logic out_aeb_comp_max_scene;
+  assign inA_comp_max_scene = minbuf_out;
+  assign inB_comp_max_scene = rddata_max_scene;
+  altfp_compare comp_max_scene (
+  .aclr(rst),
+  .clock(clk ),
+  .dataa(inA_comp_max_scene ),
+  .datab(inB_comp_max_scene ),
+  .aeb(out_aeb_comp_max_scene),
+	.agb(out_agb_comp_max_scene) );
+
+  // if aeb | agb then a MISS
+  // Else a NOTMISS
+  logic miss_s3;
+  logic notmiss_s3;
+  assign miss_s3 = out_aeb_comp_max_scene | out_agb_comp_max_scene ;
+  assign notmiss_s3 = ~miss_s3;
+
+//------------------------------------------------------------------------
+// VS Pipe for rest
+  struct packed {
+    rayID_t rayID;
+    logic is_shadow;
+  } rest_VSpipe_in, rest_VSpipe_out;
+
+  logic rest_VSpipe_valid_us, rest_VSpipe_stall_us;
+  logic rest_VSpipe_valid_ds, rest_VSpipe_stall_ds;
+  logic [2:0] rest_min_num_left;
+  
+  always_comb begin
+    unique case(rest_rfifo_choice);
+      3'b100 : begin 
+        rest_VS_pipe_in.rayID = rest_read_fifo_out[2].rayID;
+        rest_VS_pipe_in.is_shadow = rest_read_fifo_out[2].is_shadow;
+      end
+      3'b010 : begin 
+        rest_VS_pipe_in.rayID = rest_read_fifo_out[1].rayID;
+        rest_VS_pipe_in.is_shadow = rest_read_fifo_out[1].is_shadow;
+      end
+      3'b001 : begin 
+        rest_VS_pipe_in.rayID = rest_read_fifo_out[0].rayID;
+        rest_VS_pipe_in.is_shadow = rest_read_fifo_out[0].is_shadow;
+      end
+      3'b000 : rest_VS_pipe_in = `DC;
+    endcase
+  end
+  assign rest_VSpipe_valid_us = rest_is_reading;
+  
+
+  pipe_valid_stall #(.WIDTH($bits(rest_VSpipe_in)), .DEPTH(3)) rest_VSpipe_inst(
+    .clk, .rst,
+    .us_valid(rest_VSpipe_valid_us),
+    .us_data(rest_VSpipe_in),
+    .us_stall(rest_VSpipe_stall_us),
+    .ds_valid(rest_VSpipe_valid_ds),
+    .ds_data(rest_VSpipe_out),
+    .ds_stall(rest_VSpipe_stall_ds),
+    .num_left_in_fifo(rest_min_num_left) );
+
+//------------------------------------------------------------------------
+// notmiss fifo
+  struct packed {
+    rayID_t rayID;
+    logic is_shadow;
+    float_t t_min;
+    float_t t_max;
+  } notmiss_fifo_in, notmiss_fifo_out;
+
+  logic notmiss_fifo_full;
+  logic notmiss_fifo_empty;
+  logic notmiss_fifo_re;
+  logic notmiss_fifo_we;
+  always_comb begin
+    notmiss_fifo_in.rayID= rest_VSpipe_out.rayID;
+    notmiss_fifo_in.is_shadow = rest_VSpipe_out.is_shadow;
+    notmiss_fifo_in.t_min =  minbuf_s3; 
+    notmiss_fifo_in.t_max =  maxscene_s3; 
+  end
+  assign notmiss_fifo_we = notmiss_VSpipe_valid_ds & notmiss_s3;
+
+  fifo #(.DEPTH(4), .WIDTH($bits(notmiss_fifo_in)) ) notmiss_fifo_inst(
+    .clk, .rst,
+    .data_in(notmiss_fifo_in),
+    .data_out(notmiss_fifo_out),
+    .full(notmiss_fifo_full),
+    .empty(notmiss_fifo_empty),
+    .re(notmiss_fifo_re),
+    .we(notmiss_fifo_we),
+    .exists_in_fifo(),
+    .num_left_in_fifo(num_left_in_notmiss_fifo) );
+
+
+//------------------------------------------------------------------------
+// miss fifo
+  ss_to_shader_t miss_fifo_in, miss_fifo_out;
+
+  logic miss_fifo_full;
+  logic miss_fifo_empty;
+  logic miss_fifo_re;
+  logic miss_fifo_we;
+  logic [2:0] num_left_in_miss_fifo;
+  always_comb begin
+    miss_fifo_in.rayID = rest_VSpipe_out.rayID;
+    miss_fifo_in.is_shadow = rest_VSpipe_out.is_shadow ; 
+  end
+  assign miss_fifo_we = miss_VSpipe_valid_ds & miss_s3;
+
+  fifo #(.DEPTH(4), .WIDTH($bits(miss_fifo_in)) ) miss_fifo_inst(
+    .clk, .rst,
+    .data_in(miss_fifo_in),
+    .data_out(miss_fifo_out),
+    .full(miss_fifo_full),
+    .empty(miss_fifo_empty),
+    .re(miss_fifo_re),
+    .we(miss_fifo_we),
+    .exists_in_fifo(),
+    .num_left_in_fifo(num_left_in_miss_fifo) );
+
+  assign miss_fifo_re = ss_to_shader_valid & ~ss_to_shader_stall;
+  assign ss_to_shader_valid = ~miss_fifo_empty;
+  assign ss_to_shader_data = miss_fifo_out;
+  assign rest_min_num_left = (num_left_in_miss_fifo > num_left_in_notmiss_fifo) ? num_left_in_notmiss_fifo : num_left_in_miss_fifo ;
+
+//------------------------------------------------------------------------
+// rest write fifos
   // 0 == trav0
   // 1 == trav1
   // 2 == sint
@@ -467,15 +719,15 @@ end
   logic [2:0] rest_write_fifo_re;
   logic [2:0] rest_write_fifo_we;
   always_comb begin
-    rest_write_fifo_in.rayID[0] = trav0_to_ss_data.ray_info.rayID;
-    rest_write_fifo_in.elem.nodeID[0] =  trav0_to_ss_data.rest_node_ID;
-    rest_write_fifo_in.elem.t_max[0] =  trav0_to_ss_data.t_max;
-    rest_write_fifo_in.rayID[1] = trav1_to_ss_data.ray_info.rayID;
-    rest_write_fifo_in.elem.nodeID[1] =  trav1_to_ss_data.rest_node_ID;
-    rest_write_fifo_in.elem.t_max[1] =  trav1_to_ss_data.t_max;
-    rest_write_fifo_in.rayID[2] = sint_to_ss_data.ray_info.rayID;
-    rest_write_fifo_in.elem.nodeID[2] =  sint_to_ss_data.rest_node_ID;
-    rest_write_fifo_in.elem.t_max[2] =  sint_to_ss_data.t_max;
+    rest_write_fifo_in[0].rayID = trav0_to_ss_data.ray_info.rayID;
+    rest_write_fifo_in[0].elem.nodeID =  trav0_to_ss_data.rest_node_ID;
+    rest_write_fifo_in[0].elem.t_max =  trav0_to_ss_data.t_max;
+    rest_write_fifo_in[1].rayID = trav1_to_ss_data.ray_info.rayID;
+    rest_write_fifo_in[1].elem.nodeID =  trav1_to_ss_data.rest_node_ID;
+    rest_write_fifo_in[1].elem.t_max =  trav1_to_ss_data.t_max;
+    rest_write_fifo_in[2].rayID = sint_to_ss_data.ray_info.rayID;
+    rest_write_fifo_in[2].elem.nodeID =  sint_to_ss_data.rest_node_ID;
+    rest_write_fifo_in[2].elem.t_max =  sint_to_ss_data.t_max_scene;
   end
 
   assign rest_write_fifo_re = ;
@@ -493,32 +745,62 @@ generate begin
     .empty(rest_write_fifo_empty[i]),
     .re(rest_write_fifo_re[i]),
     .we(rest_write_fifo_we[i]),
-    .num_in_fifo() );
+    .exists_in_fifo(),
+    .num_left_in_fifo() );
   end
 endgenerate
 
 
 //------------------------------------------------------------------------
+  logic [1:0] rest_w_rrptr, rest_w_rrptr_n;
+  assign rest_w_rrptr_n = ( ) ? (rest_w_rrptr == 2'h2 ? 2''h0 : rest_w_rrptr + 1'b1) : rest_w_rrptr ;
+  ff_ar #(2,2'b0) rest_w_rrptr_buf(.d(rest_w_rrptr_n), .q(rest_w_rrptr), .clk, .rst);
+  
+  logic [1:0] rest_w_rrptr1, rest_w_rrptr2;
+  always_comb begin
+    unique case(rest_w_rrptr) 
+      2'b00 : begin
+        rest_w_rrptr1 = 2'b01;
+        rest_w_rrptr2 = 2'b10;
+      end
+      2'b01 : begin
+        rest_w_rrptr1 = 2'b10;
+        rest_w_rrptr2 = 2'b00;
+      end
+      2'b10 : begin
+        rest_w_rrptr1 = 2'b00;
+        rest_w_rrptr2 = 2'b01;
+      end
+    endcase
+  end
+  
+  logic [2:0] rest_write_valid;
+  assign rest_write_valid = ~rest_write_fifo_empty ;
+ 
+  //logic notmiss_fifo_empty;
+  
+
+
+  rayID_t addrA_stack, addrB_stack;
+  ss_elem_t wrdataA_stack;
+  ss_elem_t wrdataB_stack;
+  logic wrenA_stack, wrenB_stack;
+  ss_elem_t rddataA_stack;
+
+  bram_dual_2port_512x rest_bram(
+  .aclr(rst),
+  .address_a(addrA_stack),
+  .address_b(addrB_stack),
+  .clock(clk),
+  .data_a(wrdataA_stack),
+  .data_b(wrdataB_stack),
+  .wren_a(wrenA_stack),
+  .wren_b(wrenB_stack),
+  .q_a(rddataA_stack),
+  .q_b());
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//------------------------------------------------------------------------
 
 endmodule
