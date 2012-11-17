@@ -125,11 +125,10 @@ module tb_trav_unit();
   function norm_node_t create_norm_node(logic [1:0] axis, shortreal split, nodeID_t right_ID, logic low_empty, logic high_empty);
     norm_node_t r;
     r.node_type = axis;
-    r.split = ($shortrealtobits(split) >> 8);
+    r.split = ($shortrealtobits(split) >> 4);
     r.right_ID = right_ID;
     r.low_empty = low_empty;
     r.high_empty = high_empty;
-    r.reserve = 1'b0;
     return r;
   endfunction
 
@@ -138,7 +137,6 @@ module tb_trav_unit();
     l.node_type = 2'b11;
     l.ln_tri.lindex = lindex;
     l.ln_tri.lnum_left = lnum_left;
-    l.reserve0 = 'h0;
     return l;
   endfunction
 
@@ -229,7 +227,7 @@ module tb_trav_unit();
   end
 
   // Deal with trav ->rs -> trav
-
+/*
 	assign trav_to_rs0_valid = trav_to_rs_valid;
 	assign trav_to_rs0 = trav_to_rs_data;
 	assign trav_to_rs_stall = trav_to_rs0_stall;
@@ -239,24 +237,24 @@ module tb_trav_unit();
 	assign rs_to_trav_valid = rs_to_trav0_valid;
 	assign rs_to_trav_data = rs_to_trav0;
 	assign rs_to_trav0_stall = rs_to_trav_stall;
-
-	/*
+*/
+	
   assign rs_to_trav_valid = trav_to_rs_valid;
   assign trav_to_rs_stall = rs_to_trav_stall;
   always_comb begin
-    rs_to_trav_data.rayID = trav_to_rs_data.rayID ;
+    rs_to_trav_data.ray_info.rayID = trav_to_rs_data.ray_info.rayID ;
     rs_to_trav_data.nodeID = trav_to_rs_data.nodeID ;
     rs_to_trav_data.node = trav_to_rs_data.node ;
     rs_to_trav_data.restnode_search = trav_to_rs_data.restnode_search ;
     rs_to_trav_data.t_max = trav_to_rs_data.t_max ;
     rs_to_trav_data.t_min = trav_to_rs_data.t_min ;
   end
-  */
+  
 
   initial begin
 // NOTE: commented the following two lines since they are now coming from the raystore
-//    rs_to_trav_data.origin = to_bits(8);
-//    rs_to_trav_data.dir = to_bits(0.05);
+    rs_to_trav_data.origin = to_bits(8);
+    rs_to_trav_data.dir = to_bits(0.05);
 /*  while(~rs_to_trav_valid | rs_to_trav_stall) @(posedge clk);
     trav_to_data.origin = to_bits(5);
     trav_to_data.dir = to_bits(-1);

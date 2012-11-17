@@ -49,7 +49,7 @@ module memory_request_arbiter(
 	logic[24:0] addr_in;
 	logic[31:0] data_in, za_data;
 	logic[$clog2(`maxTrans)-1:0] size;
-	logic ready, readValid, writeValid;
+	logic ready, readValid, writeValid; // TODO: is writeValid needed?
 
 	// TODO: declare and connect signals
 	sdram_a2 sdram_ctrl(.*,.clk_clk(clk),.reset_reset_n(~rst),.altpll_0_c0_clk(sdram_clk));

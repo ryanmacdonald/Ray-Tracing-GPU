@@ -2,6 +2,12 @@
 // uncomment the following line when synthesizing to board
 // `define SYNTH
 
+`ifdef SYNTH
+	`define DC 'h0
+`else
+	`define DC 'hx
+`endif
+
 `define FP_1 32'h3F80_0000
 `define FP_0 32'h0
 
@@ -91,6 +97,13 @@ typedef struct packed {
 } vector_t;
 
 typedef struct packed {
+  float24_t x;
+  float24_t y;
+  float24_t z;
+
+} vector24_t;
+
+typedef struct packed {
   logic [15:0] ID;
 } triID_t;
 
@@ -158,22 +171,23 @@ typedef struct packed {
 } bari_uv_t;
 
 
+
 typedef struct packed {
-  float_t m11;
-  float_t m12;
-  float_t m13;
-  float_t m21;
-  float_t m22;
-  float_t m23;
-  float_t m31;
-  float_t m32;
-  float_t m33;
+  float24_t m11;
+  float24_t m12;
+  float24_t m13;
+  float24_t m21;
+  float24_t m22;
+  float24_t m23;
+  float24_t m31;
+  float24_t m32;
+  float24_t m33;
 
 } m3x3_t;
 
 typedef struct packed {
   m3x3_t matrix;
-  vector_t translate;	logic v0, v1, v2;
+  vector24_t translate;
 
 } int_cacheline_t;
 
@@ -214,12 +228,30 @@ typedef struct packed {
 
 } norm_node_t;
 
-// sint_to_rs_t   (This will write ray_vec to raystore
-typedef struct packed { // TODO make it go to both ss and rs
-  ray_info_t ray_info;
+// TODO change this to SHADER_to_raystore
+// sint_to_rs_t   (This will write ray_vec to raystore)
+typedef struct packed { 
+  rayID_t rayID;
   ray_vec_t ray_vec;
+} sint_to_rs_t ; // DONT USE
+
+typedef struct packed {
+  rayID_t rayID;
+  logic is_shadow;
+  ray_vec_t_ray
+} shader_to_sint_t;
+
+typedef struct packed {
+	rayID_t rayID;
   float_t t_max_scene;
-} sint_to_rs_t ;
+} sint_to_ss_t;
+
+/*
+  RYAN, sint_to_tarb is of type tarb_t.
+    ray_info.ss_* = 0;
+    nodeID = 0;
+    restnode_search = 1;
+*/
 
 
 // tarb_t // Traversal Arbiter
@@ -239,10 +271,7 @@ typedef struct packed {
   logic restnode_search;
   float_t t_max;
   float_t t_min;
-  union packed {
-    leaf_node_t leaf_node;
-    norm_node_t norm_node;
-  } tree_node;
+  norm_node_t tree_node; // cant have a damn struct bitch altera
 
 } tcache_to_trav_t ;
 
@@ -281,6 +310,7 @@ typedef struct packed {
   nodeID_t rest_node_ID;
   float_t t_max;
   logic pop_req;
+  logic update_maxscene_req;
 } trav_to_ss_t ;
 
 typedef struct packed {
@@ -363,6 +393,13 @@ typedef struct packed {
   float_t t_max_leaf;
 } list_to_ss_t;
 
+
+
+// Represents misses
+typedef struct packed {
+	rayID_t rayID;
+  logic is_shadow;
+} ss_to_shader_t;
 
 typedef struct packed {
     rayID_t rayID;

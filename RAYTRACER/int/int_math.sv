@@ -23,10 +23,10 @@ module int_math(
   float_t mK1_x, mK2_x, mK3_x, tK_x;
   float_t originp_x, dirp_x;
   
-  assign mK1_x = int_cacheline.matrix.m11;
-  assign mK2_x = int_cacheline.matrix.m12;
-  assign mK3_x = int_cacheline.matrix.m13;
-  assign tK_x = int_cacheline.translate.x;
+  assign mK1_x = {int_cacheline.matrix.m11,8'h0};
+  assign mK2_x = {int_cacheline.matrix.m12,8'h0};
+  assign mK3_x = {int_cacheline.matrix.m13,8'h0};
+  assign tK_x = {int_cacheline.translate.x,8'h0};
 
   prime_calc pcX(
     .clk, .rst,
@@ -44,10 +44,10 @@ module int_math(
   float_t mK1_y, mK2_y, mK3_y, tK_y;
   float_t originp_y, dirp_y;
   
-  assign mK1_y = int_cacheline.matrix.m21;
-  assign mK2_y = int_cacheline.matrix.m22;
-  assign mK3_y = int_cacheline.matrix.m23;
-  assign tK_y = int_cacheline.translate.y;
+  assign mK1_y = {int_cacheline.matrix.m21,8'h0};
+  assign mK2_y = {int_cacheline.matrix.m22,8'h0};
+  assign mK3_y = {int_cacheline.matrix.m23,8'h0};
+  assign tK_y = {int_cacheline.translate.y,8'h0};
 
   prime_calc pcY(
     .clk, .rst,
@@ -64,10 +64,10 @@ module int_math(
   float_t mK1_z, mK2_z, mK3_z, tK_z;
   float_t originp_z, dirp_z;
   
-  assign mK1_z = int_cacheline.matrix.m31;
-  assign mK2_z = int_cacheline.matrix.m32;
-  assign mK3_z = int_cacheline.matrix.m33;
-  assign tK_z = int_cacheline.translate.z;
+  assign mK1_z = {int_cacheline.matrix.m31,8'h0};
+  assign mK2_z = {int_cacheline.matrix.m32,8'h0};
+  assign mK3_z = {int_cacheline.matrix.m33,8'h0};
+  assign tK_z = {int_cacheline.translate.z,8'h0};
 
   prime_calc pcZ(
     .clk, .rst,

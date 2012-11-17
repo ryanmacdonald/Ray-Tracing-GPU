@@ -4,29 +4,40 @@
 
 module cache_tb;
 
+	parameter SIDE_W=8,
+              ADDR_W=8,
+              RDATA_W=16,
+              TAG_W=3,
+              INDEX_W=4,
+              NUM_LINES=(1<<INDEX_W),
+              BLK_W=1,
+              RIF_DEPTH=(`DEPTH+3),
+              MRF_DEPTH=(`DEPTH+3);
+
 	logic clk, rst;
 
 	// upstream interface
-	logic [`SIDE_W-1:0]  us_sb_data;
-	logic                us_valid;
-	logic [`ADDR_W-1:0]  us_addr;
-	logic                us_stall;
+	logic [SIDE_W-1:0]        us_sb_data;
+	logic                      us_valid;
+	logic [ADDR_W-1:0]        us_addr;
+	logic                      us_stall;
 
 	// miss handler interface
 	// data from miss handler
-	logic [`RDATA_W-1:0] from_mh_data;
-	logic                from_mh_valid;
-	logic                to_mh_stall;
+	logic [RDATA_W-1:0]       from_mh_data;
+	logic                      from_mh_valid;
+	logic                      to_mh_stall;
 
 	// data to miss handler
-	logic [`ADDR_W-1:0]  to_mh_addr;
-	logic                to_mh_valid;
-	logic                from_mh_stall;
+	logic [TAG_W+INDEX_W-1:0]  to_mh_addr;
+	logic                      to_mh_valid;
+	logic                      from_mh_stall;
 
 	// downstream interface
-	logic [$bits(hdf_data_t)-1:0] ds_data; // TODO: should use a struct...
-	logic                         ds_valid;
-	logic                         ds_stall;
+	logic [RDATA_W-1:0] ds_rdata;
+	logic [SIDE_W-1:0]  ds_sb_data;
+	logic                      ds_valid;
+	logic                      ds_stall;
 
 	//////////////// rst/clk initial blocks ////////////////
 
@@ -44,8 +55,8 @@ module cache_tb;
 	//////////////// stimuli initial blocks ////////////////
 
 	int num_reads = 30;
-	logic [$bits(hdf_data_t)-1:0] read_table [30];
-	logic [$bits(hdf_data_t)-1:0] issue_table [30];
+	logic [RDATA_W+SIDE_W-1:0] read_table [30];
+	logic [RDATA_W+SIDE_W-1:0] issue_table [30];
 
 	integer a,pre_id, post_id;
 	int num_reads_done = 0;
@@ -53,9 +64,9 @@ module cache_tb;
 		forever begin
 			@(posedge clk);
 			if(ds_valid & ~ds_stall) begin
-				$display("data: %h",ds_data);
-				post_id = ds_data[`SIDE_W-1:0];
-				read_table[post_id] = ds_data;
+				$display("data: %h",{ds_rdata,ds_sb_data});
+				post_id = ds_sb_data;
+				read_table[post_id] = {ds_rdata,ds_sb_data};
 				num_reads_done++;
 			end
 		end
@@ -73,7 +84,7 @@ module cache_tb;
 		pre_id=0;
 		all_equal = 1;
 
-		a = $random;
+		a = {$random} % (1<<ADDR_W);
 		@(posedge clk);
 		repeat(10) begin
 			do_read(a, pre_id);
@@ -83,7 +94,7 @@ module cache_tb;
 
 		@(posedge clk);
 		repeat(20) begin
-			do_read($random, pre_id[`SIDE_W-1:0]);
+			do_read($random, pre_id[SIDE_W-1:0]);
 			pre_id++;
 		end
 		us_valid <= 1'b0;
@@ -127,16 +138,16 @@ module cache_tb;
 
 	//////////////// tasks ////////////////
 
-	int data;
-	task do_read(input [`ADDR_W-1:0] addr, input logic [`SIDE_W-1:0] side);
+	logic [RDATA_W-1:0] data;
+	task do_read(input [ADDR_W-1:0] addr, input logic [SIDE_W-1:0] side);
 //		@(posedge clk);
 		us_valid <= 1'b1;
 		us_addr <= addr;
 		us_sb_data <= side;
 
-		data = m.memory[addr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W]];
+		data = m.memory[addr[ADDR_W-1:BLK_W]];
 		issue_table[side] = {data, side};
-		$display("side: %h addr: %h (t+i: %h). DRAM: %h",side, addr,addr[`TAG_W+`INDEX_W+`BLK_W-1:`BLK_W],data);
+		$display("addr: %h (t+i: %h). DRAM: %h side: %h",addr,addr[ADDR_W-1:BLK_W],data,side);
 
 		@(posedge clk);
 		while(us_stall) begin
@@ -148,36 +159,56 @@ module cache_tb;
 
 	//////////////// modules ////////////////
 
-	cache c(.*);
-	miss_handler_model m(.*);
+	cache #(.SIDE_W(SIDE_W),
+            .ADDR_W(ADDR_W),
+            .RDATA_W(RDATA_W),
+            .TAG_W(TAG_W),
+            .INDEX_W(INDEX_W),
+            .NUM_LINES(NUM_LINES),
+            .BLK_W(BLK_W),
+            .RIF_DEPTH(RIF_DEPTH),
+            .MRF_DEPTH(MRF_DEPTH))
+			c(.*);
+
+	miss_handler_model #(
+			.RDATA_W(RDATA_W),
+			.ADDR_W(ADDR_W),
+			.TAG_W(TAG_W),
+			.INDEX_W(INDEX_W),
+			.BLK_W(BLK_W))
+			m(.*);
 
 endmodule: cache_tb
 
-module miss_handler_model(
+// TODO: update this to handle no block offset in mh_addr
+module miss_handler_model
+#(parameter 
+	RDATA_W = 16,
+	ADDR_W = 8,
+	TAG_W = 3,
+	INDEX_W = 4,
+	BLK_W = 1
+)(
 	input logic clk, rst,
 
 	// data from miss handler
-	output logic [`RDATA_W-1:0] from_mh_data,
+	output logic [RDATA_W-1:0] from_mh_data,
 	output logic                from_mh_valid,
 	input  logic                to_mh_stall,
 
 	// data to miss handler
-	input  logic [`ADDR_W-1:0]  to_mh_addr,
-	input  logic                to_mh_valid,
-	output logic                from_mh_stall
+	input  logic [TAG_W+INDEX_W-1:0]  to_mh_addr,
+	input  logic                      to_mh_valid,
+	output logic                      from_mh_stall
 );
 
 	parameter NUM_STAGES = 80;
+	parameter NUM_ADDR = 1<<(TAG_W+INDEX_W);
 
-	parameter NUM_ADDR = 1<<(`TAG_W+`INDEX_W);
+	logic [RDATA_W-1:0] memory [NUM_ADDR];
 
-	logic [`RDATA_W-1:0] memory [NUM_ADDR];
-
-	logic [`RDATA_W-1:0] stages [NUM_STAGES];
+	logic [RDATA_W-1:0] stages [NUM_STAGES];
 	logic [NUM_STAGES-1:0] v;
-
-	logic [`TAG_W+`INDEX_W-1:0] mem_addr;
-	assign mem_addr = to_mh_addr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W];
 
 	assign from_mh_stall = to_mh_stall & from_mh_valid;
 
@@ -191,7 +222,7 @@ module miss_handler_model(
 		end
 		else begin
 			if(~to_mh_stall || ~from_mh_valid) begin
-				{v[0], stages[0]} <= {to_mh_valid, memory[mem_addr]};
+				{v[0], stages[0]} <= {to_mh_valid, memory[to_mh_addr]};
 				for(i=0; i < NUM_STAGES-1; i++)
 					{v[i+1], stages[i+1]} <= {v[i], stages[i]};
 				{from_mh_valid,from_mh_data} <= {v[NUM_STAGES-1],stages[NUM_STAGES-1]};

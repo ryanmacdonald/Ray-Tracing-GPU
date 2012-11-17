@@ -80,7 +80,7 @@ module list_unit(
 
   logic list_VSpipe_valid_us, list_VSpipe_stall_us;
   logic list_VSpipe_valid_ds, list_VSpipe_stall_ds;
-  logic [2:0] num_in_list_fifo;
+  logic [2:0] num_left_in_list_fifo;
 
   always_comb begin
     list_VSpipe_in.ray_info = int_to_list_data.ray_info;
@@ -100,7 +100,7 @@ module list_unit(
     .ds_valid(list_VSpipe_valid_ds),
     .ds_data(list_VSpipe_out),
     .ds_stall(list_VSpipe_stall_ds),
-    .num_in_fifo(num_in_list_fifo) );
+    .num_left_in_fifo(num_left_in_list_fifo) );
 
 
 //------------------------------------------------------------------
@@ -320,7 +320,7 @@ module list_unit(
   logic last_fifo_empty;
   logic last_fifo_re;
   logic last_fifo_we;
-  logic [2:0] num_in_last_fifo;
+  logic [2:0] num_left_in_last_fifo;
   always_comb begin
     last_fifo_in.ray_info = list_VSpipe_out.ray_info ;
     last_fifo_in.is_hit = cur_hit_s4 & (~out_agb_comp_leaf_max | out_aeb_comp_leaf_max) ; // Only if there is a hit LESS than t_max_leaf
@@ -328,7 +328,7 @@ module list_unit(
   end
   assign last_fifo_we = list_VSpipe_valid_ds & list_VSpipe_out.is_last;
 
-  fifo #(.K(2), .WIDTH($bits(last_fifo_in)) ) last_fifo_inst(
+  fifo #(.DEPTH(4), .WIDTH($bits(last_fifo_in)) ) last_fifo_inst(
     .clk, .rst,
     .data_in(last_fifo_in),
     .data_out(last_fifo_out),
@@ -336,7 +336,8 @@ module list_unit(
     .empty(last_fifo_empty),
     .re(last_fifo_re),
     .we(last_fifo_we),
-    .num_in_fifo(num_in_last_fifo) );
+    .num_left_in_fifo(num_left_in_last_fifo),
+    .exists_in_fifo());
   
   
 
@@ -352,7 +353,7 @@ module list_unit(
 
   logic int_VSpipe_valid_us, int_VSpipe_stall_us;
   logic int_VSpipe_valid_ds, int_VSpipe_stall_ds;
-  logic [1:0] num_in_int_fifo;
+  logic [1:0] num_left_in_int_fifo;
   logic hit_stall;
 
   always_comb begin
@@ -371,7 +372,7 @@ module list_unit(
     .ds_valid(int_VSpipe_valid_ds),
     .ds_data(int_VSpipe_out),
     .ds_stall(int_VSpipe_stall_ds),
-    .num_in_fifo(num_in_int_fifo) );
+    .num_left_in_fifo(num_left_in_int_fifo) );
 
 // Reading from int_into_ram
 
@@ -395,7 +396,7 @@ module list_unit(
   assign int_fifo_we = int_VSpipe_valid_ds;
   assign int_fifo_re = ~int_fifo_empty & ~list_to_rs_stall;
 
-  fifo #(.K(1), .WIDTH($bits(int_fifo_in)) ) int_fifo_inst(
+  fifo #(.DEPTH(2), .WIDTH($bits(int_fifo_in)) ) int_fifo_inst(
     .clk, .rst,
     .data_in(int_fifo_in),
     .data_out(int_fifo_out),
@@ -403,8 +404,8 @@ module list_unit(
     .empty(int_fifo_empty),
     .re(int_fifo_re),
     .we(int_fifo_we),
-    .num_in_fifo(num_in_int_fifo) );
-
+    .num_left_in_fifo(num_left_in_int_fifo),
+    .exists_in_fifo());    
 
 //------------------------------------------------------------------
 
