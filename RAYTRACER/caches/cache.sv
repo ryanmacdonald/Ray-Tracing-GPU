@@ -34,9 +34,9 @@ module cache
 	output logic               to_mh_stall,
 
 	// data to miss handler
-	output logic [ADDR_W-1:0]  to_mh_addr,
-	output logic               to_mh_valid,
-	input  logic               from_mh_stall,
+	output logic [TAG_W+INDEX_W-1:0]  to_mh_addr,
+	output logic                      to_mh_valid,
+	input  logic                      from_mh_stall,
 
 	// downstream interface
 	output logic [RDATA_W-1:0] ds_rdata,
@@ -53,6 +53,7 @@ typedef struct packed {
 typedef struct packed {
 	logic [RDATA_W-1:0] rdata;
 	logic [SIDE_W-1:0] side;
+	logic [ADDR_W-1:0] addr;
 } hdf_data_t;
 
 typedef struct packed {
@@ -90,12 +91,12 @@ typedef struct packed {
 
 // miss request fifo
 	// inputs
-	logic [ADDR_W-1:0] mrf_data_in;
+	logic [TAG_W+INDEX_W-1:0] mrf_data_in;
 	logic mrf_we;
 
 	// outputs
 	logic mrf_empty;
-	logic [ADDR_W-1:0] mrf_data_out;
+	logic [TAG_W+INDEX_W-1:0] mrf_data_out;
 	logic mrf_re;
 	logic exists_in_mrf;
 
@@ -134,7 +135,7 @@ typedef struct packed {
 /************** continuous assigns **************/
 
 	assign us_stall = rif_re | rif_full | pvs_us_stall;
-	assign to_mh_stall = from_mh_valid & ~rif_re;
+	assign to_mh_stall = from_mh_valid & (~rif_re | ~rif_wait_flag);
 	assign to_mh_addr = mrf_data_out;
 	assign to_mh_valid = ~mrf_empty;
 	assign ds_sb_data = hdf_data_out.side;
@@ -158,11 +159,12 @@ typedef struct packed {
 	// MRF assignments
 	assign mrf_we = pvs_ds_valid & miss & ~exists_in_mrf;
 	assign mrf_re = ~from_mh_stall;
-	assign mrf_data_in = pvs_ds_data.addr;
+	assign mrf_data_in = pvs_ds_data.addr[ADDR_W-1:BLK_W]; // tag and index
 
 	// HDF assignments
 	assign hdf_data_in.side = pvs_ds_data.side;
 	assign hdf_data_in.rdata = rdata;
+	assign hdf_data_in.addr = pvs_ds_data.addr;
 	assign hdf_we = pvs_ds_valid & hit;
 	assign hdf_re = ~ds_stall;
 
@@ -204,7 +206,7 @@ typedef struct packed {
 		.num_left_in_fifo(pvs_num_left_in_fifo)
 	);
 
-	fifo #(.WIDTH(ADDR_W), .DEPTH(MRF_DEPTH))
+	fifo #(.WIDTH(TAG_W+INDEX_W), .DEPTH(MRF_DEPTH))
 	MRF(
 		.clk, .rst,
 		.data_in(mrf_data_in),

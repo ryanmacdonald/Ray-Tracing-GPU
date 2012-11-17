@@ -29,7 +29,7 @@ module cache_tb;
 	logic                      to_mh_stall;
 
 	// data to miss handler
-	logic [ADDR_W-1:0]        to_mh_addr;
+	logic [TAG_W+INDEX_W-1:0]  to_mh_addr;
 	logic                      to_mh_valid;
 	logic                      from_mh_stall;
 
@@ -84,7 +84,7 @@ module cache_tb;
 		pre_id=0;
 		all_equal = 1;
 
-		a = $random;
+		a = {$random} % (1<<ADDR_W);
 		@(posedge clk);
 		repeat(10) begin
 			do_read(a, pre_id);
@@ -138,16 +138,16 @@ module cache_tb;
 
 	//////////////// tasks ////////////////
 
-	int data;
+	logic [RDATA_W-1:0] data;
 	task do_read(input [ADDR_W-1:0] addr, input logic [SIDE_W-1:0] side);
 //		@(posedge clk);
 		us_valid <= 1'b1;
 		us_addr <= addr;
 		us_sb_data <= side;
 
-		data = m.memory[addr[TAG_W+INDEX_W+BLK_W-1:INDEX_W]];
+		data = m.memory[addr[ADDR_W-1:BLK_W]];
 		issue_table[side] = {data, side};
-		$display("side: %h addr: %h (t+i: %h). DRAM: %h",side, addr,addr[TAG_W+INDEX_W+BLK_W-1:BLK_W],data);
+		$display("addr: %h (t+i: %h). DRAM: %h side: %h",addr,addr[ADDR_W-1:BLK_W],data,side);
 
 		@(posedge clk);
 		while(us_stall) begin
@@ -180,6 +180,7 @@ module cache_tb;
 
 endmodule: cache_tb
 
+// TODO: update this to handle no block offset in mh_addr
 module miss_handler_model
 #(parameter 
 	RDATA_W = 16,
@@ -196,9 +197,9 @@ module miss_handler_model
 	input  logic                to_mh_stall,
 
 	// data to miss handler
-	input  logic [ADDR_W-1:0]  to_mh_addr,
-	input  logic                to_mh_valid,
-	output logic                from_mh_stall
+	input  logic [TAG_W+INDEX_W-1:0]  to_mh_addr,
+	input  logic                      to_mh_valid,
+	output logic                      from_mh_stall
 );
 
 	parameter NUM_STAGES = 80;
@@ -208,9 +209,6 @@ module miss_handler_model
 
 	logic [RDATA_W-1:0] stages [NUM_STAGES];
 	logic [NUM_STAGES-1:0] v;
-
-	logic [TAG_W+INDEX_W-1:0] mem_addr;
-	assign mem_addr = to_mh_addr[TAG_W+INDEX_W+BLK_W-1:INDEX_W];
 
 	assign from_mh_stall = to_mh_stall & from_mh_valid;
 
@@ -224,7 +222,7 @@ module miss_handler_model
 		end
 		else begin
 			if(~to_mh_stall || ~from_mh_valid) begin
-				{v[0], stages[0]} <= {to_mh_valid, memory[mem_addr]};
+				{v[0], stages[0]} <= {to_mh_valid, memory[to_mh_addr]};
 				for(i=0; i < NUM_STAGES-1; i++)
 					{v[i+1], stages[i+1]} <= {v[i], stages[i]};
 				{from_mh_valid,from_mh_data} <= {v[NUM_STAGES-1],stages[NUM_STAGES-1]};
