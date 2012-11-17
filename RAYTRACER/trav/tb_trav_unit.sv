@@ -125,11 +125,10 @@ module tb_trav_unit();
   function norm_node_t create_norm_node(logic [1:0] axis, shortreal split, nodeID_t right_ID, logic low_empty, logic high_empty);
     norm_node_t r;
     r.node_type = axis;
-    r.split = ($shortrealtobits(split) >> 8);
+    r.split = ($shortrealtobits(split) >> 4);
     r.right_ID = right_ID;
     r.low_empty = low_empty;
     r.high_empty = high_empty;
-    r.reserve = 1'b0;
     return r;
   endfunction
 
@@ -138,7 +137,6 @@ module tb_trav_unit();
     l.node_type = 2'b11;
     l.ln_tri.lindex = lindex;
     l.ln_tri.lnum_left = lnum_left;
-    l.reserve0 = 'h0;
     return l;
   endfunction
 
@@ -244,7 +242,7 @@ module tb_trav_unit();
   assign rs_to_trav_valid = trav_to_rs_valid;
   assign trav_to_rs_stall = rs_to_trav_stall;
   always_comb begin
-    rs_to_trav_data.rayID = trav_to_rs_data.rayID ;
+    rs_to_trav_data.ray_info.rayID = trav_to_rs_data.ray_info.rayID ;
     rs_to_trav_data.nodeID = trav_to_rs_data.nodeID ;
     rs_to_trav_data.node = trav_to_rs_data.node ;
     rs_to_trav_data.restnode_search = trav_to_rs_data.restnode_search ;

@@ -120,7 +120,8 @@ module t_minus_32_days(
                                                          .full(pb_full),
                                                          .empty(pb_empty),
                                                          .data_out(pb_data_out),
-                                                         .num_in_fifo());
+                                                         .num_left_in_fifo(),
+                                                 		 .exists_in_fifo());
 
     
 
