@@ -172,7 +172,7 @@ module fifo
   logic [K-1:0] rPtr, rPtr_n;
   logic [K-1:0] wPtr, wPtr_n;
   logic [K:0] zero_cnt, zero_cnt_n;
-  logic [K:0] one_cnt, one_cnt_n; // TODO: finish this
+  logic [K:0] one_cnt, one_cnt_n;
 
   assign num_left_in_fifo = zero_cnt;
 
@@ -349,9 +349,8 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
   output logic [WIDTH-1:0] ds_data,
   input logic ds_stall,
 
-  input logic [$clog2(DEPTH+2)-1:0] num_left_in_fifo
-
-  );
+  input logic [$clog2(DEPTH+1):0] num_left_in_fifo);
+  localparam NUM_W = $clog2(DEPTH+1)+1;
 
   logic [DEPTH-1:0] valid_buf, valid_buf_n;
   assign valid_buf_n = {~us_stall & us_valid,valid_buf[DEPTH-1:1]};
@@ -361,7 +360,7 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
 
   buf_t3 #(.LAT(DEPTH), .WIDTH(WIDTH)) data_buf(.clk,.rst,.data_in(us_data),.data_out(ds_data));
 
-  logic [$clog2(DEPTH+2)-1:0] one_cnt, one_cnt_n;
+  logic [NUM_W-1:0] one_cnt, one_cnt_n;
   always_comb begin
     case({valid_buf_n[DEPTH-1],valid_buf[0]})
       2'b00 : one_cnt_n = one_cnt;
@@ -371,7 +370,7 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
     endcase
   end
 
-  ff_ar #($clog2(DEPTH+2),0) cnt_inst(.d(one_cnt_n),.q(one_cnt),.clk,.rst);
+  ff_ar #(NUM_W,0) cnt_inst(.d(one_cnt_n),.q(one_cnt),.clk,.rst);
 
   assign us_stall = ds_stall & (one_cnt >= num_left_in_fifo); // Used to & with us_valid
 

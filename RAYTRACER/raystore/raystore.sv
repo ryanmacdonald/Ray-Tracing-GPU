@@ -1,11 +1,3 @@
-//`define SYNTH
-
-`ifdef SYNTH
-	`define DC 1'b0
-`else
-	`define DC 1'bx
-`endif
-
 typedef struct packed {
 	float_t origin;
 	float_t dir;
@@ -96,7 +88,7 @@ module raystore(
 
 	// PIPE/FIFO 00000000
 
-	logic [1:0] nif0;
+	logic [1:0] nlif0;
 
 	rs_arb_to_trav_pipe_t pvs0_data_in;
 	assign pvs0_data_in.trav_to_rs = trav_to_rs0;
@@ -117,7 +109,7 @@ module raystore(
 		.ds_data(pvs0_data_out),
 		.ds_stall(rs_to_trav0_stall),
 
-		.num_in_fifo(nif0)
+		.num_left_in_fifo(nlif0)
 	);
 
 	logic [1:0] nt0;
@@ -174,13 +166,14 @@ module raystore(
 		.full(), // not used
 		.empty(f0_empty),
 		.data_out(rs_to_trav0),
-		.num_in_fifo(nif0)
+		.num_left_in_fifo(nlif0),
+		.exists_in_fifo()
 	);
 	// PIPE/FIFO 00000000
 
 	// PIPE/FIFO 11111111
 
-	logic [1:0] nif1;
+	logic [1:0] nlif1;
 
 	rs_arb_to_trav_pipe_t pvs1_data_in;
 	assign pvs1_data_in.trav_to_rs = trav_to_rs1;
@@ -201,7 +194,7 @@ module raystore(
 		.ds_data(pvs1_data_out),
 		.ds_stall(rs_to_trav1_stall),
 
-		.num_in_fifo(nif1)
+		.num_left_in_fifo(nlif1)
 	);
 
 	logic [1:0] nt1;
@@ -258,14 +251,15 @@ module raystore(
 		.full(), // not used
 		.empty(f1_empty),
 		.data_out(rs_to_trav1),
-		.num_in_fifo(nif1)
+		.num_left_in_fifo(nlif1),
+		.exists_in_fifo()
 	);
 
 	// PIPE/FIFO 11111111
 
 	// PIPE/FIFO 22222222
 
-	logic [1:0] nif2;
+	logic [1:0] nlif2;
 
 	rs_arb_to_lcache_pipe_t pvs2_data_in;
 	assign pvs2_data_in.lcache_to_rs = lcache_to_rs;
@@ -286,7 +280,7 @@ module raystore(
 		.ds_data(pvs2_data_out),
 		.ds_stall(rs_to_icache_stall),
 
-		.num_in_fifo(nif2)
+		.num_left_in_fifo(nlif2)
 	);
 
 	rs_to_icache_t f2_data_in;
@@ -311,14 +305,15 @@ module raystore(
 		.full(), // not used
 		.empty(f2_empty),
 		.data_out(rs_to_icache),
-		.num_in_fifo(nif2)
+		.num_left_in_fifo(nlif2),
+		.exists_in_fifo()
 	);
 
 	// PIPE/FIFO 22222222
 
 	// PIPE/FIFO 33333333
 
-	logic [1:0] nif3;
+	logic [1:0] nlif3;
 
 	rs_arb_to_list_pipe_t pvs3_data_in;
 	assign pvs3_data_in.list_to_rs = list_to_rs;
@@ -339,7 +334,7 @@ module raystore(
 		.ds_data(pvs3_data_out),
 		.ds_stall(rs_to_pcalc_stall),
 
-		.num_in_fifo(nif3)
+		.num_left_in_fifo(nlif3)
 	);
 
 	rs_to_pcalc_t f3_data_in;
@@ -363,7 +358,8 @@ module raystore(
 		.full(), // not used
 		.empty(f3_empty),
 		.data_out(rs_to_pcalc),
-		.num_in_fifo(nif3)
+		.num_left_in_fifo(nlif3),
+		.exists_in_fifo()
 	);
 
 	// PIPE/FIFO 33333333
@@ -454,19 +450,19 @@ module raystore_arb #(parameter N=4) (
 
 						//  sel0  sel1    data_sel
 		case(trans_choice)
-			4'b0000: ms = {{2{`DC}},{2{`DC}}, {4{`DC}}};
+			4'b0000: ms = {{2{1`DC}},{2{1`DC}}, {4{1`DC}}};
 
-			4'b0001: ms = {2'b00,{2{`DC}}, `DC,`DC,`DC,1'b0};
-			4'b0010: ms = {2'b01,{2{`DC}}, `DC,`DC,1'b0,`DC};
-			4'b0100: ms = {2'b10,{2{`DC}}, `DC,1'b0,`DC,`DC};
-			4'b1000: ms = {2'b11,{2{`DC}}, 1'b0,`DC,`DC,`DC};
+			4'b0001: ms = {2'b00,{2{1`DC}}, 1`DC,1`DC,1`DC,1'b0};
+			4'b0010: ms = {2'b01,{2{1`DC}}, 1`DC,1`DC,1'b0,1`DC};
+			4'b0100: ms = {2'b10,{2{1`DC}}, 1`DC,1'b0,1`DC,1`DC};
+			4'b1000: ms = {2'b11,{2{1`DC}}, 1'b0,1`DC,1`DC,1`DC};
 
-			4'b0011: ms = {2'b01,2'b00, `DC,`DC,1'b0,1'b1};
-			4'b0101: ms = {2'b10,2'b00, `DC,1'b0,`DC,1'b1};
-			4'b0110: ms = {2'b10,2'b01, `DC,1'b0,1'b1,`DC};
-			4'b1001: ms = {2'b11,2'b00, 1'b0,`DC,`DC,1'b1};
-			4'b1010: ms = {2'b11,2'b01, 1'b0,`DC,1'b1,`DC};
-			4'b1100: ms = {2'b11,2'b10, 1'b0,1'b1,`DC,`DC};
+			4'b0011: ms = {2'b01,2'b00, 1`DC,1`DC,1'b0,1'b1};
+			4'b0101: ms = {2'b10,2'b00, 1`DC,1'b0,1`DC,1'b1};
+			4'b0110: ms = {2'b10,2'b01, 1`DC,1'b0,1'b1,1`DC};
+			4'b1001: ms = {2'b11,2'b00, 1'b0,1`DC,1`DC,1'b1};
+			4'b1010: ms = {2'b11,2'b01, 1'b0,1`DC,1'b1,1`DC};
+			4'b1100: ms = {2'b11,2'b10, 1'b0,1'b1,1`DC,1`DC};
 		endcase
 	end
 

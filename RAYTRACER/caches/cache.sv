@@ -1,5 +1,7 @@
 `default_nettype none
 
+`define DEPTH 2
+
 module cache
 
 #(parameter 
@@ -13,7 +15,6 @@ module cache
 	NUM_LINES=(1<<INDEX_W), // TODO: make sure block ram only has this many lines
 	BLK_W=1,
 
-	DEPTH=2,
 	RIF_DEPTH=(`DEPTH+3),
 	MRF_DEPTH=(`DEPTH+3)
 )
@@ -21,41 +22,42 @@ module cache
 	input logic clk, rst,
 
 	// upstream interface
-	input  logic [`SIDE_W-1:0]  us_sb_data,
-	input  logic                us_valid,
-	input  logic [`ADDR_W-1:0]  us_addr,
-	output logic                us_stall,
+	input  logic [SIDE_W-1:0]  us_sb_data,
+	input  logic               us_valid,
+	input  logic [ADDR_W-1:0]  us_addr,
+	output logic               us_stall,
 
 	// miss handler interface
 	// data from miss handler
-	input  logic [`RDATA_W-1:0] from_mh_data,
-	input  logic                from_mh_valid,
-	output logic                to_mh_stall,
+	input  logic [RDATA_W-1:0] from_mh_data,
+	input  logic               from_mh_valid,
+	output logic               to_mh_stall,
 
 	// data to miss handler
-	output logic [`ADDR_W-1:0]  to_mh_addr,
-	output logic                to_mh_valid,
-	input  logic                from_mh_stall,
+	output logic [ADDR_W-1:0]  to_mh_addr,
+	output logic               to_mh_valid,
+	input  logic               from_mh_stall,
 
 	// downstream interface
-	output logic [$bits(hdf_data_t)-1:0] ds_data, // TODO: should use a struct...
-	output logic                         ds_valid,
-	input  logic                         ds_stall
+	output logic [RDATA_W-1:0] ds_rdata,
+	output logic [SIDE_W-1:0]  ds_sb_data,
+	output logic               ds_valid,
+	input  logic               ds_stall
 );
 
 typedef struct packed {
-	logic [`SIDE_W-1:0] side;
-	logic [`ADDR_W-1:0] addr;
+	logic [SIDE_W-1:0] side;
+	logic [ADDR_W-1:0] addr;
 } pvs_data_t;
 
 typedef struct packed {
-	logic [`RDATA_W-1:0] rdata;
-	logic [`SIDE_W-1:0] side;
+	logic [RDATA_W-1:0] rdata;
+	logic [SIDE_W-1:0] side;
 } hdf_data_t;
 
 typedef struct packed {
-	logic [`ADDR_W-1:0] addr;
-	logic [`SIDE_W-1:0] side;
+	logic [ADDR_W-1:0] addr;
+	logic [SIDE_W-1:0] side;
 	logic flag;
 } rif_data_t;
 
@@ -63,14 +65,14 @@ typedef struct packed {
 
 // cache storage
 	// inputs to cache storage
-	logic [`ADDR_W-1:0] waddr;
-	logic [`ADDR_W-1:0] raddr;
-	logic [`RDATA_W-1:0] wdata;
+	logic [ADDR_W-1:0] waddr;
+	logic [ADDR_W-1:0] raddr;
+	logic [RDATA_W-1:0] wdata;
 	logic cache_we;
-	logic [`TAG_W-1:0] pipe_tag;
+	logic [TAG_W-1:0] pipe_tag;
 
 	// outputs of cache storage
-	logic [`RDATA_W-1:0] rdata;
+	logic [RDATA_W-1:0] rdata;
 	logic miss;
 	logic hit;
 
@@ -84,16 +86,16 @@ typedef struct packed {
 	logic pvs_ds_stall;
 	logic pvs_ds_valid;
 	pvs_data_t pvs_ds_data;
-	logic [$clog2(`DEPTH+2):0] pvs_num_left_in_fifo;
+	logic [$clog2(`DEPTH+1):0] pvs_num_left_in_fifo;
 
 // miss request fifo
 	// inputs
-	logic [`ADDR_W-1:0] mrf_data_in;
+	logic [ADDR_W-1:0] mrf_data_in;
 	logic mrf_we;
 
 	// outputs
 	logic mrf_empty;
-	logic [`ADDR_W-1:0] mrf_data_out;
+	logic [ADDR_W-1:0] mrf_data_out;
 	logic mrf_re;
 	logic exists_in_mrf;
 
@@ -101,7 +103,7 @@ typedef struct packed {
 	// upstream
 	hdf_data_t hdf_data_in;
 	logic hdf_we;
-	logic [$clog2(`DEPTH+2):0] hdf_num_left_in_fifo;
+	logic [$clog2(`DEPTH+1):0] hdf_num_left_in_fifo;
 
 	// downstream
 	logic hdf_empty;
@@ -135,15 +137,16 @@ typedef struct packed {
 	assign to_mh_stall = from_mh_valid & ~rif_re;
 	assign to_mh_addr = mrf_data_out;
 	assign to_mh_valid = ~mrf_empty;
-	assign ds_data = hdf_data_out;
+	assign ds_sb_data = hdf_data_out.side;
+	assign ds_rdata = hdf_data_out.rdata;
 	assign ds_valid = ~hdf_empty;
 
 	// cache storage assignments
-	assign pipe_tag = pvs_ds_data.addr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W+`BLK_W]; // just tag
+	assign pipe_tag = pvs_ds_data.addr[TAG_W+INDEX_W+BLK_W-1:INDEX_W+BLK_W]; // just tag
 	assign raddr = (rif_re) ? rif_data_out.addr: us_addr;
 	assign waddr = rif_data_out.addr;
 	assign wdata = from_mh_data;
-	assign cache_we = rif_re;
+	assign cache_we = rif_re & rif_wait_flag;
 
 	// PVS assignments
 	assign pvs_ds_stall = ds_stall;
@@ -178,7 +181,15 @@ typedef struct packed {
 
 /************** module instantiations **************/
 
-	cache_storage csu(.*); // TODO: define parameters later
+	cache_storage #(
+		.SIDE_W(SIDE_W),
+		.ADDR_W(ADDR_W),
+		.RDATA_W(RDATA_W),
+		.TAG_W(TAG_W),
+		.INDEX_W(INDEX_W),
+		.NUM_LINES(NUM_LINES),
+		.BLK_W(BLK_W))
+	csu (.*);
 
 	pipe_valid_stall #(.WIDTH($bits(pvs_data_t)), .DEPTH(`DEPTH)) pvs(
 		.clk, .rst,
@@ -193,7 +204,7 @@ typedef struct packed {
 		.num_left_in_fifo(pvs_num_left_in_fifo)
 	);
 
-	fifo #(.WIDTH(`ADDR_W), .K($clog2(`MRF_DEPTH)))
+	fifo #(.WIDTH(ADDR_W), .DEPTH(MRF_DEPTH))
 	MRF(
 		.clk, .rst,
 		.data_in(mrf_data_in),
@@ -206,7 +217,7 @@ typedef struct packed {
 		.exists_in_fifo(exists_in_mrf)
 	);
 
-	fifo #(.WIDTH($bits(hdf_data_t)), .K($clog2(`DEPTH+2)))
+	fifo #(.WIDTH($bits(hdf_data_t)), .DEPTH(`DEPTH+1))
 	HDF(
 		.clk, .rst,
 		.data_in(hdf_data_in),
@@ -219,7 +230,7 @@ typedef struct packed {
 		.exists_in_fifo()
 	);
 
-	fifo #(.WIDTH($bits(rif_data_t)), .K($clog2(`DEPTH+2)))
+	fifo #(.WIDTH($bits(rif_data_t)), .DEPTH(`DEPTH+1))
 	RIF_buffer(
 		.clk, .rst,
 		.data_in(rif_buf_data_in),
@@ -232,7 +243,7 @@ typedef struct packed {
 		.exists_in_fifo()
 	);
 
-	fifo #(.WIDTH($bits(rif_data_t)), .K($clog2(`RIF_DEPTH)))
+	fifo #(.WIDTH($bits(rif_data_t)), .DEPTH(RIF_DEPTH))
 	RIF(
 		.clk, .rst,
 		.data_in(rif_data_in),
@@ -248,15 +259,28 @@ typedef struct packed {
 endmodule
 
 // TODO: make wdata able to write only certain blocks
-module cache_storage(
+module cache_storage
+#(parameter 
+	SIDE_W=8,
+	ADDR_W=8,
+	RDATA_W=16,
+
+	TAG_W=3,
+	INDEX_W=4,
+	NUM_LINES=(1<<INDEX_W),
+	BLK_W=1,
+
+	RIF_DEPTH=(`DEPTH+3),
+	MRF_DEPTH=(`DEPTH+3)
+)(
 		// upstream side
-	input logic [`ADDR_W-1:0] waddr,
-	input logic [`RDATA_W-1:0] wdata,
+	input logic [ADDR_W-1:0] waddr,
+	input logic [RDATA_W-1:0] wdata,
 	input logic cache_we,
-	input logic [`ADDR_W-1:0] raddr,
+	input logic [ADDR_W-1:0] raddr,
 	// downstream side
-	input logic [`TAG_W-1:0] pipe_tag,
-	output  logic [`RDATA_W-1:0] rdata,
+	input logic [TAG_W-1:0] pipe_tag,
+	output  logic [RDATA_W-1:0] rdata,
 	output logic miss,
 	output logic hit,
 	input logic clk, rst
@@ -265,25 +289,25 @@ module cache_storage(
 	// NOTE: this is just a simulation model
 	// TODO: implement real block rams
 
-	logic [`RDATA_W-1:0] way0 [1<<(`INDEX_W)];
-	logic [`RDATA_W-1:0] way1 [1<<(`INDEX_W)];
+	logic [RDATA_W-1:0] way0 [1<<(INDEX_W)];
+	logic [RDATA_W-1:0] way1 [1<<(INDEX_W)];
 
 	logic hit0, hit1;
 
-	logic [`TAG_W:0] tagstore0 [1<<(`INDEX_W)]; // no -1 because one bit is needed for valid
-	logic [`TAG_W:0] tagstore1 [1<<(`INDEX_W)];
+	logic [TAG_W:0] tagstore0 [1<<(INDEX_W)]; // no -1 because one bit is needed for valid
+	logic [TAG_W:0] tagstore1 [1<<(INDEX_W)];
 
-	logic [`RDATA_W-1:0] rdata0a, rdata0b, rdata1a, rdata1b;
+	logic [RDATA_W-1:0] rdata0a, rdata0b, rdata1a, rdata1b;
 
-	logic [`TAG_W-1:0] tag0a, tag0b, tag1a, tag1b;
-	logic [`TAG_W-1:0] wr_tag; 
-	logic [`INDEX_W-1:0] rd_index, wr_index;
+	logic [TAG_W-1:0] tag0a, tag0b, tag1a, tag1b;
+	logic [TAG_W-1:0] wr_tag; 
+	logic [INDEX_W-1:0] rd_index, wr_index;
 
 	logic valid0a, valid0b, valid1a, valid1b;
 
-	assign rd_index = raddr[`INDEX_W+`BLK_W-1:`BLK_W];
-	assign wr_tag = waddr[`TAG_W+`INDEX_W+`BLK_W-1:`INDEX_W+`BLK_W];
-	assign wr_index = waddr[`INDEX_W+`BLK_W-1:`BLK_W];
+	assign rd_index = raddr[INDEX_W+BLK_W-1:BLK_W];
+	assign wr_tag = waddr[TAG_W+INDEX_W+BLK_W-1:INDEX_W+BLK_W];
+	assign wr_index = waddr[INDEX_W+BLK_W-1:BLK_W];
 
 	logic way_choice;
 
@@ -296,9 +320,9 @@ module cache_storage(
 			valid1a <= 1'b0;
 			valid0b <= 1'b0;
 			valid1b <= 1'b0;
-			for(i=0; i < 1<<`INDEX_W; i++) begin
-				tagstore0[i][`TAG_W] <= 1'b0;
-				tagstore1[i][`TAG_W] <= 1'b0;
+			for(i=0; i < 1<<INDEX_W; i++) begin
+				tagstore0[i][TAG_W] <= 1'b0;
+				tagstore1[i][TAG_W] <= 1'b0;
 			end
 		end
 		else begin
