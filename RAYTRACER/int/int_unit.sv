@@ -73,6 +73,8 @@ module int_unit(
     int_pipe_in.ln_tri.lindex = icache_to_int_data.ln_tri.lindex + 1'b1;
   end
   
+  logic [5:0] min_num_left_in_fifo;
+  assign min_num_left_in_fifo = 6'd45 - (list_num_fifo>larb_num_fifo ? list_num_fifo : larb_num_fifo) ;
   // The math pipleile is 45 latency
   pipe_valid_stall #(.WIDTH($bits(int_pipe_in)), .DEPTH(45)) pipe_inst(
     .clk, .rst,
@@ -82,7 +84,7 @@ module int_unit(
     .ds_valid(pipe_ds_valid),
     .ds_data(int_pipe_out),
     .ds_stall(pipe_ds_stall),
-    .num_in_fifo(list_num_fifo>larb_num_fifo ? list_num_fifo : larb_num_fifo ) );
+    .num_left_in_fifo(min_num_left_in_fifo) );
  
   assign pipe_ds_stall = int_to_larb_stall | int_to_list_stall ;
 
@@ -121,11 +123,13 @@ module int_unit(
   
   `ifndef SYNTH
     always @(*) assert(!((list_full|larb_full) & pipe_ds_valid));
+    initial $display("list_fifo width= %d\nlarb_fifo width=%d\n",$bits(int_to_list_t),$bits(leaf_info_t));
   `endif
 
   assign list_wrreq = pipe_ds_valid & (hit | is_last);
   assign larb_wrreq = pipe_ds_valid & (~is_last);
 
+  // Should be 129
   altbramfifo_w144_d45 list_fifo(
 	.clock (clk),
 	.data ( list_fifo_in),
@@ -136,6 +140,7 @@ module int_unit(
 	.q(list_fifo_out ),
   .usedw(list_num_fifo));
 
+  // Should be 33
   altbramfifo_w144_d45 larb_fifo(
 	.clock (clk),
 	.data ( larb_fifo_in),

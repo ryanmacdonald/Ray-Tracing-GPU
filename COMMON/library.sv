@@ -337,7 +337,7 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
   output logic [WIDTH-1:0] ds_data,
   input logic ds_stall,
 
-  input logic [$clog2(DEPTH+2):0] num_left_in_fifo
+  input logic [$clog2(DEPTH+2)-1:0] num_left_in_fifo
 
   );
 
@@ -349,7 +349,7 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
 
   buf_t3 #(.LAT(DEPTH), .WIDTH(WIDTH)) data_buf(.clk,.rst,.data_in(us_data),.data_out(ds_data));
 
-  logic [$clog2(DEPTH+2):0] one_cnt, one_cnt_n;
+  logic [$clog2(DEPTH+2)-1:0] one_cnt, one_cnt_n;
   always_comb begin
     case({valid_buf_n[DEPTH-1],valid_buf[0]})
       2'b00 : one_cnt_n = one_cnt;
@@ -359,7 +359,7 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
     endcase
   end
 
-  ff_ar #($clog2(DEPTH+2)+1,0) cnt_inst(.d(one_cnt_n),.q(one_cnt),.clk,.rst);
+  ff_ar #($clog2(DEPTH+2),0) cnt_inst(.d(one_cnt_n),.q(one_cnt),.clk,.rst);
 
   assign us_stall = ds_stall & (one_cnt >= num_left_in_fifo); // Used to & with us_valid
 
@@ -392,7 +392,7 @@ module lshape #(parameter SIDE_W = 10, UNSTALL_W = 100, DEPTH = 20)
   `endif
 
 
-  pipe_valid_stall #(.WIDTH(SIDE_W), .DEPTH(20)) pipe_inst(
+  pipe_valid_stall #(.WIDTH(SIDE_W), .DEPTH(DEPTH)) pipe_inst(
     .clk, .rst,
     .us_valid,
     .us_data(us_side_data),
