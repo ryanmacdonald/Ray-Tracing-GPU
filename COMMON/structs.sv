@@ -91,6 +91,13 @@ typedef struct packed {
 } vector_t;
 
 typedef struct packed {
+  float24_t x;
+  float24_t y;
+  float24_t z;
+
+} vector24_t;
+
+typedef struct packed {
   logic [15:0] ID;
 } triID_t;
 
@@ -148,22 +155,23 @@ typedef struct packed {
 } bari_uv_t;
 
 
+
 typedef struct packed {
-  float_t m11;
-  float_t m12;
-  float_t m13;
-  float_t m21;
-  float_t m22;
-  float_t m23;
-  float_t m31;
-  float_t m32;
-  float_t m33;
+  float24_t m11;
+  float24_t m12;
+  float24_t m13;
+  float24_t m21;
+  float24_t m22;
+  float24_t m23;
+  float24_t m31;
+  float24_t m32;
+  float24_t m33;
 
 } m3x3_t;
 
 typedef struct packed {
   m3x3_t matrix;
-  vector_t translate;	logic v0, v1, v2;
+  vector24_t translate;
 
 } int_cacheline_t;
 
@@ -229,10 +237,7 @@ typedef struct packed {
   logic restnode_search;
   float_t t_max;
   float_t t_min;
-  union packed {
-    leaf_node_t leaf_node;
-    norm_node_t norm_node;
-  } tree_node;
+  norm_node_t tree_node; // cant have a damn struct bitch altera
 
 } tcache_to_trav_t ;
 

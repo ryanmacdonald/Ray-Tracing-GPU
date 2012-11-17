@@ -108,7 +108,7 @@ module shortstack(
   // 2 == list
 
   struct packed {
-    ray_info_t ray_info;
+    ray_info_t ray_info; // This has wptr representing the readpointer (ss_wptr - 1)
     float_t t_min;
   } stack_read_fifo_in[3], stack_read_fifo_out[3];
 
@@ -131,7 +131,7 @@ module shortstack(
 genvar i;
 generate begin
   for(i=0; i<3; i+=1) begin
-  fifo #(.K(2), .WIDTH($bits(stack_read_fifo_in)) ) stack_read_fifo_inst(
+  fifo #(.DEPTH(3), .WIDTH($bits(stack_read_fifo_in)) ) stack_read_fifo_inst(
     .clk, .rst,
     .data_in(stack_read_fifo_in[i]),
     .data_out(stack_read_fifo_out[i]),
@@ -139,7 +139,8 @@ generate begin
     .empty(stack_read_fifo_empty[i]),
     .re(stack_read_fifo_re[i]),
     .we(stack_read_fifo_we[i]),
-    .num_in_fifo() );
+    .num_left_in_fifo(),
+    .exists_in_fifo());
   end
 end
 
@@ -150,6 +151,7 @@ end
 
   struct packed {
     rayID_t rayID;
+    logic [1:0] ss_wptr;
     ss_elem_t elem;
   } stack_write_fifo_in[2], stack_write_fifo_out[2];
 
@@ -159,10 +161,12 @@ end
   logic stack_write_fifo_re[2];
   logic stack_write_fifo_we[2];
   always_comb begin
-    stack_write_fifo_in.ray_info[0] = trav0_to_ss_data.ray_info;
+    stack_write_fifo_in.rayID[0] = trav0_to_ss_data.ray_info.rayID;
+    stack_write_fifo_in.ss_wptr[0] = trav0_to_ss_data.ray_info.ss_wptr;
     stack_write_fifo_in.elem.nodeID[0] =  trav0_to_ss_data.push_node_ID;
     stack_write_fifo_in.elem.t_max[0] =  trav0_to_ss_data.t_max;
-    stack_write_fifo_in.ray_info[1] = trav1_to_ss_data.ray_info;
+    stack_write_fifo_in.rayID[1] = trav1_to_ss_data.ray_info.rayID;
+    stack_write_fifo_in.ss_wptr[1] = trav1_to_ss_data.ray_info.ss_wptr;
     stack_write_fifo_in.elem.nodeID[1] =  trav1_to_ss_data.push_node_ID;
     stack_write_fifo_in.elem.t_max[1] =  trav1_to_ss_data.t_max;
   end
@@ -174,7 +178,7 @@ end
 genvar i;
 generate begin
   for(i=0; i<2; i+=1) begin
-  fifo #(.K(2), .WIDTH($bits(stack_write_fifo_in)) ) stack_write_fifo_inst(
+  fifo #(.DEPTH(3), .WIDTH($bits(stack_write_fifo_in)) ) stack_write_fifo_inst(
     .clk, .rst,
     .data_in(stack_write_fifo_in[i]),
     .data_out(stack_write_fifo_out[i]),
@@ -211,7 +215,12 @@ endgenerate
   
   assign stack_read_fifo_re = trans_choice;
   
-  
+  logic [3:0] stack_read_en;
+  always_comb begin
+    stack_read_en = 4'h0;
+    stack_read_en[stack_read_fifo_out[trans_choice].ray_info.ss_wptr]
+  end
+
   // reading always has addrA priority
   
   assign addrA_stack = ;
@@ -295,7 +304,7 @@ endgenerate
   end
   assign stack_fifo_we = stack_VSpipe_valid_ds;
 
-  fifo #(.K(1), .WIDTH($bits(stack_fifo_in)) ) stack_fifo_inst(
+  fifo #(.DEPTH(2), .WIDTH($bits(stack_fifo_in)) ) stack_fifo_inst(
     .clk, .rst,
     .data_in(stack_fifo_in),
     .data_out(stack_fifo_out),

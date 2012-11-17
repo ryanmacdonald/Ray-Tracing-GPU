@@ -223,18 +223,18 @@ module tb_int_unit();
     $display("%f %f %f %f\n",b41,b42,b43,b44);
   
 
-    c.matrix.m11 = $shortrealtobits(b11);
-    c.matrix.m12 = $shortrealtobits(b12);
-    c.matrix.m13 = $shortrealtobits(b13);
-    c.matrix.m21 = $shortrealtobits(b21);
-    c.matrix.m22 = $shortrealtobits(b22);
-    c.matrix.m23 = $shortrealtobits(b23);
-    c.matrix.m31 = $shortrealtobits(b31);
-    c.matrix.m32 = $shortrealtobits(b32);
-    c.matrix.m33 = $shortrealtobits(b33);
-    c.translate.x = $shortrealtobits(b14);
-    c.translate.y = $shortrealtobits(b24);
-    c.translate.z = $shortrealtobits(b34);
+    c.matrix.m11 = ($shortrealtobits(b11) >> 8);
+    c.matrix.m12 = ($shortrealtobits(b12) >> 8) ;
+    c.matrix.m13 = ($shortrealtobits(b13) >> 8) ;
+    c.matrix.m21 = ($shortrealtobits(b21) >> 8) ;
+    c.matrix.m22 = ($shortrealtobits(b22) >> 8) ;
+    c.matrix.m23 = ($shortrealtobits(b23) >> 8) ;
+    c.matrix.m31 = ($shortrealtobits(b31) >> 8) ;
+    c.matrix.m32 = ($shortrealtobits(b32) >> 8) ;
+    c.matrix.m33 = ($shortrealtobits(b33) >> 8) ;
+    c.translate.x = ($shortrealtobits(b14) >> 8) ;
+    c.translate.y = ($shortrealtobits(b24) >> 8) ;
+    c.translate.z = ($shortrealtobits(b34) >> 8) ;
     
     $display("c = %x, %d (size)", c, $bits(int_cacheline_t));
 

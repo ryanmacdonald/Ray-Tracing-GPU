@@ -113,7 +113,7 @@ module t_minus_32_days(
                   .readDone(doneRead[0]),.readValid(readValid_out[0]),
                   .pbData(pb_data_in),.pb_we(pb_we),.pb_full(pb_full));
 
-    fifo #(.WIDTH($bits(pixel_buffer_entry_t)),.K(5)) pb(.clk,.rst,
+    fifo #(.WIDTH($bits(pixel_buffer_entry_t)),.DEPTH(32)) pb(.clk,.rst,
                                                          .data_in(pb_data_in),
                                                          .we(pb_we),
                                                          .re(pb_re),

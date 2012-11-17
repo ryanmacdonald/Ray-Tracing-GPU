@@ -93,7 +93,7 @@ module trav_unit(
     leaf_fifo_in.ln_tri = tcache_data.tree_node.leaf_node.ln_tri ;
   end
 
-  fifo #(.WIDTH($bits(leaf_fifo_in)), .K(2)) leaf_fifo(
+  fifo #(.WIDTH($bits(leaf_fifo_in)), .DEPTH(8)) leaf_fifo(
     .clk, .rst,
     .data_in(leaf_fifo_in),
     .data_out(leaf_fifo_out),
@@ -101,7 +101,8 @@ module trav_unit(
     .re(leaf_fifo_re),
     .full(leaf_fifo_full),
     .empty(leaf_fifo_empty),
-    .num_in_fifo());
+    .num_left_in_fifo(),
+    .exists_in_fifo());
 
 
 
@@ -192,7 +193,7 @@ module trav_unit(
   logic ds_valid_pipe_vs;
   logic ds_stall_pipe_vs;
 
-  logic [4:0] num_in_trav_fifo;
+  logic [4:0] num_left_in_trav_fifo;
   
   always_comb begin
     trav_sb_in.ray_info = rs_to_trav_data.ray_info ;
@@ -211,14 +212,14 @@ module trav_unit(
     .ds_valid(ds_valid_pipe_vs),
     .ds_data(trav_sb_out),
     .ds_stall(ds_stall_pipe_vs),
-    .num_in_fifo(num_in_trav_fifo[3:0]) );
+    .num_left_in_fifo(num_left_in_trav_fifo) );
 
 
   trav_math big_ass_math_thaaaang(
     .clk, .rst,
     .origin_in(rs_to_trav_data.origin),
     .dir_in(rs_to_trav_data.dir),
-    .split_in({rs_to_trav_data.node.split,8'b0}),
+    .split_in({rs_to_trav_data.node.split,4'b0}), // TODO TEST THIS MOTHER FUCKER
     .t_max_in(rs_to_trav_data.t_max),
     .t_min_in(rs_to_trav_data.t_min),
   
@@ -253,7 +254,7 @@ module trav_unit(
   assign trav_fifo_we = ds_valid_pipe_vs ;
   
 
-  fifo #(.K(4), .WIDTH($bits(trav_fifo_in)) ) trav_fifo_inst(
+  fifo #(.DEPTH(14), .WIDTH($bits(trav_fifo_in)) ) trav_fifo_inst(
     .clk, .rst,
     .data_in(trav_fifo_in),
     .data_out(trav_fifo_out),
@@ -261,7 +262,8 @@ module trav_unit(
     .empty(trav_fifo_empty),
     .re(trav_fifo_re),
     .we(trav_fifo_we),
-    .num_in_fifo(num_in_trav_fifo) );
+    .num_left_in_fifo(num_left_in_trav_fifo),
+    .exists_in_fifo());
 
     
 

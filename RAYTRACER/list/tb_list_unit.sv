@@ -68,7 +68,7 @@ module tb_list_unit;
   task send_int_to_list(int rayID, int triID, bit hit, bit is_last, shortreal t_int, shortreal u, shortreal v);
     int_to_list_valid <= 1'b1;
     int_to_list_data.ray_info.rayID <= rayID;
-    int_to_list_data.ray_info.is_occular <= 0;
+    int_to_list_data.ray_info.is_shadow <= 0;
     int_to_list_data.triID <= triID ;
     int_to_list_data.hit <= hit ;
     int_to_list_data.is_last <= is_last ;
