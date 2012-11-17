@@ -153,7 +153,7 @@ endmodule
 
 // depth 2^k
 module fifo
-#(  parameter WIDTH = 32, K = 2, EARLY_BY = 0)
+#(  parameter WIDTH = 32, K = 2)
 (
   input logic clk, rst,
   input logic [WIDTH-1:0] data_in,
@@ -170,6 +170,7 @@ module fifo
   logic [K:0] rPtr, rPtr_n;
   logic [K:0] wPtr, wPtr_n;
   logic [K:0] zero_cnt, zero_cnt_n;
+  logic [K:0] one_cnt, one_cnt_n; // TODO: finish this
 
   assign num_left_in_fifo = zero_cnt;
 
