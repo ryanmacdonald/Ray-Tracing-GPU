@@ -817,7 +817,6 @@ endgenerate
   struct packed {
     rayID_t rayID;
     logic is_shadow;
-    nodeID_t nodeID;
     float_t t_min;
     float_t t_max;
   } notmiss_fifo_in, notmiss_fifo_out;
@@ -829,7 +828,6 @@ endgenerate
   always_comb begin
     notmiss_fifo_in.rayID= rest_VSpipe_out.rayID;
     notmiss_fifo_in.is_shadow = rest_VSpipe_out.is_shadow;
-    notmiss_fifo_in.nodeID =  restnode_s3; 
     notmiss_fifo_in.t_min =  minbuf_s3; 
     notmiss_fifo_in.t_max =  maxscene_s3; 
   end
@@ -878,6 +876,210 @@ endgenerate
   assign ss_to_shader_data = miss_fifo_out;
   assign rest_min_num_left = (num_left_in_miss_fifo > num_left_in_notmiss_fifo) ? num_left_in_notmiss_fifo : num_left_in_miss_fifo ;
 
+//------------------------------------------------------------------------
+// rest write fifos
+  // 0 == trav0
+  // 1 == trav1
+  // 2 == sint
 
+  struct packed {
+    rayID_t rayID;
+    nodeID_t nodeID;
+  } rest_write_fifo_in[3], rest_write_fifo_out[3];
+
+  // fifo to accumulate Definite misses and definite hits
+  logic [2:0] rest_write_fifo_full;
+  logic [2:0] rest_write_fifo_empty;
+  logic [2:0] rest_write_fifo_re;
+  logic [2:0] rest_write_fifo_we;
+  always_comb begin
+    rest_write_fifo_in[0].rayID = trav0_to_ss_data.ray_info.rayID;
+    rest_write_fifo_in[0].elem.nodeID =  trav0_to_ss_data.rest_node_ID;
+    rest_write_fifo_in[0].elem.t_max =  trav0_to_ss_data.t_max;
+    rest_write_fifo_in[1].rayID = trav1_to_ss_data.ray_info.rayID;
+    rest_write_fifo_in[1].elem.nodeID =  trav1_to_ss_data.rest_node_ID;
+    rest_write_fifo_in[1].elem.t_max =  trav1_to_ss_data.t_max;
+    rest_write_fifo_in[2].rayID = sint_to_ss_data.ray_info.rayID;
+    rest_write_fifo_in[2].elem.nodeID =  sint_to_ss_data.rest_node_ID;
+    rest_write_fifo_in[2].elem.t_max =  sint_to_ss_data.t_max_scene;
+  end
+
+  assign rest_write_fifo_re = ;
+  assign rest_write_fifo_we = ;
+
+
+genvar i;
+generate begin
+  for(i=0; i<2; i+=1) begin
+  fifo #(.DEPTH(3), .WIDTH($bits(rest_write_fifo_in)) ) rest_write_fifo_inst(
+    .clk, .rst,
+    .data_in(rest_write_fifo_in[i]),
+    .data_out(rest_write_fifo_out[i]),
+    .full(rest_write_fifo_full[i]),
+    .empty(rest_write_fifo_empty[i]),
+    .re(rest_write_fifo_re[i]),
+    .we(rest_write_fifo_we[i]),
+    .exists_in_fifo(),
+    .num_left_in_fifo() );
+  end
+endgenerate
+
+
+//------------------------------------------------------------------------
+  logic [1:0] rest_w_rrptr, rest_w_rrptr_n;
+  assign rest_w_rrptr_n = ( ) ? (rest_w_rrptr == 2'h2 ? 2''h0 : rest_w_rrptr + 1'b1) : rest_w_rrptr ;
+  ff_ar #(2,2'b0) rest_w_rrptr_buf(.d(rest_w_rrptr_n), .q(rest_w_rrptr), .clk, .rst);
+  
+  logic [1:0] rest_w_rrptr1, rest_w_rrptr2;
+  always_comb begin
+    unique case(rest_w_rrptr) 
+      2'b00 : begin
+        rest_w_rrptr1 = 2'b01;
+        rest_w_rrptr2 = 2'b10;
+      end
+      2'b01 : begin
+        rest_w_rrptr1 = 2'b10;
+        rest_w_rrptr2 = 2'b00;
+      end
+      2'b10 : begin
+        rest_w_rrptr1 = 2'b00;
+        rest_w_rrptr2 = 2'b01;
+      end
+    endcase
+  end
+  
+  //logic notmiss_fifo_empty;
+  
+  logic [2:0] rest_wfifo_valid; // if not stalling and there is something in the write fifo
+  logic [2:0] rest_wfifo_choice; // Both bits CAN be set here (resolves read/write conflict)
+  
+  assign rest_wfifo_valid = ~rest_write_fifo_empty;
+  
+  always_comb begin
+    rest_wfifo_choice[rest_w_rrptr] = rest_wfifo_valid[rest_w_rrptr];
+    rest_wfifo_choice[rest_w_rrptr1] = rest_wfifo_valid[rest_w_rrptr1] & ~(rest_wfifo_valid[rest_w_rrptr] & rest_is_reading);
+    rest_wfifo_choice[rest_w_rrptr2] = rest_wfifo_valid[rest_w_rrptr2] & ( rest_wfifo_valid[rest_w_rrptr] + rest_wfifo_valid[rest_w_rrptr1] + rest_is_reading <= 1);
+  end
+
+  assign rest_write_fifo_re = rest_wfifo_choice;
+
+  rayID_t addrA_rest, addrB_rest;
+  float_t wrdataA_rest;
+  float_t wrdataB_rest;
+  logic wrenA_rest, wrenB_rest;
+  float_t rddataA_rest;
+  float_t rddataB_rest;
+
+  
+  always_comb begin
+    unique case({rest_is_reading,rest_wfifo_choice})
+      4'b1_100 : begin
+        addrA_rest = rest_cur_raddr;
+        addrB_rest = rest_write_fifo_out[2].rayID;
+        wrdataA_rest = `DC ;
+        wrdataB_rest = rest_write_fifo_out[2].t_max_scene;
+        wrenA_rest = 0;
+        wrenB_rest = 1;
+      end
+      4'b1_010 : begin
+        addrA_rest = rest_cur_raddr;
+        addrB_rest = rest_write_fifo_out[1].rayID;
+        wrdataA_rest = `DC ;
+        wrdataB_rest = rest_write_fifo_out[1].t_max_scene;
+        wrenA_rest = 0;
+        wrenB_rest = 1;
+      end
+      4'b1_001 : begin
+        addrA_rest = rest_cur_raddr;
+        addrB_rest = rest_write_fifo_out[0].rayID;
+        wrdataA_rest = `DC ;
+        wrdataB_rest = rest_write_fifo_out[0].t_max_scene;
+        wrenA_rest = 0;
+        wrenB_rest = 1;
+      end
+      4'b1_000 : begin
+        addrA_rest = rest_cur_raddr;
+        addrB_rest = `DC;
+        wrdataA_rest = `DC ;
+        wrdataB_rest = `DC;
+        wrenA_rest = 0;
+        wrenB_rest = 0;
+      end
+      4'b0_100 : begin
+        addrA_rest = `DC;
+        addrB_rest = rest_write_fifo_out[2].rayID;
+        wrdataA_rest = `DC ;
+        wrdataB_rest = rest_write_fifo_out[2].t_max_scene;
+        wrenA_rest = 0;
+        wrenB_rest = 1;
+      end
+      4'b0_010 : begin
+        addrA_rest = `DC;
+        addrB_rest = rest_write_fifo_out[1].rayID;
+        wrdataA_rest = `DC ;
+        wrdataB_rest = rest_write_fifo_out[1].t_max_scene;
+        wrenA_rest = 0;
+        wrenB_rest = 1;
+      end
+      4'b0_001 : begin
+        addrA_rest = `DC;
+        addrB_rest = rest_write_fifo_out[0].rayID;
+        wrdataA_rest = `DC ;
+        wrdataB_rest = rest_write_fifo_out[0].t_max_scene;
+        wrenA_rest = 0;
+        wrenB_rest = 1;
+      end
+      4'b0_000 : begin
+        addrA_rest = `DC;
+        addrB_rest = `DC;
+        wrdataA_rest = `DC ;
+        wrdataB_rest = `DC;
+        wrenA_rest = 0;
+        wrenB_rest = 0;
+      end     
+      4'b0_110 : begin
+        addrA_rest = rest_write_fifo_out[1].rayID;
+        addrB_rest = rest_write_fifo_out[2].rayID;
+        wrdataA_rest = rest_write_fifo_out[1].t_max_scene ;
+        wrdataB_rest = rest_write_fifo_out[2].t_max_scene;
+        wrenA_rest = 1;
+        wrenB_rest = 1;
+      end
+      4'b0_101 : begin
+        addrA_rest = rest_write_fifo_out[0].rayID;
+        addrB_rest = rest_write_fifo_out[2].rayID;
+        wrdataA_rest = rest_write_fifo_out[0].t_max_scene ;
+        wrdataB_rest = rest_write_fifo_out[2].t_max_scene;
+        wrenA_rest = 1;
+        wrenB_rest = 1;
+      end
+      4'b0_011 : begin
+        addrA_rest = rest_write_fifo_out[0].rayID;
+        addrB_rest = rest_write_fifo_out[1].rayID;
+        wrdataA_rest = rest_write_fifo_out[0].t_max_scene ;
+        wrdataB_rest = rest_write_fifo_out[1].t_max_scene;
+        wrenA_rest = 1;
+        wrenB_rest = 1;
+      end
+    endcase
+  end
+
+  bram_dual_2port_512x32 rest_bram(
+  .aclr(rst),
+  .address_a(addrA_rest),
+  .address_b(addrB_rest),
+  .clock(clk),
+  .data_a(wrdataA_rest),
+  .data_b(wrdataB_rest),
+  .wren_a(wrenA_rest),
+  .wren_b(wrenB_rest),
+  .q_a(rddataA_rest),
+  .q_b());
+
+
+
+
+
+//------------------------------------------------------------------------
 
 endmodule

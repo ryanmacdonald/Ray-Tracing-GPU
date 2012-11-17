@@ -81,16 +81,19 @@ module trav_unit(
   // add a small 4-wide fifo before the trav to tarb path
   
   assign leaf_fifo_we = ~leaf_fifo_full & tcache_valid & 
-                          (tcache_data.tree_node.leaf_node.node_type == 2'b11);
+                          (tcache_data.tree_node.node_type == 2'b11);
   assign tcache_stall = tcache_valid & ( 
-                            (leaf_fifo_full & tcache_data.tree_node.leaf_node.node_type == 2'b11) |
-                            (trav_to_rs_stall & tcache_data.tree_node.leaf_node.node_type != 2'b11) );
+                            (leaf_fifo_full & tcache_data.tree_node.node_type == 2'b11) |
+                            (trav_to_rs_stall & tcache_data.tree_node.node_type != 2'b11) );
+
+  leaf_node_t leaf_node_tmp;
+  assign leaf_node_tmp = leaf_node_t'(tcache_data.tree_node);
 
 
   always_comb begin
     leaf_fifo_in.ray_info = tcache_data.ray_info ;
     leaf_fifo_in.t_max = tcache_data.t_max ;
-    leaf_fifo_in.ln_tri = tcache_data.tree_node.leaf_node.ln_tri ;
+    leaf_fifo_in.ln_tri = leaf_node_tmp.ln_tri ;
   end
 
   fifo #(.WIDTH($bits(leaf_fifo_in)), .DEPTH(8)) leaf_fifo(
@@ -154,12 +157,12 @@ module trav_unit(
   always_comb begin
     trav_to_rs_data.ray_info = tcache_data.ray_info;
     trav_to_rs_data.nodeID = tcache_data.nodeID;
-    trav_to_rs_data.node = tcache_data.tree_node.norm_node;
+    trav_to_rs_data.node = tcache_data.tree_node;
     trav_to_rs_data.restnode_search = tcache_data.restnode_search;
     trav_to_rs_data.t_max = tcache_data.t_max;
     trav_to_rs_data.t_min = tcache_data.t_min;
   end
-  assign trav_to_rs_valid = tcache_valid & tcache_data.tree_node.leaf_node.node_type != 2'b11;
+  assign trav_to_rs_valid = tcache_valid & tcache_data.tree_node.node_type != 2'b11;
 
 
   struct packed {
@@ -254,7 +257,7 @@ module trav_unit(
   assign trav_fifo_we = ds_valid_pipe_vs ;
   
 
-  fifo #(.DEPTH(14), .WIDTH($bits(trav_fifo_in)) ) trav_fifo_inst(
+  fifo #(.DEPTH(15), .WIDTH($bits(trav_fifo_in)) ) trav_fifo_inst(
     .clk, .rst,
     .data_in(trav_fifo_in),
     .data_out(trav_fifo_out),
@@ -293,6 +296,7 @@ module trav_unit(
       assert(!(trav_fifo_full & ds_valid_pipe_vs));
       assert(trav_fifo_empty || (only_low + only_high + trav_lo_then_hi + trav_hi_then_lo == 1));
       assert(trav_fifo_empty || (t_max > t_min));
+      assert(!(low_empty & high_empty));
     end
   `endif
  
@@ -301,6 +305,7 @@ module trav_unit(
   logic pop_valid;
   logic push_valid;
   logic update_restnode_valid;
+  logic update_maxscene_valid;
   nodeID_t push_node_ID;
   
   nodeID_t low_node_ID;
@@ -311,6 +316,7 @@ module trav_unit(
   assign push_valid = ((~low_empty & ~high_empty) & (trav_lo_then_hi | trav_hi_then_lo)) ;
   assign update_restnode_valid = trav_fifo_out.restnode_search & push_valid;
   assign push_node_ID = trav_lo_then_hi ? trav_fifo_out.right_ID : low_node_ID ;
+  assign update_maxscene_valid = (trav_lo_then_hi & high_empty) | (trav_hi_then_lo & low_empty);
 
   // trav_to_ss buffer and interface
   trav_to_ss_t ss_buf_n, ss_buf;
@@ -332,6 +338,7 @@ module trav_unit(
       ss_buf_n.rest_node_ID = trav_fifo_out.parent_ID ;
       ss_buf_n.t_max = t_max; // TODO is it always t_max??
       ss_buf_n.pop_req = pop_valid ;
+      ss_buf_n.update_maxscene_req = update_maxscene_valid;
     end
  end
 
