@@ -1,35 +1,23 @@
 `default_nettype none
 
-`define SIDE_W 8
-`define ADDR_W 8
-`define RDATA_W 16
+module cache
 
-// NOTE: following should add up to ADDR_W
-`define TAG_W   3
-`define INDEX_W 4
-`define BLK_W 1
+#(parameter 
+	SIDE_W=8,
+	ADDR_W=8,
+	RDATA_W=16,
 
-`define DEPTH 2
-`define RIF_DEPTH (`DEPTH+3)
-`define MRF_DEPTH (`DEPTH+3)
+	// NOTE: following should add up to ADDR_W
+	TAG_W=3,
+	INDEX_W=4,
+	NUM_LINES=(1<<INDEX_W), // TODO: make sure block ram only has this many lines
+	BLK_W=1,
 
-typedef struct packed {
-	logic [`SIDE_W-1:0] side;
-	logic [`ADDR_W-1:0] addr;
-} pvs_data_t;
-
-typedef struct packed {
-	logic [`RDATA_W-1:0] rdata;
-	logic [`SIDE_W-1:0] side;
-} hdf_data_t;
-
-typedef struct packed {
-	logic [`ADDR_W-1:0] addr;
-	logic [`SIDE_W-1:0] side;
-	logic flag;
-} rif_data_t;
-
-module cache(
+	DEPTH=2,
+	RIF_DEPTH=(`DEPTH+3),
+	MRF_DEPTH=(`DEPTH+3)
+)
+(
 	input logic clk, rst,
 
 	// upstream interface
@@ -54,6 +42,22 @@ module cache(
 	output logic                         ds_valid,
 	input  logic                         ds_stall
 );
+
+typedef struct packed {
+	logic [`SIDE_W-1:0] side;
+	logic [`ADDR_W-1:0] addr;
+} pvs_data_t;
+
+typedef struct packed {
+	logic [`RDATA_W-1:0] rdata;
+	logic [`SIDE_W-1:0] side;
+} hdf_data_t;
+
+typedef struct packed {
+	logic [`ADDR_W-1:0] addr;
+	logic [`SIDE_W-1:0] side;
+	logic flag;
+} rif_data_t;
 
 /************** signal declarations **************/
 
@@ -243,6 +247,7 @@ module cache(
 
 endmodule
 
+// TODO: make wdata able to write only certain blocks
 module cache_storage(
 		// upstream side
 	input logic [`ADDR_W-1:0] waddr,
