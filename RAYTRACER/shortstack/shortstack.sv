@@ -131,25 +131,23 @@ module shortstack(
     stack_read_fifo_in[2].t_min = list_to_ss_data.t_max;
   end
 
-  assign stack_read_fifo_we = ;
 
 
-genvar i;
-generate begin
-  for(i=0; i<3; i+=1) begin
-  fifo #(.DEPTH(3), .WIDTH($bits(stack_read_fifo_in)) ) stack_read_fifo_inst(
-    .clk, .rst,
-    .data_in(stack_read_fifo_in[i]),
-    .data_out(stack_read_fifo_out[i]),
-    .full(stack_read_fifo_full[i]),
-    .empty(stack_read_fifo_empty[i]),
-    .re(stack_read_fifo_re[i]),
-    .we(stack_read_fifo_we[i]),
-    .exists_in_fifo(),
-    .num_left_in_fifo(),
-    .exists_in_fifo());
+  genvar i;
+  generate begin
+    for(i=0; i<3; i+=1) begin
+    fifo #(.DEPTH(3), .WIDTH($bits(stack_read_fifo_in)) ) stack_read_fifo_inst(
+      .clk, .rst,
+      .data_in(stack_read_fifo_in[i]),
+      .data_out(stack_read_fifo_out[i]),
+      .full(stack_read_fifo_full[i]),
+      .empty(stack_read_fifo_empty[i]),
+      .re(stack_read_fifo_re[i]),
+      .we(stack_read_fifo_we[i]),
+      .exists_in_fifo(),
+      .num_left_in_fifo(),
+    end
   end
-end
 
 //------------------------------------------------------------------------
 // Short Stack write fifos
@@ -178,7 +176,6 @@ end
     stack_write_fifo_in[1].elem.t_max =  trav1_to_ss_data.t_max;
   end
 
-  assign stack_write_fifo_re = ;
 
 
 genvar i;
@@ -204,8 +201,6 @@ endgenerate
   logic [2:0] stack_rfifo_valid, stack_rfifo_choice;
   logic [1:0] stack_r_rrptr, stack_r_rrptr_n;
   assign stack_r_rrptr_n = (|stack_rfifo_valid) ? (stack_r_rrptr == 2'h2 ? 2''h0 : stack_r_rrptr + 1'b1) : stack_r_rrptr ;
-  
-  
   
   ff_ar #(2,2'b0) stack_r_rrptr_buf(.d(stack_r_rrptr_n), .q(stack_r_rrptr), .clk, .rst);
   
@@ -260,7 +255,7 @@ endgenerate
   assign stack_is_reading = |stack_rfifo_valid;
 
   logic stack_w_rrptr, stack_w_rrptr_n;
-  assign stack_w_rrptr_n = ( ) ?  ~stack_w_rrptr : stacK_w_rrptr ;
+  assign stack_w_rrptr_n = (|stack_wfifo_valid) ?  ~stack_w_rrptr : stack_w_rrptr ;
   ff_ar #(1,1'b0) stack_w_rrptr_buf(.d(stack_w_rrptr_n), .q(stack_w_rrptr), .clk, .rst);
   
   logic [1:0] stack_wfifo_valid; // if not stalling and there is something in the write fifo
@@ -274,7 +269,13 @@ endgenerate
 
   assign stack_wfifo_valid = ~stack_write_fifo_empty;
   
-  
+  always_comb begin
+    stack_wfifo_choice = 'h0;
+    stack_wfifo_choice[stack_w_rrptr] = stack_wfifo_valid[stack_w_rrptr];
+    stack_wfifo_choice[~stack_w_rrptr] = stack_wfifo_valid[~stack_w_rrptr] & ~(stack_same_w0w1_dest & stack_same_rw0_dest & 
+                                                                                stack_is_reading & stack_wfifo_valid[stack_w_rrptr]) 
+  end
+/*
   always_comb begin
     if(stack_w_rrptr) begin
       stack_wfifo_choice[1] = stack_wfifo_valid[1];
@@ -286,7 +287,7 @@ endgenerate
                                                        stack_is_reading & stack_wfifo_valid[0]) ;
     end
   end
-
+*/
   assign stack_write_fifo_re = stack_wfifo_choice;
   // port A = 0, port B = 1
 
@@ -319,8 +320,8 @@ endgenerate
       wrenB_stack[i] = (stack_wfifo_choice[1] & stack_wptr[1] == i & stack_w1_port) | (stack_wfifo_choic[0] & stack_wptr[0] == i & stack_w0_port) ;
       if(stack_w_rrptr) begin
         addrA_stack[i] = (stack_read_valid[i] & cur_rptr==i) ? stack_cur_raddr : 
-                         ( (stack_wfifo_choice[1] & stack_wptr[1]==i & ~stack_w1_port) ? stack_write_fifo_out[1].rayID : 
-                           (stack_wfifo_choice[0] & stack_wptr[0]==i & ~stack_w0_port) ? stack_write_fifo_out[0].rayID) : `DC ;
+                          (stack_wfifo_choice[1] & stack_wptr[1]==i & ~stack_w1_port) ? stack_write_fifo_out[1].rayID : 
+                           (stack_wfifo_choice[0] & stack_wptr[0]==i & ~stack_w0_port) ? stack_write_fifo_out[0].rayID : `DC ;
         wrdataA_stack[i] = (stack_wfifo_choice[1] & stack_wptr[1]==i & ~stack_w1_port) ? stack_write_fifo_out[1].elem :
                            (stack_wfifo_choice[0] & stack_wptr[0]==i & ~stack_w0_port) ? stack_write_fifo_out[0].elem : `DC;
         addrB_stack[i] = (stack_wfifo_choice[1] & stack_wptr[1]==i & stack_w1_port) ? stack_write_fifo_out[1].rayID :
@@ -330,8 +331,8 @@ endgenerate
       end
       else begin
         addrA_stack[i] = (stack_read_valid[i] & cur_rptr==i) ? stack_cur_raddr : 
-                         ( (stack_wfifo_choice[0] & stack_wptr[0]==i & ~stack_w0_port) ? stack_write_fifo_out[0].rayID : 
-                           (stack_wfifo_choice[1] & stack_wptr[1]==i & ~stack_w1_port) ? stack_write_fifo_out[1].rayID) : `DC ;
+                          (stack_wfifo_choice[0] & stack_wptr[0]==i & ~stack_w0_port) ? stack_write_fifo_out[0].rayID : 
+                           (stack_wfifo_choice[1] & stack_wptr[1]==i & ~stack_w1_port) ? stack_write_fifo_out[1].rayID : `DC ;
         wrdataA_stack[i] = (stack_wfifo_choice[0] & stack_wptr[0]==i & ~stack_w0_port) ? stack_write_fifo_out[0].elem :
                            (stack_wfifo_choice[1] & stack_wptr[1]==i & ~stack_w1_port) ? stack_write_fifo_out[1].elem : `DC;
         addrB_stack[i] = (stack_wfifo_choice[0] & stack_wptr[0]==i & stack_w0_port) ? stack_write_fifo_out[0].rayID :
@@ -342,13 +343,12 @@ endgenerate
       end
     end
   end
-  
 
 
   genvar s;
   generate
     for(s=0; s<4; s++) begin
-      bram_dual_2port_512x stack_bram(
+      bram_dual_2port_512x48 stack_bram(
       .aclr(rst[i]),
       .address_a(addrA_stack[i]),
       .address_b(addrB_stack[i]),
@@ -362,7 +362,6 @@ endgenerate
     end
 
   endgenerate
-
 
 
 //------------------------------------------------------------------------
@@ -398,6 +397,8 @@ endgenerate
     .exists_in_fifo(),
     .num_left_in_fifo(num_left_in_stack_fifo) );
 
+  assign stack_VSpipe_stall_ds = ss_to_tarb0_stall;
+
 //------------------------------------------------------------------------
 // Stack fifo
   struct packed {
@@ -430,10 +431,10 @@ endgenerate
     .exists_in_fifo(),
     .num_left_in_fifo(num_left_in_stack_fifo) );
 
-  assign ss_to_tarb0_valid = ~stack_fifo_empty;
-  assign ss_to_tarb0_data = stack_fifo_out;
-  assign stack_fifo_re = ss_to_tarb0_valid & ~ss_to_tarb0_stall ;
-
+  assign ss_to_tarb_valid0 = ~stack_fifo_empty;
+  assign ss_to_tarb_data0 = stack_fifo_out;
+  assign stack_fifo_re = ss_to_tarb_valid0 & ~ss_to_tarb_stall0 ;
+  assign stack_VSpipe_stall_ds = ss_to_tarb_stall0;
 
 
 //------------------------------------------------------------------------------------------------------
@@ -450,82 +451,95 @@ endgenerate
     rayID_t rayID;
     logic is_shadow;
     float_t t_min;
-  } maxscene_read_fifo_in[3], maxscene_read_fifo_out[3];
+  } rest_read_fifo_in[3], rest_read_fifo_out[3];
 
-  logic [2:0] maxscene_read_fifo_full;
-  logic [2:0] maxscene_read_fifo_empty;
-  logic [2:0] maxscene_read_fifo_re;
-  logic [2:0] maxscene_read_fifo_we;
+  logic [2:0] rest_read_fifo_full;
+  logic [2:0] rest_read_fifo_empty;
+  logic [2:0] rest_read_fifo_re;
+  logic [2:0] rest_read_fifo_we;
   always_comb begin
-    maxscene_read_fifo_in[0].rayID = trav0_to_ss_data.rayID;
-    maxscene_read_fifo_in[0].is_shadow = trav0_to_ss_data.is_shadow;
-    maxscene_read_fifo_in[0].t_min =  trav0_to_ss_data.t_max;
-    maxscene_read_fifo_in[1].rayID = trav1_to_ss_data.rayID;
-    maxscene_read_fifo_in[1].is_shadow = trav1_to_ss_data.is_shadow;
-    maxscene_read_fifo_in[1].t_min =  trav1_to_ss_data.t_max;
-    maxscene_read_fifo_in[2].rayID = list_to_ss_data.rayID;
-    maxscene_read_fifo_in[2].is_shadow = list_to_ss_data.is_shadow;
-    maxscene_read_fifo_in[2].t_min = list_to_ss_data.t_max;
+    rest_read_fifo_in[0].rayID = trav0_to_ss_data.rayID;
+    rest_read_fifo_in[0].is_shadow = trav0_to_ss_data.is_shadow;
+    rest_read_fifo_in[0].t_min =  trav0_to_ss_data.t_max;
+    rest_read_fifo_in[1].rayID = trav1_to_ss_data.rayID;
+    rest_read_fifo_in[1].is_shadow = trav1_to_ss_data.is_shadow;
+    rest_read_fifo_in[1].t_min =  trav1_to_ss_data.t_max;
+    rest_read_fifo_in[2].rayID = list_to_ss_data.rayID;
+    rest_read_fifo_in[2].is_shadow = list_to_ss_data.is_shadow;
+    rest_read_fifo_in[2].t_min = list_to_ss_data.t_max;
   end
 
-  assign maxscene_read_fifo_we = ;
 
 
 genvar i;
 generate begin
   for(i=0; i<3; i+=1) begin
-  fifo #(.DEPTH(3), .WIDTH($bits(maxscene_read_fifo_in)) ) maxscene_read_fifo_inst(
+  fifo #(.DEPTH(3), .WIDTH($bits(rest_read_fifo_in)) ) rest_read_fifo_inst(
     .clk, .rst,
-    .data_in(maxscene_read_fifo_in[i]),
-    .data_out(maxscene_read_fifo_out[i]),
-    .full(maxscene_read_fifo_full[i]),
-    .empty(maxscene_read_fifo_empty[i]),
-    .re(maxscene_read_fifo_re[i]),
-    .we(maxscene_read_fifo_we[i]),
+    .data_in(rest_read_fifo_in[i]),
+    .data_out(rest_read_fifo_out[i]),
+    .full(rest_read_fifo_full[i]),
+    .empty(rest_read_fifo_empty[i]),
+    .re(rest_read_fifo_re[i]),
+    .we(rest_read_fifo_we[i]),
     .exists_in_fifo(),
     .num_left_in_fifo() );
   end
 end
 
 //------------------------------------------------------------------------
-// maxscene write fifos
+// rest write fifos
   // 0 == trav0
   // 1 == trav1
   // 2 == sint
 
   struct packed {
     rayID_t rayID;
+    nodeID_t nodeID;
+    logic nodeID_valid;
     float_t t_max_scene;
-  } maxscene_write_fifo_in[3], maxscene_write_fifo_out[3];
+    logic t_max_scene_valid;
+  } rest_write_fifo_in[3], rest_write_fifo_out[3];
 
   // fifo to accumulate Definite misses and definite hits
-  logic [2:0] maxscene_write_fifo_full;
-  logic [2:0] maxscene_write_fifo_empty;
-  logic [2:0] maxscene_write_fifo_re;
-  logic [2:0] maxscene_write_fifo_we;
+  logic [2:0] rest_write_fifo_full;
+  logic [2:0] rest_write_fifo_empty;
+  logic [2:0] rest_write_fifo_re;
+  logic [2:0] rest_write_fifo_we;
   always_comb begin
-    maxscene_write_fifo_in[0].rayID = trav0_to_ss_data.ray_info.rayID;
-    maxscene_write_fifo_in[0].t_max_scene =  trav0_to_ss_data.t_max;
-    maxscene_write_fifo_in[1].rayID = trav1_to_ss_data.ray_info.rayID;
-    maxscene_write_fifo_in[1].t_max_scene =  trav1_to_ss_data.t_max;
-    maxscene_write_fifo_in[2].rayID = sint_to_ss_data.rayID;
-    maxscene_write_fifo_in[2].t_max_scene =  sint_to_ss_data.t_max.t_max_scene;
+    rest_write_fifo_in[0].rayID = trav0_to_ss_data.ray_info.rayID;
+    rest_write_fifo_in[0].t_max_scene =  trav0_to_ss_data.t_max;
+    rest_write_fifo_in[0].t_max_scene_valid = trav0_to_ss_data.update_maxscene_req | trav0_to_ss_data.update_restnode_req ;
+    rest_write_fifo_in[0].nodeID =  trav0_to_ss_data.rest_node_ID;
+    rest_write_fifo_in[0].nodeID_valid =  trav0_to_ss_data.update_restnode_req;
+
+    rest_write_fifo_in[1].rayID = trav1_to_ss_data.ray_info.rayID;
+    rest_write_fifo_in[1].t_max_scene =  trav1_to_ss_data.t_max;
+    rest_write_fifo_in[1].t_max_scene_valid = trav1_to_ss_data.update_maxscene_req | trav1_to_ss_data.update_restnode_req;
+    rest_write_fifo_in[1].nodeID =  trav1_to_ss_data.rest_node_ID;
+    rest_write_fifo_in[1].nodeID_valid =  trav1_to_ss_data.update_restnode_req;
+    
+    rest_write_fifo_in[2].rayID = sint_to_ss_data.ray_info.rayID;
+    rest_write_fifo_in[2].t_max_scene =  sint_to_ss_data.t_max;
+    rest_write_fifo_in[2].t_max_scene_valid = 1'b1 ;
+    rest_write_fifo_in[2].nodeID = 'h0 ;
+    rest_write_fifo_in[2].nodeID_valid =  1'b1 ;
+  
   end
 
-  assign maxscene_write_fifo_re = ;
 
 
 genvar i;
 generate begin
   for(i=0; i<2; i+=1) begin
-  fifo #(.DEPTH(3), .WIDTH($bits(maxscene_write_fifo_in)) ) maxscene_write_fifo_inst(
+  fifo #(.DEPTH(3), .WIDTH($bits(rest_write_fifo_in)) ) rest_write_fifo_inst(
     .clk, .rst,
-    .data_in(maxscene_write_fifo_in[i]),
-    .data_out(maxscene_write_fifo_out[i]),
-    .full(maxscene_write_fifo_full[i]),
-    .empty(maxscene_write_fifo_empty[i]),
-    .re(maxscene_write_fifo_re[i]),
-    .we(maxscene_write_fifo_we[i]),
+    .data_in(rest_write_fifo_in[i]),
+    .data_out(rest_write_fifo_out[i]),
+    .full(rest_write_fifo_full[i]),
+    .empty(rest_write_fifo_empty[i]),
+    .re(rest_write_fifo_re[i]),
+    .we(rest_write_fifo_we[i]),
     .exists_in_fifo(),
     .num_left_in_fifo() );
   end
@@ -533,209 +547,246 @@ endgenerate
 
 
 //------------------------------------------------------------------------
-  // maxscene read arbitration logic
-  logic [1:0] maxscene_r_rrptr, maxscene_r_rrptr_n;
-  assign maxscene_r_rrptr_n = (|maxscene_rfifo_valid) ? (maxscene_r_rrptr == 2'h2 ? 2''h0 : maxscene_r_rrptr + 1'b1) : maxscene_r_rrptr ;
-  ff_ar #(2,2'b0) maxscene_r_rrptr_buf(.d(maxscene_r_rrptr_n), .q(maxscene_r_rrptr), .clk, .rst);
+  // rest read arbitration logic
+  logic [1:0] rest_r_rrptr, rest_r_rrptr_n;
+  assign rest_r_rrptr_n = (|rest_rfifo_valid) ? (rest_r_rrptr == 2'h2 ? 2''h0 : rest_r_rrptr + 1'b1) : rest_r_rrptr ;
+  ff_ar #(2,2'b0) rest_r_rrptr_buf(.d(rest_r_rrptr_n), .q(rest_r_rrptr), .clk, .rst);
   
-  logic [2:0] maxscene_rfifo_valid, maxscene_rfifo_choice;
-  assign maxscene_rfifo_valid = ~maxscene_read_fifo_empty & {3{maxscene_VSpipe_stall_us}};
+  logic [2:0] rest_rfifo_valid, rest_rfifo_choice;
+  assign rest_rfifo_valid = ~rest_read_fifo_empty & {3{rest_VSpipe_stall_us}};
   
-  logic [1:0] maxscene_r_rrptr1, maxscene_r_rrptr2;
+  logic [1:0] rest_r_rrptr1, rest_r_rrptr2;
   always_comb begin
-    unique case(maxscene_r_rrptr) 
+    unique case(rest_r_rrptr) 
       2'b00 : begin
-        maxscene_r_rrptr1 = 2'b01;
-        maxscene_r_rrptr2 = 2'b10;
+        rest_r_rrptr1 = 2'b01;
+        rest_r_rrptr2 = 2'b10;
       end
       2'b01 : begin
-        maxscene_r_rrptr1 = 2'b10;
-        maxscene_r_rrptr2 = 2'b00;
+        rest_r_rrptr1 = 2'b10;
+        rest_r_rrptr2 = 2'b00;
       end
       2'b10 : begin
-        maxscene_r_rrptr1 = 2'b00;
-        maxscene_r_rrptr2 = 2'b01;
+        rest_r_rrptr1 = 2'b00;
+        rest_r_rrptr2 = 2'b01;
       end
     endcase
   end
   
   always_comb begin
-    maxscene_rfifo_choice = 'h0;
-    maxscene_rfifo_choice[maxscene_r_rrptr] = maxscene_rfifo_valid[maxscene_r_rrptr];
-    maxscene_rfifo_choice[maxscene_r_rrptr1] = maxscene_rfifo_valid[maxscene_r_rrptr1] & ~maxscene_rfifo_valid[maxscene_r_rrptr] ;
-    maxscene_rfifo_choice[maxscene_r_rrptr2] = maxscene_rfifo_valid[maxscene_r_rrptr2] & ~maxscene_rfifo_valid[maxscene_r_rrptr] & ~maxscene_rfifo_valid[maxscene_r_rrptr1];
+    rest_rfifo_choice = 'h0;
+    rest_rfifo_choice[rest_r_rrptr] = rest_rfifo_valid[rest_r_rrptr];
+    rest_rfifo_choice[rest_r_rrptr1] = rest_rfifo_valid[rest_r_rrptr1] & ~rest_rfifo_valid[rest_r_rrptr] ;
+    rest_rfifo_choice[rest_r_rrptr2] = rest_rfifo_valid[rest_r_rrptr2] & ~rest_rfifo_valid[rest_r_rrptr] & ~rest_rfifo_valid[rest_r_rrptr1];
   end
 
+  assign rest_write_fifo_re = rest_rfifo_choice;
   
-  rayID_t maxscene_cur_raddr;
-  float_t maxscene_cur_t_min;
+  rayID_t rest_cur_raddr;
+  float_t rest_cur_t_min;
   always_comb begin
-    maxscene_cur_rptr = 'h0;
-    maxscene_read_valid = 'h0;
-    case(maxscene_rfifo_choice)
+    rest_cur_rptr = 'h0;
+    rest_read_valid = 'h0;
+    case(rest_rfifo_choice)
       3'b100: begin
-        maxscene_cur_raddr = maxscene_read_fifo_out[2].rayID;
-        maxscene_cur_t_min = maxscene_read_fifo_out[2].t_min;
+        rest_cur_raddr = rest_read_fifo_out[2].rayID;
+        rest_cur_t_min = rest_read_fifo_out[2].t_min;
       3'b010: begin
-        maxscene_cur_raddr = maxscene_read_fifo_out[1].rayID;
-        maxscene_cur_t_min = maxscene_read_fifo_out[1].t_min;
+        rest_cur_raddr = rest_read_fifo_out[1].rayID;
+        rest_cur_t_min = rest_read_fifo_out[1].t_min;
       3'b001: begin
-        maxscene_cur_raddr = maxscene_read_fifo_out[0].rayID;
-        maxscene_cur_t_min = maxscene_read_fifo_out[0].t_min;
+        rest_cur_raddr = rest_read_fifo_out[0].rayID;
+        rest_cur_t_min = rest_read_fifo_out[0].t_min;
       end
     endcase
   end
-  logic maxscene_is_reading;
-  assign maxscene_is_reading = |maxscene_rfifo_valid;
+  logic rest_is_reading;
+  assign rest_is_reading = |rest_rfifo_valid;
 
 
-  logic [1:0] maxscene_w_rrptr, maxscene_w_rrptr_n;
-  assign maxscene_w_rrptr_n = (|maxscene_wfifo_choice) ? (maxscene_w_rrptr == 2'h2 ? 2''h0 : maxscene_w_rrptr + 1'b1) : maxscene_w_rrptr ;
-  ff_ar #(2,2'b0) maxscene_w_rrptr_buf(.d(maxscene_w_rrptr_n), .q(maxscene_w_rrptr), .clk, .rst);
+  logic [1:0] rest_w_rrptr, rest_w_rrptr_n;
+  assign rest_w_rrptr_n = (|rest_wfifo_choice) ? (rest_w_rrptr == 2'h2 ? 2'h0 : rest_w_rrptr + 1'b1) : rest_w_rrptr ;
+  ff_ar #(2,2'b0) rest_w_rrptr_buf(.d(rest_w_rrptr_n), .q(rest_w_rrptr), .clk, .rst);
   
-  logic [1:0] maxscene_w_rrptr1, maxscene_w_rrptr2;
+  logic [1:0] rest_w_rrptr1, rest_w_rrptr2;
   always_comb begin
-    unique case(maxscene_w_rrptr) 
+    unique case(rest_w_rrptr) 
       2'b00 : begin
-        maxscene_w_rrptr1 = 2'b01;
-        maxscene_w_rrptr2 = 2'b10;
+        rest_w_rrptr1 = 2'b01;
+        rest_w_rrptr2 = 2'b10;
       end
       2'b01 : begin
-        maxscene_w_rrptr1 = 2'b10;
-        maxscene_w_rrptr2 = 2'b00;
+        rest_w_rrptr1 = 2'b10;
+        rest_w_rrptr2 = 2'b00;
       end
       2'b10 : begin
-        maxscene_w_rrptr1 = 2'b00;
-        maxscene_w_rrptr2 = 2'b01;
+        rest_w_rrptr1 = 2'b00;
+        rest_w_rrptr2 = 2'b01;
       end
     endcase
   end
 
 
-  logic [2:0] maxscene_wfifo_valid; // if not stalling and there is something in the write fifo
-  logic [2:0] maxscene_wfifo_choice; // Both bits CAN be set here (resolves read/write conflict)
+  logic [2:0] rest_wfifo_valid; // if not stalling and there is something in the write fifo
+  logic [2:0] rest_wfifo_choice; // Both bits CAN be set here (resolves read/write conflict)
   
-  assign maxscene_wfifo_valid = ~maxscene_write_fifo_empty;
+  assign rest_wfifo_valid = ~rest_write_fifo_empty;
   
   always_comb begin
-    maxscene_wfifo_choice[maxscene_w_rrptr] = maxscene_wfifo_valid[maxscene_w_rrptr];
-    maxscene_wfifo_choice[maxscene_w_rrptr1] = maxscene_wfifo_valid[maxscene_w_rrptr1] & ~(maxscene_wfifo_valid[maxscene_w_rrptr] & maxscene_is_reading);
-    maxscene_wfifo_choice[maxscene_w_rrptr2] = maxscene_wfifo_valid[maxscene_w_rrptr2] & ( maxscene_wfifo_valid[maxscene_w_rrptr] + maxscene_wfifo_valid[maxscene_w_rrptr1] + maxscene_is_reading <= 1);
+    rest_wfifo_choice[rest_w_rrptr] = rest_wfifo_valid[rest_w_rrptr];
+    rest_wfifo_choice[rest_w_rrptr1] = rest_wfifo_valid[rest_w_rrptr1] & ~(rest_wfifo_valid[rest_w_rrptr] & rest_is_reading);
+    rest_wfifo_choice[rest_w_rrptr2] = rest_wfifo_valid[rest_w_rrptr2] & ( rest_wfifo_valid[rest_w_rrptr] + rest_wfifo_valid[rest_w_rrptr1] + rest_is_reading <= 1);
   end
 
-  assign maxscene_write_fifo_re = maxscene_wfifo_choice;
+  assign rest_write_fifo_re = rest_wfifo_choice;
 
-  rayID_t addrA_maxscene, addrB_maxscene;
-  float_t wrdataA_maxscene;
-  float_t wrdataB_maxscene;
-  logic wrenA_maxscene, wrenB_maxscene;
-  float_t rddataA_maxscene;
-  float_t rddataB_maxscene;
+  logic [5:0] beA_rest, beB_rest;
+  rayID_t addrA_rest, addrB_rest;
+  ss_elem_t wrdataA_rest;
+  ss_elem_t wrdataB_rest;
+  logic wrenA_rest, wrenB_rest;
+  ss_elem_t rddataA_rest;
+  ss_elem_t rddataB_rest;
 
-  
+  nodeID
+  t_max_scene
+
+  struct packed {
+    rayID_t rayID;
+    nodeID_t nodeID;
+    logic nodeID_valid;
+    float_t t_max_scene;
+    logic t_max_scene_valid;
+  } rest_write_fifo_in[3], rest_write_fifo_out[3];
+
+
   always_comb begin
-    unique case({maxscene_is_reading,maxscene_wfifo_choice})
+    unique case({rest_is_reading,rest_wfifo_choice})
       4'b1_100 : begin
-        addrA_maxscene = maxscene_cur_raddr;
-        addrB_maxscene = maxscene_write_fifo_out[2].rayID;
-        wrdataA_maxscene = `DC ;
-        wrdataB_maxscene = maxscene_write_fifo_out[2].t_max_scene;
-        wrenA_maxscene = 0;
-        wrenB_maxscene = 1;
+				beA_rest = 6'b11_1111 ;
+				beB_rest = { {2{rest_write_fifo_out[2].nodeID_valid}}, {4{rest_write_fifo_out[2].t_max_scene_valid}} } ;
+        addrA_rest = rest_cur_raddr;
+        addrB_rest = rest_write_fifo_out[2].rayID ; 
+        wrdataA_rest = `DC ;
+        wrdataB_rest = {rest_write_fifo_out[2].nodeID, rest_write_fifo_out[2].t_max_scene} ; 
+        wrenA_rest = 0;
+        wrenB_rest = 1;
       end
       4'b1_010 : begin
-        addrA_maxscene = maxscene_cur_raddr;
-        addrB_maxscene = maxscene_write_fifo_out[1].rayID;
-        wrdataA_maxscene = `DC ;
-        wrdataB_maxscene = maxscene_write_fifo_out[1].t_max_scene;
-        wrenA_maxscene = 0;
-        wrenB_maxscene = 1;
+				beA_rest = 6'b11_1111;
+				beB_rest = { {2{rest_write_fifo_out[1].nodeID_valid}}, {4{rest_write_fifo_out[1].t_max_scene_valid}} } ;
+        addrA_rest = rest_cur_raddr;
+        addrB_rest  rest_write_fifo_out[1].rayID ; 
+        wrdataA_rest = `DC ;
+        wrdataB_rest = {rest_write_fifo_out[1].nodeID, rest_write_fifo_out[1].t_max_scene} ; 
+        wrenA_rest = 0;
+        wrenB_rest = 1;
       end
       4'b1_001 : begin
-        addrA_maxscene = maxscene_cur_raddr;
-        addrB_maxscene = maxscene_write_fifo_out[0].rayID;
-        wrdataA_maxscene = `DC ;
-        wrdataB_maxscene = maxscene_write_fifo_out[0].t_max_scene;
-        wrenA_maxscene = 0;
-        wrenB_maxscene = 1;
+				beA_rest = 6'b11_1111;
+				beB_rest = { {2{rest_write_fifo_out[0].nodeID_valid}}, {4{rest_write_fifo_out[0].t_max_scene_valid}} } ;
+        addrA_rest = rest_cur_raddr;
+        addrB_rest  rest_write_fifo_out[0].rayID ; 
+        wrdataA_rest = `DC ;
+        wrdataB_rest = {rest_write_fifo_out[0].nodeID, rest_write_fifo_out[0].t_max_scene} ; 
+        wrenA_rest = 0;
+        wrenB_rest = 1;
       end
       4'b1_000 : begin
-        addrA_maxscene = maxscene_cur_raddr;
-        addrB_maxscene = `DC;
-        wrdataA_maxscene = `DC ;
-        wrdataB_maxscene = `DC;
-        wrenA_maxscene = 0;
-        wrenB_maxscene = 0;
+				beA_rest = 6'b11_1111;
+				beB_rest = 'h0 ;
+        addrA_rest = rest_cur_raddr;
+        addrB_rest = `DC;
+        wrdataA_rest = `DC ;
+        wrdataB_rest = `DC;
+        wrenA_rest = 0;
+        wrenB_rest = 0;
       end
       4'b0_100 : begin
-        addrA_maxscene = `DC;
-        addrB_maxscene = maxscene_write_fifo_out[2].rayID;
-        wrdataA_maxscene = `DC ;
-        wrdataB_maxscene = maxscene_write_fifo_out[2].t_max_scene;
-        wrenA_maxscene = 0;
-        wrenB_maxscene = 1;
+				beA_rest = 6'b0;
+				beB_rest = { {2{rest_write_fifo_out[2].nodeID_valid}}, {4{rest_write_fifo_out[2].t_max_scene_valid}} } ;
+        addrA_rest = `DC;
+        addrB_rest  rest_write_fifo_out[2].rayID ; 
+        wrdataA_rest = `DC ;
+        wrdataB_rest = {rest_write_fifo_out[2].nodeID, rest_write_fifo_out[2].t_max_scene} ; 
+        wrenA_rest = 0;
+        wrenB_rest = 1;
       end
       4'b0_010 : begin
-        addrA_maxscene = `DC;
-        addrB_maxscene = maxscene_write_fifo_out[1].rayID;
-        wrdataA_maxscene = `DC ;
-        wrdataB_maxscene = maxscene_write_fifo_out[1].t_max_scene;
-        wrenA_maxscene = 0;
-        wrenB_maxscene = 1;
+				beA_rest = 6'b0;
+				beB_rest = { {2{rest_write_fifo_out[1].nodeID_valid}}, {4{rest_write_fifo_out[1].t_max_scene_valid}} } ;
+        addrA_rest = `DC;
+        addrB_rest  rest_write_fifo_out[1].rayID ; 
+        wrdataA_rest = `DC ;
+        wrdataB_rest = {rest_write_fifo_out[1].nodeID, rest_write_fifo_out[1].t_max_scene} ; 
+        wrenA_rest = 0;
+        wrenB_rest = 1;
       end
       4'b0_001 : begin
-        addrA_maxscene = `DC;
-        addrB_maxscene = maxscene_write_fifo_out[0].rayID;
-        wrdataA_maxscene = `DC ;
-        wrdataB_maxscene = maxscene_write_fifo_out[0].t_max_scene;
-        wrenA_maxscene = 0;
-        wrenB_maxscene = 1;
+				beA_rest = 6'b0;
+				beB_rest = { {2{rest_write_fifo_out[0].nodeID_valid}}, {4{rest_write_fifo_out[0].t_max_scene_valid}} } ;
+        addrA_rest = `DC;
+        addrB_rest  rest_write_fifo_out[0].rayID ; 
+        wrdataA_rest = `DC ;
+        wrdataB_rest = {rest_write_fifo_out[0].nodeID, rest_write_fifo_out[0].t_max_scene} ; 
+        wrenA_rest = 0;
+        wrenB_rest = 1;
       end
       4'b0_000 : begin
-        addrA_maxscene = `DC;
-        addrB_maxscene = `DC;
-        wrdataA_maxscene = `DC ;
-        wrdataB_maxscene = `DC;
-        wrenA_maxscene = 0;
-        wrenB_maxscene = 0;
+				beA_rest = 6'b0;
+				beB_rest = 6'b0;
+        addrA_rest = `DC;
+        addrB_rest = `DC;
+        wrdataA_rest = `DC ;
+        wrdataB_rest = `DC;
+        wrenA_rest = 0;
+        wrenB_rest = 0;
       end     
       4'b0_110 : begin
-        addrA_maxscene = maxscene_write_fifo_out[1].rayID;
-        addrB_maxscene = maxscene_write_fifo_out[2].rayID;
-        wrdataA_maxscene = maxscene_write_fifo_out[1].t_max_scene ;
-        wrdataB_maxscene = maxscene_write_fifo_out[2].t_max_scene;
-        wrenA_maxscene = 1;
-        wrenB_maxscene = 1;
+				beA_rest = { {2{rest_write_fifo_out[1].nodeID_valid}}, {4{rest_write_fifo_out[1].t_max_scene_valid}} } ;
+				beB_rest = { {2{rest_write_fifo_out[2].nodeID_valid}}, {4{rest_write_fifo_out[2].t_max_scene_valid}} } ;
+        addrA_rest  rest_write_fifo_out[1].rayID ; 
+        addrB_rest  rest_write_fifo_out[2].rayID ; 
+        wrdataA_rest = {rest_write_fifo_out[1].nodeID, rest_write_fifo_out[1].t_max_scene } ; 
+        wrdataB_rest = {rest_write_fifo_out[2].nodeID, rest_write_fifo_out[2].t_max_scene} ; 
+        wrenA_rest = 1;
+        wrenB_rest = 1;
       end
       4'b0_101 : begin
-        addrA_maxscene = maxscene_write_fifo_out[0].rayID;
-        addrB_maxscene = maxscene_write_fifo_out[2].rayID;
-        wrdataA_maxscene = maxscene_write_fifo_out[0].t_max_scene ;
-        wrdataB_maxscene = maxscene_write_fifo_out[2].t_max_scene;
-        wrenA_maxscene = 1;
-        wrenB_maxscene = 1;
+				beA_rest = { {2{rest_write_fifo_out[0].nodeID_valid}}, {4{rest_write_fifo_out[0].t_max_scene_valid}} } ;
+				beB_rest = { {2{rest_write_fifo_out[2].nodeID_valid}}, {4{rest_write_fifo_out[2].t_max_scene_valid}} } ;
+        addrA_rest  rest_write_fifo_out[0].rayID ; 
+        addrB_rest  rest_write_fifo_out[2].rayID ; 
+        wrdataA_rest = {rest_write_fifo_out[0].nodeID, rest_write_fifo_out[0].t_max_scene } ; 
+        wrdataB_rest = {rest_write_fifo_out[2].nodeID, rest_write_fifo_out[2].t_max_scene} ; 
+        wrenA_rest = 1;
+        wrenB_rest = 1;
       end
       4'b0_011 : begin
-        addrA_maxscene = maxscene_write_fifo_out[0].rayID;
-        addrB_maxscene = maxscene_write_fifo_out[1].rayID;
-        wrdataA_maxscene = maxscene_write_fifo_out[0].t_max_scene ;
-        wrdataB_maxscene = maxscene_write_fifo_out[1].t_max_scene;
-        wrenA_maxscene = 1;
-        wrenB_maxscene = 1;
+				beA_rest = { {2{rest_write_fifo_out[0].nodeID_valid}}, {4{rest_write_fifo_out[0].t_max_scene_valid}} } ;
+				beB_rest = { {2{rest_write_fifo_out[1].nodeID_valid}}, {4{rest_write_fifo_out[1].t_max_scene_valid}} } ;
+        addrA_rest  rest_write_fifo_out[0].rayID ; 
+        addrB_rest  rest_write_fifo_out[1].rayID ; 
+        wrdataA_rest = {rest_write_fifo_out[0].nodeID, rest_write_fifo_out[0].t_max_scene } ; 
+        wrdataB_rest = {rest_write_fifo_out[1].nodeID, rest_write_fifo_out[1].t_max_scene} ; 
+        wrenA_rest = 1;
+        wrenB_rest = 1;
       end
     endcase
   end
 
-  bram_dual_2port_512x32 maxscene_bram(
+  bram_dual_2port_be_512x48 rest_bram(
   .aclr(rst),
-  .address_a(addrA_maxscene),
-  .address_b(addrB_maxscene),
+  .address_a(addrA_rest),
+  .address_b(addrB_rest),
+  .byteena_a(beA_rest),
+	.byteena_b(beB_rest),
   .clock(clk),
-  .data_a(wrdataA_maxscene),
-  .data_b(wrdataB_maxscene),
-  .wren_a(wrenA_maxscene),
-  .wren_b(wrenB_maxscene),
-  .q_a(rddataA_maxscene),
+  .data_a(wrdataA_rest),
+  .data_b(wrdataB_rest),
+  .wren_a(wrenA_rest),
+  .wren_b(wrenB_rest),
+  .q_a(rddataA_rest),
   .q_b());
 
 
@@ -743,19 +794,21 @@ endgenerate
   // Buffer for t_maxc cur and a compparison against the tmax of the scene
   float_t minbuf_in, minbuf_out, minbuf_s3;
   float_t maxscene_s3;
+  nopeID_t restnode_s3;
 
   assign minbuf_in = rest_cur_t_min;
   buf_t3 #(.LAT(2), .WIDTH($bits(minbuf_in))) 
     minbuf_buf(.data_in(minbuf_in), .data_out(minbuf_out), .clk, .rst);
 
   ff_ar #($bits(float_t),'h0) minbuf_s3_reg(.d(minbuf_out), .q(minbuf_s3), .clk, .rst);
-  ff_ar #($bits(float_t),'h0) maxscene_s3_reg(.d(rddata_max_scene), .q(maxscene_s3), .clk, .rst);
+  ff_ar #($bits(float_t),'h0) maxscene_s3_reg(.d(rddataA_rest.t_max), .q(maxscene_s3), .clk, .rst);
+  ff_ar #($bits(nodeID_t),'h0) restnode_s3_reg(.d(rddataA_rest.nodeID), .q(restnode_s3), .clk, .rst);
 
   float_t inA_comp_max_scene, inB_comp_max_scene;
   logic out_agb_comp_max_scene;
   logic out_aeb_comp_max_scene;
   assign inA_comp_max_scene = minbuf_out;
-  assign inB_comp_max_scene = rddata_max_scene;
+  assign inB_comp_max_scene = rddataA_rest.t_max;
   altfp_compare comp_max_scene (
   .aclr(rst),
   .clock(clk ),
@@ -846,6 +899,17 @@ endgenerate
     .exists_in_fifo(),
     .num_left_in_fifo(num_left_in_notmiss_fifo) );
 
+  assign notmiss_fifo_re = ss_to_tarb_valid & ~ss_to_tarb_stall;
+  assign ss_to_tarb_valid = ~notmiss_fifo_empty;
+  always_comb begin
+    ss_to_tarb_data.ray_info = 'h0 ;
+    ss_to_tarb_data.ray_info.rayID = notmiss_fifo_out.rayID ;
+    ss_to_tarb_data.ray_info.is_shadow = notmiss_fifo_out.is_shadow;
+    ss_to_tarb_data.nodeID = notmiss_fifo_out.nodeID;
+    ss_to_tarb_data.restnode_search = 1'b1 ;
+    ss_to_tarb_data.t_max = notmiss_fifo_out.t_max ;
+    ss_to_tarb_data.t_min = notmiss_fifo_out.t_min ;
+  end
 
 //------------------------------------------------------------------------
 // miss fifo
@@ -878,6 +942,92 @@ endgenerate
   assign ss_to_shader_data = miss_fifo_out;
   assign rest_min_num_left = (num_left_in_miss_fifo > num_left_in_notmiss_fifo) ? num_left_in_notmiss_fifo : num_left_in_miss_fifo ;
 
+  assign rest_VSpipe_stall = ss_to_tarb_stall | ss_to_shader_stall ;
 
+  // trav0
+  assign rest_write_fifo_we[2] = sint_to_ss_valid & ~rest_write_fifo_full[2] ;
+  assign sint_to_ss_stall = sint_to_ss_valid & rest_write_fifo_full[2] ;
+
+
+  logic list_rest_read_valid;
+  logic list_stack_read_valid;
+  assign list_rest_read_valid = list_to_ss_valid & list_to_ss_valid.ray_info.ss_num == 'h0 & ~rest_read_fifo_full[2] ;
+  assign list_stack_read_valid = list_to_ss_valid & list_to_ss_valid.ray_info.ss_num != 'h0 & ~stack_read_fifo_full[2] ;
+  
+  assign rest_read_fifo_we[2] = list_rest_read_valid ;
+  assign stack_read_fifo_we[2] = list_stack_read_valid ;
+  assign list_to_ss_stall = list_to_ss_valid & ~(list_rest_read_valid | list_stack_read_valid) ;
+
+
+  // Case on (pop, update_maxscene, push, update_restnode)
+  always_comb begin
+    rest_read_fifo_we[0] = 1'b0;
+    rest_write_fifo_we[0] = 1'b0;
+    stack_read_fifo_we[0] = 1'b0;
+    stack_write_fifo_we[0] = 1'b0;
+    trav0_to_ss_stall = 1'b0 ;
+    if(trav0_to_ss_valid) begin
+      unique case({trav0_to_ss_data.pop_req,trav0_to_ss_data.update_maxscene_req,trav0_to_ss_data.push_req,trav0_to_ss_data.update_restnode_req})
+        4'b1000 : begin
+          if(trav0_to_ss_data.ray_info.ss_num=='h0) begin
+            rest_read_fifo_we[0] =  ~rest_read_fifo_full[0];
+            trav0_to_ss_stall =  rest_read_fifo_full[0] ;
+          end
+          else begin
+            stack_read_fifo_we[0] =  ~stack_read_fifo_full[0];
+            trav0_to_ss_stall =  stack_read_fifo_full[0];
+          end
+        end
+        4'b0100 : begin
+          rest_write_fifo_we[0] = ~rest_write_fifo_we[0];
+          trav0_to_ss_stall = rest_write_fifo_we[0];
+        end
+        4'b0010 : begin
+          stack_write_fifo_we[0] = ~stack_write_fifo_full[0]; 
+          trav0_to_ss_stall = stack_write_fifo_full[0]; 
+        end
+        4'b0011 : begin
+          stack_write_fifo_we[0] = ~stack_write_fifo_full[0] & ~rest_write_fifo_full[0];
+          trav0_to_ss_stall = stack_write_fifo_full[0] | rest_write_fifo_full[0] ;
+        end
+      endcase
+    end
+
+  end
+  
+  always_comb begin
+    rest_read_fifo_we[1] = 1'b0;
+    rest_write_fifo_we[1] = 1'b0;
+    stack_read_fifo_we[1] = 1'b0;
+    stack_write_fifo_we[1] = 1'b0;
+    trav1_to_ss_stall = 1'b0 ;
+    if(trav1_to_ss_valid) begin
+      unique case({trav1_to_ss_data.pop_req,trav1_to_ss_data.update_maxscene_req,trav1_to_ss_data.push_req,trav1_to_ss_data.update_restnode_req})
+        4'b1000 : begin
+          if(trav1_to_ss_data.ray_info.ss_num=='h0) begin
+            rest_read_fifo_we[1] =  ~rest_read_fifo_full[1];
+            trav1_to_ss_stall =  rest_read_fifo_full[1] ;
+          end
+          else begin
+            stack_read_fifo_we[1] =  ~stack_read_fifo_full[1];
+            trav1_to_ss_stall =  stack_read_fifo_full[1];
+          end
+        end
+        4'b0100 : begin
+          rest_write_fifo_we[1] = ~rest_write_fifo_we[1];
+          trav1_to_ss_stall = rest_write_fifo_we[1];
+        end
+        4'b0010 : begin
+          stack_write_fifo_we[1] = ~stack_write_fifo_full[1]; 
+          trav1_to_ss_stall = stack_write_fifo_full[1]; 
+        end
+        4'b0011 : begin
+          stack_write_fifo_we[1] = ~stack_write_fifo_full[1] & ~rest_write_fifo_full[1];
+          trav1_to_ss_stall = stack_write_fifo_full[1] | rest_write_fifo_full[1] ;
+        end
+      endcase
+    end
+
+  end
 
 endmodule

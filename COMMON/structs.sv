@@ -228,7 +228,7 @@ typedef struct packed {
 typedef struct packed {
   rayID_t rayID;
   logic is_shadow;
-  ray_vec_t_ray
+  ray_vec_t ray_vec;
 } shader_to_sint_t;
 
 typedef struct packed {
