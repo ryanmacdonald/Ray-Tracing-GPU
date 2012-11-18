@@ -35,7 +35,7 @@ module sdram_a2 (
 		input  wire[31:0] data_in,
 		output wire[31:0] za_data,
 		input  wire[$clog2(`maxTrans)-1: 0] size,	
-		output reg	      readValid,	
+		output wire	      readValid,	
 
 		// temp write error flag
 		output wire write_error,
@@ -45,7 +45,6 @@ module sdram_a2 (
 	);
 		
 
-	//assign readValid = za_valid;
 
 	wire		btn0, btn1;
 	wire		btn0_n, btn1_n;
@@ -60,6 +59,8 @@ module sdram_a2 (
 	//wire [31:0] za_data;
 	wire za_valid;
 	wire za_waitrequest;
+
+	assign readValid = za_valid;
 	
 	wire [7:0] reg_data, reg_data_next;
 	//assign LEDs = reg_data;
@@ -87,7 +88,7 @@ module sdram_a2 (
 	//	 reading and writing
 	always @* begin
 		nextCount = count; re_n = 1; we_n = 1;
-		readValid = za_valid; 	
+//		readValid = za_valid; 	
 		nextAddr = 0; nextData = 0; nextCount = 0;
 		case(state)
 			`IDLE:begin
