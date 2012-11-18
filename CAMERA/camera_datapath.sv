@@ -28,18 +28,21 @@
 module camera_datapath (input logic clk, rst,
 			input logic v0, v1, v2,
 			input logic ld_curr_camera,
+			input logic render_frame,
 			input logic[2:0] key,
 			input logic[31:0] cnt,
 			output vector_t E, U, V, W);
 
 `ifndef SYNTH
 	shortreal nc_x,nc_y,nc_z;
+	shortreal xval;
 	assign nc_x = $bitstoshortreal(nextCam.x);
 	assign nc_y = $bitstoshortreal(nextCam.y);
 	assign nc_z = $bitstoshortreal(nextCam.z);	
+	assign xval = $bitstoshortreal(add_1_result);
 `endif
 
-	logic[31:0] move_val, move_val_n;
+	logic[31:0] shift, move_val, move_val_n;
 	logic[2:0] last_key;
 	logic update_cam;
 	vector_t E_n,U_n,V_n,W_n;
@@ -49,13 +52,15 @@ module camera_datapath (input logic clk, rst,
 	// Synchronizer
 	sync_to_v #(0) vs(.synced_signal(update_cam),.clk,.rst,.v0,.v1,.v2,
 			  .signal_to_sync(ld_curr_camera));
+
+	ff_ar_en #(32,0) sr(.q(shift),.d(cnt),.en(render_frame&&ld_curr_camera),.clk,.rst);
 	
 
 	////// FP INSTANTIATIONS AND LOGIC //////
 
 	
 	logic[31:0] conv_dataa, conv_result;
-	assign conv_dataa = cnt;
+	assign conv_dataa = shift;
 	altfp_convert conv(.dataa(conv_dataa),.result(conv_result),
 			   .clock(clk),.aclr(rst));
 

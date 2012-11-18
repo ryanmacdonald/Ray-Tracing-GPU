@@ -133,6 +133,16 @@ typedef struct packed{
   vector_t dir;
 } prg_ray_t;
 
+typedef struct packed{
+  float_t tmin;
+  float_t tmax;
+  logic miss;
+  rayID_t rayID;
+  vector_t origin;
+  vector_t direction;
+} scene_int_ray_t;
+
+
 typedef struct packed {
   ray_info_t ray_info;
   vector_t origin;
@@ -218,13 +228,42 @@ typedef struct packed {
 
 } norm_node_t;
 
-// sint_to_rs_t   (This will write ray_vec to raystore
-typedef struct packed { // TODO make it go to both ss and rs
-  ray_info_t ray_info;
+// TODO change this to SHADER_to_raystore
+// sint_to_rs_t   (This will write ray_vec to raystore)
+typedef struct packed { 
+  rayID_t rayID;
   ray_vec_t ray_vec;
-  float_t t_max_scene;
-} sint_to_rs_t ;
+} sint_to_rs_t ; // DONT USE
 
+typedef struct packed {
+  rayID_t rayID;
+  logic is_shadow;
+  ray_vec_t ray_vec;
+} shader_to_sint_t;
+
+typedef struct packed {
+	rayID_t rayID;
+  float_t t_max_scene;
+} sint_to_ss_t;
+
+/*
+  RYAN, sint_to_tarb is of type tarb_t.
+    ray_info.ss_* = 0;
+    nodeID = 0;
+    restnode_search = 1;
+*/
+
+typedef struct packed{
+  rayID_t rayID;
+  float_t tmin;
+  float_t tmax;
+  logic is_shadow;
+  logic miss;
+} sint_entry_t;
+
+typedef struct packed{
+  rayID_t rayID;
+} sint_to_shader_t;
 
 // tarb_t // Traversal Arbiter
 typedef struct packed {
@@ -282,6 +321,7 @@ typedef struct packed {
   nodeID_t rest_node_ID;
   float_t t_max;
   logic pop_req;
+  logic update_maxscene_req;
 } trav_to_ss_t ;
 
 typedef struct packed {
@@ -351,6 +391,7 @@ typedef struct packed {
 
 } int_to_list_t ;
 
+
 typedef struct packed {
   rayID_t rayID;
   bari_uv_t uv;
@@ -363,6 +404,13 @@ typedef struct packed {
   float_t t_max_leaf;
 } list_to_ss_t;
 
+
+
+// Represents misses
+typedef struct packed {
+	rayID_t rayID;
+  logic is_shadow;
+} ss_to_shader_t;
 
 typedef struct packed {
     rayID_t rayID;

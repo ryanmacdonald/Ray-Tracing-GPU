@@ -25,13 +25,8 @@ module camera_controller(
   // out = S_key    5
 
 
-  `ifndef SYNTH
-  shortreal Ex,Ey,Ez;
-  assign Ex = $bitstoshortreal(E.x);
-  assign Ey = $bitstoshortreal(E.y);
-  assign Ez = $bitstoshortreal(E.z);
-  `endif
-	logic ld_curr_camera;
+
+
 	logic valid_key_press, valid_key_release;
 
 	assign valid_key_press = (|{keys.d[0],keys.a[0],keys.e[0],keys.q[0],keys.w[0],keys.s[0]});
@@ -40,15 +35,11 @@ module camera_controller(
 	logic rendering, rendering_n;
 	assign rendering_n = valid_key_release ? 1'b0 :
 			     ((valid_key_press || rendering) ? 1'b1 : 1'b0);
-	ff_ar #(1,0) rd(.q(rendering),.d(rendering_n),.clk,.rst);
+	ff_ar_en #(1,0) rd(.q(rendering),.d(rendering_n),.clk,.rst);
 
-	logic[2:0] last_key, last_key_n;
-	ff_ar #(3,0) kr(.q(last_key),.d(last_key_n),.clk,.rst);
-
-	logic[31:0] cnt, cnt_n;
-	logic cnt_cl;
-	assign cnt_n = cnt_cl ? 0 : (rendering  ? cnt + 10'd1 : 0);
-	ff_ar #(32,0) ct(.q(cnt),.d(cnt_n),.clk,.rst);
+	logic[5:0] cnt, cnt_n;
+	assign cnt_n = (rendering && (last_key != 3'h6)) ? cnt + 3 : 0;
+	ff_ar_en #(9,0) ct(.q(cnt),.d(cnt_n),.clk,.rst);
 
 	always_comb begin
 		last_key_n = last_key;
@@ -68,50 +59,53 @@ module camera_controller(
 		end
 	end
 
-	enum logic {IDLE, RENDERING} state, nextState;
+	enum logic[1:0] {S0, S1, S2} state, nextState;
 
-	// Assumes that a key press will never be shorter than a render
 	always_comb begin
-		cnt_cl = 0; ld_curr_camera = 0; render_frame = 0; 
 		case(state)
-			IDLE:begin
-				if(valid_key_press && ~rendering) begin
+			S0:begin
+				if(valid_key_press) begin
 					ld_curr_camera = 1;
-					render_frame = 1;	
-					nextState = RENDERING;
+					nextState = S1;
 				end
-				else nextState = IDLE;
+				else nextstate = S0;
 			end
-			RENDERING:begin
-				if(valid_key_release) begin
-					cnt_cl = 1;
-					ld_curr_camera = 1;
-					nextState = IDLE;
+			S1:begin
+				if(rendering) begin
+				
 				end
-				else if(rendering_done) begin
-					cnt_cl = 1;
-					ld_curr_camera = 1;
-					render_frame = 1;
-					nextState = RENDERING;
+				else begin
+
 				end
-				else nextState = RENDERING;
 			end
-			default: nextState = IDLE;
+			S2:begin
+				if(rendering) begin
+
+				end
+				else begin
+
+				end
+			end
+			default:
 		endcase
 	end
 
 	always_ff @(posedge clk, posedge rst) begin
-		if(rst) state <= IDLE;
+		if(rst) state <= S0;
 		else state <= nextState;
 	end
 		
 
-	camera_datapath cd(.clk,.rst,.v0,.v1,.v2,.ld_curr_camera,.render_frame,
-			   .key(last_key),.cnt,.E,.U,.V,.W);
+	camera_datapath cd(.clk,.rst,.v0,.v1,.v2,.ld_curr_camera,.key,.cnt,..E,.U,.V,.W);
 
 
  /* 
-
+  `ifndef SYNTH
+  shortreal Ex,Ey,Ez;
+  assign Ex = $bitstoshortreal(E.x);
+  assign Ey = $bitstoshortreal(E.y);
+  assign Ez = $bitstoshortreal(E.z);
+  `endif
 
   logic[1:0] CS0, NS0;
 
@@ -170,7 +164,7 @@ module camera_controller(
   assign is_counting_n = stop_cnt ? 1'b0 : (start_cnt0 | start_cnt25 ? 1'b1 : is_counting);
   
   ff_ar #(1,1'b0) ff1(.q(is_counting), .d(is_counting_n), .clk, .rst);
-  
+  /*
   // TODO might be sketchy, check this shit
   always_comb begin
     mv_cnt_n = mv_cnt ;
@@ -181,7 +175,7 @@ module camera_controller(
       4'b0001 : mv_cnt_n = mv_cnt + 3'h3 ;
     endcase
   end
-
+*/
 	assign mv_cnt_n = clr_cnt|start_cnt0 ? 'h0 :
 		( start_cnt25 ? 'd25 :
 		( stop_cnt ? mv_cnt :

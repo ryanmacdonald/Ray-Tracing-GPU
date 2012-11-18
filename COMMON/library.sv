@@ -339,6 +339,28 @@ module VS_buf #(parameter WIDTH = 8) (
 
 endmodule
 
+
+module minimum3 #(parameter WIDTH = 4)
+		(output logic[WIDTH-1:0] out,
+		 input  logic[WIDTH-1:0] in1, in2, in3);
+
+	logic[WIDTH-1:0] temp;
+
+	minimum2 #(.WIDTH(WIDTH)) m1(temp,in1,in2);
+	minimum2 #(.WIDTH(WIDTH)) m2(out,temp,in3);
+
+endmodule: minimum3
+
+
+module minimum2 #(parameter WIDTH = 4)
+	 (output logic[WIDTH-1:0] out,
+	  input  logic[WIDTH-1:0] in1, in2);
+
+	assign out = (in1 < in2) ? in1 : in2;
+
+endmodule: minimum2
+
+
 module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
   input logic clk, rst,
   input logic us_valid,
