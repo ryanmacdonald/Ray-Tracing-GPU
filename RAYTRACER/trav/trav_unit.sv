@@ -316,14 +316,14 @@ module trav_unit(
   assign push_valid = ((~low_empty & ~high_empty) & (trav_lo_then_hi | trav_hi_then_lo)) ;
   assign update_restnode_valid = trav_fifo_out.restnode_search & push_valid;
   assign push_node_ID = trav_lo_then_hi ? trav_fifo_out.right_ID : low_node_ID ;
-  assign update_maxscene_valid = (trav_lo_then_hi & high_empty) | (trav_hi_then_lo & low_empty);
+  assign update_maxscene_valid = trav_fifo_out.restnode_search & ((trav_lo_then_hi & high_empty) | (trav_hi_then_lo & low_empty)) ;
 
   // trav_to_ss buffer and interface
   trav_to_ss_t ss_buf_n, ss_buf;
   logic ss_valid_n, ss_valid;
   
   logic good_to_ss;
-  assign good_to_ss = ~trav_fifo_empty & (pop_valid | push_valid | update_restnode_valid);
+  assign good_to_ss = ~trav_fifo_empty & (pop_valid | push_valid | update_restnode_valid | update_maxscene_valid);
 
   assign ss_valid_n = (ss_valid & trav_to_ss_stall) | (good_to_ss & trav_fifo_re) ;
 
