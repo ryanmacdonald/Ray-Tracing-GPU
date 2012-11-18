@@ -140,7 +140,7 @@ typedef struct packed{
   rayID_t rayID;
   vector_t origin;
   vector_t direction;
-} scene_int_ray_t
+} scene_int_ray_t;
 
 
 typedef struct packed {
@@ -238,7 +238,7 @@ typedef struct packed {
 typedef struct packed {
   rayID_t rayID;
   logic is_shadow;
-  ray_vec_t_ray
+  ray_vec_t ray;
 } shader_to_sint_t;
 
 typedef struct packed {
@@ -253,6 +253,17 @@ typedef struct packed {
     restnode_search = 1;
 */
 
+typedef struct packed{
+  rayID_t rayID;
+  float_t tmin;
+  float_t tmax;
+  logic is_shadow;
+  logic miss;
+} sint_entry_t;
+
+typedef struct packed{
+  rayID_t rayID;
+} sint_to_shader_t;
 
 // tarb_t // Traversal Arbiter
 typedef struct packed {
