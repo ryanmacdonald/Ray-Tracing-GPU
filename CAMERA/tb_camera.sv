@@ -29,8 +29,8 @@ module tb_camera;
 		keys.pressed <= 0;
 		@(posedge clk);
 		fork 
-			render_done_ctrl(100);
-			key_release_ctrl(120);
+			render_done_ctrl(300);
+			key_release_ctrl(200);
 		join
 		render_done_ctrl(50);
 		render_done_ctrl(50);
