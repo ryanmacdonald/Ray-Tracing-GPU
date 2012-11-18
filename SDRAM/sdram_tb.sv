@@ -69,19 +69,21 @@ module trans_model(input logic clk, rst_l,
 
 	     // Interface from caches to SDRAM controller
 	     logic[`numcaches-1:0][24:0] addr_cache_to_sdram;
-	     logic[24:0] addr_sl_to_sdram;
+	     logic[24:0] addr_sl_to_sdram, sl_addr;
 	     logic[31:0] writeData;
 	     logic[`numcaches-1:0][$clog2(`maxTrans)-1:0] transSize;
 	     logic[`numcaches-1:0] readReq;
-	     logic  writeReq;
+	     logic  writeReq, write_error;
 
 	     logic[`numcaches-1:0] readValid_out;
 	     logic[`numcaches-1:0][31:0] readData;
 	     logic[`numcaches-1:0] doneRead;
 	     logic doneWrite;
+
+	     assign sl_addr = addr_sl_to_sdram;
 						
-		  memory_request_arbiter mra(.*);
-		  qsys_sdram_mem_model_sdram_partner_module_0 model(.clk(clk),.*);
+	     memory_request_arbiter mra(.*);
+	     qsys_sdram_mem_model_sdram_partner_module_0 model(.clk(clk),.*);
 	
 			always_comb begin
 				addr_cache_to_sdram[0] = 25'hA5A5A5;
@@ -94,7 +96,7 @@ module trans_model(input logic clk, rst_l,
 					IDLE:begin
 						if(~read_l) begin
 							readReq[2'b0] = 1;
-							transSize[2'b0] = 2;
+							transSize[2'b0] = 9;
 							nextState = READ1;
 						end
 						else if(~write_l) begin
@@ -117,14 +119,14 @@ module trans_model(input logic clk, rst_l,
 					end
 					READ1:begin
 						readReq[2'b0] = 1;
-						transSize[2'b0] = 2;
+						transSize[2'b0] = 9;
 						if(readValid_out[2'b0]) nextState = READ2;
 						else nextState = READ1;
 					end
 					READ2:begin
 						readReq[2'b0] = 1;
-						transSize[2'b0] = 2;
-						if(readValid_out[2'b0]) nextState = IDLE;
+						transSize[2'b0] = 9;
+						if(doneRead[0]) nextState = IDLE;
 						else nextState = READ2;
 					end
 					default: nextState = IDLE;
