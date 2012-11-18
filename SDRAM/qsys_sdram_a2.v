@@ -60,6 +60,8 @@ module sdram_a2 (
 	//wire [31:0] za_data;
 	wire za_valid;
 	wire za_waitrequest;
+
+	assign readValid = za_valid;
 	
 	wire [7:0] reg_data, reg_data_next;
 	//assign LEDs = reg_data;
@@ -88,6 +90,7 @@ module sdram_a2 (
 	//	 reading and writing
 	always @* begin
 		nextCount = count; re_n = 1; we_n = 1;
+//		readValid = za_valid; 	
 		nextAddr = 0; nextData = 0; nextCount = 0;
 		case(state)
 			`IDLE:begin
