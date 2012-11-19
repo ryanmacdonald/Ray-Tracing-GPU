@@ -80,9 +80,6 @@ lshape:
 ryan:
 	$(CC) $(FLAGS) -top tb_ryan_demo COMMON/*v COMMON/altfp*/*.v PS2/* COMMON/altbram_fifo/altbramfifo_w211_d16/*v RAYTRACER/scene_int/* PRG/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv CAMERA/*v TBs/tb_ryan_demo.sv ~/18-545/ryan_demo.sv 
 
-
-
-
 clean:
 	rm -rf simv
 	rm -rf simv.daidir
