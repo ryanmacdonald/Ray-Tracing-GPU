@@ -115,7 +115,7 @@ module trtr(
 								  .ps2_pkt_DH(shift_data[30:23]),
 								  .rec_ps2_pkt(pkt_rec), .keys);
   
-    ps2 ps21(.iSTART(start), .iRST_n(~rst),
+    ps2 ps2(.iSTART(start), .iRST_n(~rst),
 			  .iCLK_50(clk), .ps2_clk(ps2_clk),
 			  .ps2_data(ps2_data), .ps2_clk_out(ps2_clk_out),
 			  .ps2_dat_out(ps2_data_out), .ce(clk_en), .de(data_en),
