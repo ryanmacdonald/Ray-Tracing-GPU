@@ -1,6 +1,6 @@
 `default_nettype none
 // uncomment the following line when synthesizing to board
-// `define SYNTH
+//`define SYNTH
 
 `ifdef SYNTH
 	`define DC 'h0
@@ -10,6 +10,24 @@
 
 `define FP_1 32'h3F80_0000
 `define FP_0 32'h0
+
+// Defs for camera initialization
+`ifndef SYNTH
+	`define INIT_CAM_X 32'h40800000
+	`define INIT_CAM_Y 32'h40400000
+	`define INIT_CAM_Z 32'hC1200000
+`else
+	`define INIT_CAM_X 32'h00000000
+	`define INIT_CAM_Y 32'h00000000
+	`define INIT_CAM_Z 32'hC1200000
+`endif
+
+
+`ifndef SYNTH
+	`define move_scale 32'h3F800000
+`else
+	`define move_scale 32'h32ABCC77 
+`endif
 
 // Number of caches and max read size for memory interface
 `define numcaches 4

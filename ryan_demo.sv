@@ -83,7 +83,7 @@ module ryan_demo(
 
 	logic prg_ready;
 	prg_ray_t prg_data;
-	prg_top		  prg(.clk,.rst,.v0,.v1,.v2,.start(start),
+	prg		  prg(.clk,.rst,.v0,.v1,.v2,.start(start),
 			      .E,.U,.V,.W,.pw,.int_to_prg_stall(1'b0),.ready(prg_ready),.done(),.prg_data);	  
 
 	shader_to_sint_t ray_in;
@@ -105,27 +105,29 @@ module ryan_demo(
 	tarb_t tf_ray_out;
 	sint_to_ss_t ssf_ray_out;
 	sint_to_shader_t ssh_ray_out;
+	logic tf_ds_stall, ssf_ds_stall, ssh_ds_stall;
 	logic us_stall, tf_ds_valid, ssf_ds_valid, ssh_ds_valid;
 	scene_int	  si(.ray_in(ray_in),.v0(v1),.v1(v2),.v2(v0),
 			     .xmin,.xmax,.ymin,.ymax,.zmin,.zmax,
-			     .tf_ds_stall(pb_full),.ssf_ds_stall(pb_full),.ssh_ds_stall(pb_full),
+			     .tf_ds_stall,.ssf_ds_stall,.ssh_ds_stall,
 			     .us_valid(prg_ready),.clk,.rst,.tf_ray_out,.ssf_ray_out,
 			     .ssh_ray_out,.us_stall,.tf_ds_valid,.ssf_ds_valid,.ssh_ds_valid);
 
 
-	logic pb_we, pb_empty;
-	// TODO: pb_we enabled correctly?
-	assign pb_we = ssh_ds_valid || tf_ds_valid;
-	assign pb_data_in.pixelID = ssh_ds_valid ? ssh_ray_out.rayID : (tf_ds_valid ? ssf_ray_out.rayID : 'h0);
-	assign pb_data_in.color = ssh_ds_valid ? 24'h00_00_00 : (tf_ds_valid ? 24'hFF_FF_FF : 'h0);
-	
 
+	temp_sint_fifo_arb tsfa(.clk,.rst,.tf_ds_valid,.ssf_ds_valid,.ssh_ds_valid,
+				.ssf_ray_out,.ssh_ray_out,.tf_ray_out,
+				.tf_ds_stall,.ssf_ds_stall,.ssh_ds_stall,
+				.pb_data(pb_data_in),
+				.pb_we);
+
+
+	logic pb_we, pb_empty;
 	fifo #(.WIDTH($bits(pixel_buffer_entry_t)),.DEPTH(200)) 
 			  pb(.clk,.rst,.data_in(pb_data_in),
 			     .we(pb_we),.re(pb_re),.full(pb_full),
 			     .empty(pb_empty),.data_out(pb_data_out),
 			     .num_left_in_fifo(),.exists_in_fifo());
-
 
 
 	logic[1:0] cnt, cnt_n;
