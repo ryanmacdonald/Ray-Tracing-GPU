@@ -20,7 +20,7 @@ module tb_prg;
 	assign v2 = (cntV == 2'b10);
 
 
-	prg_top fuck(.*);
+	prg fuck(.*);
 
 	initial begin
 
@@ -32,7 +32,7 @@ module tb_prg;
 		V.x <= `FP_0; V.y <= `FP_1; V.z <= `FP_0;
 		W.x <= `FP_0; W.y <= `FP_0; W.z <= `FP_1;
 		start <= 0;
-		int_to_prg_stall <= 0;
+//		int_to_prg_stall <= 0;
 		D <= 32'h42C80000;
 		pw <= `FP_1;
 		@(posedge clk); 
@@ -46,11 +46,11 @@ module tb_prg;
 
 		repeat(100) @(posedge clk);
 
-		int_to_prg_stall <= 1;
+//		int_to_prg_stall <= 1;
 
 		repeat(100) @(posedge clk);
 
-		int_to_prg_stall <= 0;
+//		int_to_prg_stall <= 0;
 
 		while(~done)
 			@(posedge clk);
@@ -58,7 +58,17 @@ module tb_prg;
 		$finish;
 
 	end
-	
+
+	integer i;
+	initial begin
+		forever @(posedge clk) begin
+			i <= {$random} % 2;
+		end
+	end
+
+	always_comb begin
+		int_to_prg_stall = (ready && i) ? 1'b1 : 1'b0;
+	end
 
 	always #5 clk = ~clk;
 

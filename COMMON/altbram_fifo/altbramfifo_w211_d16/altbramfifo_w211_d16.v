@@ -43,7 +43,8 @@ module altbramfifo_w211_d16 (
 	wrreq,
 	empty,
 	full,
-	q);
+	q,
+	usedw);
 
 	input	  clock;
 	input	[210:0]  data;
@@ -52,27 +53,30 @@ module altbramfifo_w211_d16 (
 	output	  empty;
 	output	  full;
 	output	[210:0]  q;
+	output	[3:0]  usedw;
 
-	wire  sub_wire0;
+	wire [3:0] sub_wire0;
 	wire  sub_wire1;
-	wire [210:0] sub_wire2;
-	wire  empty = sub_wire0;
-	wire  full = sub_wire1;
-	wire [210:0] q = sub_wire2[210:0];
+	wire  sub_wire2;
+	wire [210:0] sub_wire3;
+	wire [3:0] usedw = sub_wire0[3:0];
+	wire  empty = sub_wire1;
+	wire  full = sub_wire2;
+	wire [210:0] q = sub_wire3[210:0];
 
 	scfifo	scfifo_component (
 				.clock (clock),
 				.data (data),
 				.rdreq (rdreq),
 				.wrreq (wrreq),
-				.empty (sub_wire0),
-				.full (sub_wire1),
-				.q (sub_wire2),
+				.usedw (sub_wire0),
+				.empty (sub_wire1),
+				.full (sub_wire2),
+				.q (sub_wire3),
 				.aclr (),
 				.almost_empty (),
 				.almost_full (),
-				.sclr (),
-				.usedw ());
+				.sclr ());
 	defparam
 		scfifo_component.add_ram_output_register = "OFF",
 		scfifo_component.intended_device_family = "Cyclone IV E",
@@ -81,8 +85,8 @@ module altbramfifo_w211_d16 (
 		scfifo_component.lpm_type = "scfifo",
 		scfifo_component.lpm_width = 211,
 		scfifo_component.lpm_widthu = 4,
-		scfifo_component.overflow_checking = "OFF",
-		scfifo_component.underflow_checking = "OFF",
+		scfifo_component.overflow_checking = "ON",
+		scfifo_component.underflow_checking = "ON",
 		scfifo_component.use_eab = "ON";
 
 
@@ -104,12 +108,12 @@ endmodule
 // Retrieval info: PRIVATE: LE_BasedFIFO NUMERIC "0"
 // Retrieval info: PRIVATE: LegacyRREQ NUMERIC "0"
 // Retrieval info: PRIVATE: MAX_DEPTH_BY_9 NUMERIC "0"
-// Retrieval info: PRIVATE: OVERFLOW_CHECKING NUMERIC "1"
+// Retrieval info: PRIVATE: OVERFLOW_CHECKING NUMERIC "0"
 // Retrieval info: PRIVATE: Optimize NUMERIC "0"
 // Retrieval info: PRIVATE: RAM_BLOCK_TYPE NUMERIC "0"
 // Retrieval info: PRIVATE: SYNTH_WRAPPER_GEN_POSTFIX STRING "0"
-// Retrieval info: PRIVATE: UNDERFLOW_CHECKING NUMERIC "1"
-// Retrieval info: PRIVATE: UsedW NUMERIC "0"
+// Retrieval info: PRIVATE: UNDERFLOW_CHECKING NUMERIC "0"
+// Retrieval info: PRIVATE: UsedW NUMERIC "1"
 // Retrieval info: PRIVATE: Width NUMERIC "211"
 // Retrieval info: PRIVATE: dc_aclr NUMERIC "0"
 // Retrieval info: PRIVATE: diff_widths NUMERIC "0"
@@ -131,8 +135,8 @@ endmodule
 // Retrieval info: CONSTANT: LPM_TYPE STRING "scfifo"
 // Retrieval info: CONSTANT: LPM_WIDTH NUMERIC "211"
 // Retrieval info: CONSTANT: LPM_WIDTHU NUMERIC "4"
-// Retrieval info: CONSTANT: OVERFLOW_CHECKING STRING "OFF"
-// Retrieval info: CONSTANT: UNDERFLOW_CHECKING STRING "OFF"
+// Retrieval info: CONSTANT: OVERFLOW_CHECKING STRING "ON"
+// Retrieval info: CONSTANT: UNDERFLOW_CHECKING STRING "ON"
 // Retrieval info: CONSTANT: USE_EAB STRING "ON"
 // Retrieval info: USED_PORT: clock 0 0 0 0 INPUT NODEFVAL "clock"
 // Retrieval info: USED_PORT: data 0 0 211 0 INPUT NODEFVAL "data[210..0]"
@@ -140,6 +144,7 @@ endmodule
 // Retrieval info: USED_PORT: full 0 0 0 0 OUTPUT NODEFVAL "full"
 // Retrieval info: USED_PORT: q 0 0 211 0 OUTPUT NODEFVAL "q[210..0]"
 // Retrieval info: USED_PORT: rdreq 0 0 0 0 INPUT NODEFVAL "rdreq"
+// Retrieval info: USED_PORT: usedw 0 0 4 0 OUTPUT NODEFVAL "usedw[3..0]"
 // Retrieval info: USED_PORT: wrreq 0 0 0 0 INPUT NODEFVAL "wrreq"
 // Retrieval info: CONNECT: @clock 0 0 0 0 clock 0 0 0 0
 // Retrieval info: CONNECT: @data 0 0 211 0 data 0 0 211 0
@@ -148,6 +153,7 @@ endmodule
 // Retrieval info: CONNECT: empty 0 0 0 0 @empty 0 0 0 0
 // Retrieval info: CONNECT: full 0 0 0 0 @full 0 0 0 0
 // Retrieval info: CONNECT: q 0 0 211 0 @q 0 0 211 0
+// Retrieval info: CONNECT: usedw 0 0 4 0 @usedw 0 0 4 0
 // Retrieval info: GEN_FILE: TYPE_NORMAL altbramfifo_w211_d16.v TRUE
 // Retrieval info: GEN_FILE: TYPE_NORMAL altbramfifo_w211_d16.inc FALSE
 // Retrieval info: GEN_FILE: TYPE_NORMAL altbramfifo_w211_d16.cmp FALSE

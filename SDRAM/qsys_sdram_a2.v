@@ -35,7 +35,7 @@ module sdram_a2 (
 		input  wire[31:0] data_in,
 		output wire[31:0] za_data,
 		input  wire[$clog2(`maxTrans)-1: 0] size,	
-		output reg	      readValid,	
+		output wire	      readValid,	
 
 		// temp write error flag
 		output wire write_error,
@@ -45,7 +45,7 @@ module sdram_a2 (
 	);
 		
 
-	//assign readValid = za_valid;
+
 
 	wire		btn0, btn1;
 	wire		btn0_n, btn1_n;
@@ -60,10 +60,13 @@ module sdram_a2 (
 	//wire [31:0] za_data;
 	wire za_valid;
 	wire za_waitrequest;
+
+	assign readValid = za_valid;
 	
 	wire [7:0] reg_data, reg_data_next;
 	//assign LEDs = reg_data;
-	
+
+	assign readValid = za_valid;
 	assign reg_data_next = (za_valid) ? za_data[7:0] : reg_data;
 	ff_ar #(8,8'b0) za_data_reg(.q(reg_data), .d(reg_data_next), .clk(clk_clk), .rst(~reset_reset_n));
 
@@ -87,7 +90,7 @@ module sdram_a2 (
 	//	 reading and writing
 	always @* begin
 		nextCount = count; re_n = 1; we_n = 1;
-		readValid = za_valid; 	
+//		readValid = za_valid; 	
 		nextAddr = 0; nextData = 0; nextCount = 0;
 		case(state)
 			`IDLE:begin
@@ -182,15 +185,6 @@ module sdram_a2 (
 		end
 	end
 		
-
-	// NOTE: this is a hack to make za_valid coincide with za_data during simulation
-	wire za_valid_pre_ff;
-	`ifdef SYNTH
-	assign za_valid = za_valid_pre_ff;
-	`else
-	ff_ar #(1,1'b0) za_valid_ff(.q(za_valid), .d(za_valid_pre_ff), .clk(clk_clk), .rst(~reset_reset_n));
-	`endif 
-
 	qsys_sdram_a2_sdram_0 sdram_0 (
 		.clk            (clk_clk),                 //   clk.clk
 		.reset_n        (~rst_controller_reset_out_reset), // reset.reset_n
@@ -201,7 +195,7 @@ module sdram_a2 (
 		.az_rd_n        (re_n),                                //      .read_n
 		.az_wr_n        (we_n),                                //      .write_n
 		.za_data        (za_data),                                //      .readdata
-		.za_valid       (za_valid_pre_ff),                         //      .readdatavalid
+		.za_valid       (za_valid),                         //      .readdatavalid
 		.za_waitrequest (za_waitrequest),                                //      .waitrequest
 		.zs_addr        (zs_addr),                                //  wire.export
 		.zs_ba          (zs_ba),                                //      .export

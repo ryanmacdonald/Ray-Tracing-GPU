@@ -177,11 +177,11 @@ module fifo
   assign num_left_in_fifo = zero_cnt;
 
   // actual queue
-  logic [DEPTH-1:0][WIDTH-1:0] queue;
-  logic [DEPTH-1:0][WIDTH-1:0] queue_n;
+  logic [DEPTH-1:0][WIDTH:0] queue; // not -1 because of valid bit (for exists_in_fifo)
+  logic [DEPTH-1:0][WIDTH:0] queue_n;
 
   //output assigns
-  assign data_out = queue[rPtr];
+  assign data_out = queue[rPtr][WIDTH-1:0]; // exclude valid bit
   assign empty = (one_cnt == 'h0 );
   assign full = (zero_cnt == 'h0);
 
@@ -207,7 +207,7 @@ module fifo
 
   always_comb begin
     queue_n = queue ;
-    if(write_valid) queue_n[wPtr[K-1:0]] = data_in;
+    if(write_valid) queue_n[wPtr[K-1:0]] = {1'b1,data_in}; // set the valid bit
     if(read_valid) queue_n[rPtr[K-1:0]] = 'h0;
   end
  
@@ -216,7 +216,7 @@ module fifo
 
   ff_ar #(K,'h0) ff_r(.q(rPtr), .d(rPtr_n), .clk, .rst);
   ff_ar #(K,'h0) ff_w(.q(wPtr), .d(wPtr_n), .clk, .rst);
-  ff_ar #(DEPTH*WIDTH,'h0) ff_q(.q(queue), .d(queue_n), .clk, .rst); 
+  ff_ar #(DEPTH*(WIDTH+1),'h0) ff_q(.q(queue), .d(queue_n), .clk, .rst); 
   ff_ar #(K+1,DEPTH) ff_zero_cnt(.q(zero_cnt), .d(zero_cnt_n), .clk, .rst);
   ff_ar #(K+1,'h0) ff_one_cnt(.q(one_cnt), .d(one_cnt_n), .clk, .rst);
 
@@ -224,7 +224,7 @@ module fifo
   always_comb begin
     exists_in_fifo = 1'b0;
     for(i=0; i < DEPTH; i++) begin
-      if(queue[i] == data_in)
+      if(queue[i][WIDTH-1] == data_in && queue[i][WIDTH]) // AND with valid bit
         exists_in_fifo = 1'b1;
     end
   end
