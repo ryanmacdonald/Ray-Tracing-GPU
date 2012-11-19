@@ -7,7 +7,7 @@
 // Takes in a primary ray and outputs tmin, tmax values
 // based on the scene bounding box.
 
-module scene_int_pl(input prg_ray_t ray,
+module scene_int_pl(input shader_to_sint_t ray,
 		 input v0, v1, v2,
 		 input float_t xmin, xmax,
 		 input float_t ymin, ymax,
@@ -17,11 +17,15 @@ module scene_int_pl(input prg_ray_t ray,
 		 output float_t tmin_scene, tmax_scene,
 		 output logic miss);
 
-
+	`ifndef SYNTH
+		shortreal tmin_sr, tmax_sr;
+		assign tmin_sr = $bitstoshortreal(tmin_scene);
+		assign tmax_sr = $bitstoshortreal(tmax_scene);
+	`endif
 
 	
 	float_t dataa_add1_pos, dataa_add1_neg, datab_add1, result_add1;
-	assign dataa_add1_pos = v0 ? ray.origin.x : (v1 ? ray.origin.y : ray.origin.z);
+	assign dataa_add1_pos = v0 ? ray.ray_vec.origin.x : (v1 ? ray.ray_vec.origin.y : ray.ray_vec.origin.z);
 	assign dataa_add1_neg = {~dataa_add1_pos.sign,dataa_add1_pos[30:0]};
 	assign datab_add1 = v0 ? xmin : (v1 ? ymin : zmin);
 	altfp_add add1(.aclr(rst),.clock(clk),
@@ -31,7 +35,7 @@ module scene_int_pl(input prg_ray_t ray,
 
 
 	float_t dataa_add2_pos, datab_add2, dataa_add2_neg, result_add2;
-	assign dataa_add2_pos = v0 ? ray.origin.x : (v1? ray.origin.y: ray.origin.z);
+	assign dataa_add2_pos = v0 ? ray.ray_vec.origin.x : (v1? ray.ray_vec.origin.y: ray.ray_vec.origin.z);
 	assign dataa_add2_neg = {~dataa_add2_pos.sign,dataa_add2_pos[30:0]};
 	assign datab_add2 = v0 ? xmax : (v1 ? ymax : zmax);
 	altfp_add add2(.aclr(rst),.clock(clk),
@@ -42,7 +46,7 @@ module scene_int_pl(input prg_ray_t ray,
 
 	float_t dataa_div1, datab_div1, result_div1;
 	assign dataa_div1 = result_add1;
-	assign datab_div1 = v1 ? ray.dir.x : (v2 ? ray.dir.y : ray.dir.z);
+	assign datab_div1 = v1 ? ray.ray_vec.dir.x : (v2 ? ray.ray_vec.dir.y : ray.ray_vec.dir.z);
 	altfp_div div1(.aclr(rst),.clock(clk),
 		       .dataa(dataa_div1),.datab(datab_div1),.division_by_zero(),
 		       .nan(),.overflow(),.result(result_div1),.underflow(),.zero());
@@ -50,7 +54,7 @@ module scene_int_pl(input prg_ray_t ray,
 
 	float_t dataa_div2, datab_div2, result_div2;
 	assign dataa_div2 = result_add2;
-	assign datab_div2 = v1 ? ray.dir.x : (v2 ? ray.dir.y : ray.dir.z);
+	assign datab_div2 = v1 ? ray.ray_vec.dir.x : (v2 ? ray.ray_vec.dir.y : ray.ray_vec.dir.z);
 	altfp_div div2(.aclr(rst),.clock(clk),
 		       .dataa(dataa_div2),.datab(datab_div2),.division_by_zero(),
 		       .nan(),.overflow(),.result(result_div2),.underflow(),.zero());
@@ -58,9 +62,9 @@ module scene_int_pl(input prg_ray_t ray,
 
 	logic[6:0] raydir;
 	logic raydir_n, shifter_en;
-	assign raydir_n = v0 ? ray.dir.x.sign : (v1 ? ray.dir.y.sign : ray.dir.z.sign);
+	assign raydir_n = v0 ? ray.ray_vec.dir.x.sign : (v1 ? ray.ray_vec.dir.y.sign : ray.ray_vec.dir.z.sign);
 	assign shifter_en = 1'b1; 
-	shifter #(7,0) rd(.q(raydir),.d(raydir_n),.en(shifter_en),.clr(),.clk(clk),.rst(rst));
+	shifter #(7,0) rd(.q(raydir),.d(raydir_n),.en(shifter_en),.clr(1'b0),.clk(clk),.rst(rst));
 	
 
 	// Signal declarations for regs and fp comparators //
@@ -139,52 +143,52 @@ module scene_int_pl(input prg_ray_t ray,
 
 	assign dataa_cmp1 = q_r1;
 	assign datab_cmp1 = d_r1;
-	altfp_compare cmp1(.aclr(rst),.clock(clk),.dataa(dataa_cmp1),.datab(datab_cmp1),.agb(agb_cmp1));
+	altfp_compare cmp1(.aclr(rst),.clock(clk),.dataa(dataa_cmp1),.datab(datab_cmp1),.agb(agb_cmp1),.aeb());
 
 
 	assign dataa_cmp2 = q_r1;
 	assign datab_cmp2 = d_r2;
-	altfp_compare cmp2(.aclr(rst),.clock(clk),.dataa(dataa_cmp2),.datab(datab_cmp2),.agb(agb_cmp2));
+	altfp_compare cmp2(.aclr(rst),.clock(clk),.dataa(dataa_cmp2),.datab(datab_cmp2),.agb(agb_cmp2),.aeb());
 	
 
 	assign dataa_cmp3 = d_r1;
 	assign datab_cmp3 = q_r2;
-	altfp_compare cmp3(.aclr(rst),.clock(clk),.dataa(dataa_cmp3),.datab(datab_cmp3),.agb(agb_cmp3));
+	altfp_compare cmp3(.aclr(rst),.clock(clk),.dataa(dataa_cmp3),.datab(datab_cmp3),.agb(agb_cmp3),.aeb());
 	
 
 	assign dataa_cmp4 = d_r2;
 	assign datab_cmp4 = q_r2;
-	altfp_compare cmp4(.aclr(rst),.clock(clk),.dataa(dataa_cmp4),.datab(datab_cmp4),.agb(agb_cmp4));
+	altfp_compare cmp4(.aclr(rst),.clock(clk),.dataa(dataa_cmp4),.datab(datab_cmp4),.agb(agb_cmp4),.aeb());
 
 
 	assign dataa_cmp5 = d_r5; 
 	assign datab_cmp5 = d_r1;
-	altfp_compare cmp5(.aclr(rst),.clock(clk),.dataa(dataa_cmp5),.datab(datab_cmp5),.agb(agb_cmp5));
+	altfp_compare cmp5(.aclr(rst),.clock(clk),.dataa(dataa_cmp5),.datab(datab_cmp5),.agb(agb_cmp5),.aeb());
 
 
 	assign dataa_cmp6 = d_r5;
 	assign datab_cmp6 = d_r2;
-	altfp_compare cmp6(.aclr(rst),.clock(clk),.dataa(dataa_cmp6),.datab(datab_cmp6),.agb(agb_cmp6));
+	altfp_compare cmp6(.aclr(rst),.clock(clk),.dataa(dataa_cmp6),.datab(datab_cmp6),.agb(agb_cmp6),.aeb());
 
 
 	assign dataa_cmp7 = d_r1;
 	assign datab_cmp7 = d_r7;
-	altfp_compare cmp7(.aclr(rst),.clock(clk),.dataa(dataa_cmp7),.datab(datab_cmp7),.agb(agb_cmp7));
+	altfp_compare cmp7(.aclr(rst),.clock(clk),.dataa(dataa_cmp7),.datab(datab_cmp7),.agb(agb_cmp7),.aeb());
 
 
 	assign dataa_cmp8 = d_r2;
 	assign datab_cmp8 = d_r7;
-	altfp_compare cmp8(.aclr(rst),.clock(clk),.dataa(dataa_cmp8),.datab(datab_cmp8),.agb(agb_cmp8));
+	altfp_compare cmp8(.aclr(rst),.clock(clk),.dataa(dataa_cmp8),.datab(datab_cmp8),.agb(agb_cmp8),.aeb());
 	
 
 	assign dataa_cmp9 = d_r8;
 	assign datab_cmp9 = `EPSILON;
-	altfp_compare cmp9(.aclr(rst),.clock(clk),.dataa(dataa_cmp9),.datab(datab_cmp9),.agb(agb_cmp9));
+	altfp_compare cmp9(.aclr(rst),.clock(clk),.dataa(dataa_cmp9),.datab(datab_cmp9),.agb(agb_cmp9),.aeb());
 
 
 	assign dataa_cmp10 = `FP_1;
 	assign datab_cmp10 = d_r10;
-	altfp_compare cmp10(.aclr(rst),.clock(clk),.dataa(dataa_cmp10),.datab(datab_cmp10),.agb(agb_cmp10));
+	altfp_compare cmp10(.aclr(rst),.clock(clk),.dataa(dataa_cmp10),.datab(datab_cmp10),.agb(agb_cmp10),.aeb());
 
 
 

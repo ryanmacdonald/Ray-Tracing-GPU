@@ -107,8 +107,10 @@ typedef struct packed {
   logic [15:0] ID;
 } triID_t;
 
+
+// TODO: change width back to [8:0]
 typedef struct packed {
-  logic [8:0] ID;
+  logic [18:0] ID;
 } rayID_t;
 
 
@@ -234,6 +236,7 @@ typedef struct packed {
   rayID_t rayID;
   ray_vec_t ray_vec;
 } sint_to_rs_t ; // DONT USE
+
 
 typedef struct packed {
   rayID_t rayID;
