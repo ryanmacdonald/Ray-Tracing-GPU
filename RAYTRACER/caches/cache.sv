@@ -87,7 +87,7 @@ typedef struct packed {
 	logic pvs_ds_stall;
 	logic pvs_ds_valid;
 	pvs_data_t pvs_ds_data;
-	logic [$clog2(`DEPTH+1):0] pvs_num_left_in_fifo;
+	logic [$clog2(`DEPTH+2)-1:0] pvs_num_left_in_fifo;
 
 // miss request fifo
 	// inputs
@@ -104,7 +104,7 @@ typedef struct packed {
 	// upstream
 	hdf_data_t hdf_data_in;
 	logic hdf_we;
-	logic [$clog2(`DEPTH+1):0] hdf_num_left_in_fifo;
+	logic [$clog2(`DEPTH+2)-1:0] hdf_num_left_in_fifo;
 
 	// downstream
 	logic hdf_empty;
