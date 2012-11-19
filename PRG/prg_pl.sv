@@ -21,7 +21,7 @@
 // -frame_done asserted from FBH
 // -output rayReady asserted every three cycles when
 //  a new primary ray is available 
-module prg(input logic clk, rst,
+module prg_pl(input logic clk, rst,
 	   input logic v0, v1, v2,
 	   input logic start,
 	   input logic[$clog2(`screen_width)-1:0] x,
@@ -187,7 +187,7 @@ module prg(input logic clk, rst,
 					nextState = ACTIVE;
 				end
 				else if(v1) begin
-					if(cnt >= 6'd37 || rayID > 0) begin
+					if(cnt >= 6'd39 || rayID > 0) begin
 						nextCnt = 0;
 //						if(rayValid[0]) begin 
 //							rayReady = 1;
@@ -240,6 +240,6 @@ module prg(input logic clk, rst,
 			end
 	end
 
-endmodule: prg
+endmodule: prg_pl
 
 

@@ -2,7 +2,7 @@
 
 
 
-module prg_top(input logic clk, rst,
+module prg(input logic clk, rst,
 	       input logic v0, v1, v2,
 	       input logic start,
 	       input vector_t E, U, V, W,
@@ -26,36 +26,36 @@ module prg_top(input logic clk, rst,
 	logic[8:0] y, nextY;
 	
 	prg_ray_t prg_out;
-	logic[4:0] num_in_rb, num_left_in_rb;
+	logic[3:0] num_in_rb, num_left_in_rb;
 	altbramfifo_w211_d16 rb(.clock(clk),.data(prg_out),.rdreq(rb_re),.wrreq(rb_we),
 				.empty(rb_empty),.full(rb_full),.q(prg_data),
 				.usedw(num_in_rb));
 
-	assign num_left_in_rb = 5'd16 - num_in_rb;
+	assign num_left_in_rb = 5'd16 - {rb_full,num_in_rb};
 
 	// TODO: depth param correct?
 	logic ds_valid, us_stall;
-	pipe_valid_stall #(.WIDTH(1),.DEPTH(43))
+	pipe_valid_stall #(.WIDTH(1),.DEPTH(40))
 			 valid_pipe(.clk, .rst,.us_valid(x_y_valid),.us_data(1'b0),.us_stall,
 			  .ds_valid,
   			  .ds_data(),
 			  .ds_stall(int_to_prg_stall),
-			  .num_left_in_fifo(num_left_in_rb));
+			  .num_left_in_fifo({3'b0,num_left_in_rb}));
 	    
 	ff_ar_en #(10,0)   xr(.q(x),.d(nextX),.en(x_y_valid),.clk,.rst);
 	ff_ar_en #(9,479)  yr(.q(y),.d(nextY),.en(x_y_valid),.clk,.rst);
 
-	prg poop(.prg_data(prg_out),.*);
+	prg_pl poop(.prg_data(prg_out),.*);
 
 	assign nextX = (x == 'd639) ? 0 : x + 1;
 	assign nextY = (x == 'd639) ? y - 1 : y;
 
 	assign rb_we = ds_valid;
-	assign rb_re = ~rb_empty && ~int_to_prg_stall;
+	assign rb_re = ~rb_empty && ~int_to_prg_stall && v0;
 
-	assign ready = rb_re;
+	assign ready = ~rb_empty;
 
 	assign x_y_valid = ~us_stall && v0;
 
 
-endmodule: prg_top
+endmodule: prg
