@@ -16,7 +16,7 @@ module cache
 	BLK_W=1,
 
 	RIF_DEPTH=(`DEPTH+3),
-	MRF_DEPTH=(`DEPTH+3)
+	MRF_DEPTH=(RIF_DEPTH+`DEPTH)
 )
 (
 	input logic clk, rst,

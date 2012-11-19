@@ -185,15 +185,6 @@ module sdram_a2 (
 		end
 	end
 		
-
-	// NOTE: this is a hack to make za_valid coincide with za_data during simulation
-	wire za_valid_pre_ff;
-	`ifdef SYNTH
-	assign za_valid = za_valid_pre_ff;
-	`else
-	//ff_ar #(1,1'b0) za_valid_ff(.q(za_valid), .d(za_valid_pre_ff), .clk(clk_clk), .rst(~reset_reset_n));
-	`endif 
-
 	qsys_sdram_a2_sdram_0 sdram_0 (
 		.clk            (clk_clk),                 //   clk.clk
 		.reset_n        (~rst_controller_reset_out_reset), // reset.reset_n
