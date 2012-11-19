@@ -196,7 +196,7 @@ module trav_unit(
   logic ds_valid_pipe_vs;
   logic ds_stall_pipe_vs;
 
-  logic [4:0] num_left_in_trav_fifo;
+  logic [3:0] num_left_in_trav_fifo;
   
   always_comb begin
     trav_sb_in.ray_info = rs_to_trav_data.ray_info ;

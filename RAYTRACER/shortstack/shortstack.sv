@@ -55,7 +55,9 @@ typedef struct packed {
   float_t t_max;
 } ss_elem_t;
 
-module shortstack(
+module shortstack_unit(
+
+  input logic clk, rst,
 
   input logic trav0_to_ss_valid,
   input trav_to_ss_t trav0_to_ss_data,
@@ -68,7 +70,7 @@ module shortstack(
 
 
   input logic sint_to_ss_valid,
-  input sint_to_ss_t si_to_ss_data,
+  input sint_to_ss_t sint_to_ss_data,
   output logic sint_to_ss_stall,
 
 
@@ -84,13 +86,13 @@ module shortstack(
 
   // This is for reading from the stack
   output logic ss_to_tarb_valid0,
-  output tarb_t_t ss_to_tarb_data0,
-  input logic ss_to_tarb_stall0
+  output tarb_t ss_to_tarb_data0,
+  input logic ss_to_tarb_stall0,
   
 
   // this is for reading from the restart node
   output logic ss_to_tarb_valid1,
-  output tarb_t_t ss_to_tarb_data1,
+  output tarb_t ss_to_tarb_data1,
   input logic ss_to_tarb_stall1
 
 
@@ -128,15 +130,15 @@ module shortstack(
     stack_read_fifo_in[2].ray_info = list_to_ss_data.ray_info;
     stack_read_fifo_in[2].ray_info.ss_wptr = list_to_ss_data.ray_info.ss_wptr - 1'b1;
     stack_read_fifo_in[2].ray_info.ss_num = list_to_ss_data.ray_info.ss_num - 1'b1;
-    stack_read_fifo_in[2].t_min = list_to_ss_data.t_max;
+    stack_read_fifo_in[2].t_min = list_to_ss_data.t_max_leaf;
   end
 
 
 
   genvar i;
-  generate begin
-    for(i=0; i<3; i+=1) begin
-    fifo #(.DEPTH(3), .WIDTH($bits(stack_read_fifo_in)) ) stack_read_fifo_inst(
+  generate
+    for(i=0; i<3; i+=1) begin : stack_read_fifo
+    fifo #(.DEPTH(3), .WIDTH($bits(stack_read_fifo_in[0])) ) stack_read_fifo_inst(
       .clk, .rst,
       .data_in(stack_read_fifo_in[i]),
       .data_out(stack_read_fifo_out[i]),
@@ -145,9 +147,9 @@ module shortstack(
       .re(stack_read_fifo_re[i]),
       .we(stack_read_fifo_we[i]),
       .exists_in_fifo(),
-      .num_left_in_fifo(),
-    end
-  end
+      .num_left_in_fifo() );
+    end : stack_read_fifo
+  endgenerate
 
 //------------------------------------------------------------------------
 // Short Stack write fifos
@@ -178,33 +180,36 @@ module shortstack(
 
 
 
-genvar i;
-generate begin
-  for(i=0; i<2; i+=1) begin
-  fifo #(.DEPTH(3), .WIDTH($bits(stack_write_fifo_in)) ) stack_write_fifo_inst(
-    .clk, .rst,
-    .data_in(stack_write_fifo_in[i]),
-    .data_out(stack_write_fifo_out[i]),
-    .full(stack_write_fifo_full[i]),
-    .empty(stack_write_fifo_empty[i]),
-    .re(stack_write_fifo_re[i]),
-    .we(stack_write_fifo_we[i]),
-    .exists_in_fifo(),
-    .num_left_in_fifo() );
-  end
-endgenerate
+  generate
+    for(i=0; i<2; i+=1) begin : stack_write_fifo
+    fifo #(.DEPTH(3), .WIDTH($bits(stack_write_fifo_in[0])) ) stack_write_fifo_inst(
+      .clk, .rst,
+      .data_in(stack_write_fifo_in[i]),
+      .data_out(stack_write_fifo_out[i]),
+      .full(stack_write_fifo_full[i]),
+      .empty(stack_write_fifo_empty[i]),
+      .re(stack_write_fifo_re[i]),
+      .we(stack_write_fifo_we[i]),
+      .exists_in_fifo(),
+      .num_left_in_fifo() );
+    end : stack_write_fifo
+  endgenerate
 
+  // VSpipe signals
+  logic stack_VSpipe_valid_us, stack_VSpipe_stall_us;
+  logic stack_VSpipe_valid_ds, stack_VSpipe_stall_ds;
+  logic [1:0] num_left_in_stack_fifo;
 
 //------------------------------------------------------------------------
 // Stack instantiations
 
   logic [2:0] stack_rfifo_valid, stack_rfifo_choice;
   logic [1:0] stack_r_rrptr, stack_r_rrptr_n;
-  assign stack_r_rrptr_n = (|stack_rfifo_valid) ? (stack_r_rrptr == 2'h2 ? 2''h0 : stack_r_rrptr + 1'b1) : stack_r_rrptr ;
+  assign stack_r_rrptr_n = (|stack_rfifo_valid) ? (stack_r_rrptr == 2'h2 ? 2'h0 : stack_r_rrptr + 1'b1) : stack_r_rrptr ;
   
   ff_ar #(2,2'b0) stack_r_rrptr_buf(.d(stack_r_rrptr_n), .q(stack_r_rrptr), .clk, .rst);
   
-  assign stack_rfifo_valid = ~stack_read_fifo_empty & {3{stack_VSpipe_stall_us}};
+  assign stack_rfifo_valid = ~stack_read_fifo_empty & ~{3{stack_VSpipe_stall_us}};
   logic [1:0] stack_r_rrptr1, stack_r_rrptr2;
   always_comb begin
     unique case(stack_r_rrptr) 
@@ -231,6 +236,8 @@ endgenerate
     stack_rfifo_choice[stack_r_rrptr2] = stack_rfifo_valid[stack_r_rrptr2] & ~stack_rfifo_valid[stack_r_rrptr] & ~stack_rfifo_valid[stack_r_rrptr1];
   end
   
+  assign stack_read_fifo_re = stack_rfifo_choice ;
+
   logic [3:0] stack_read_valid;
   logic [1:0] stack_cur_rptr;
   rayID_t stack_cur_raddr;
@@ -238,13 +245,15 @@ endgenerate
     stack_cur_rptr = 'h0;
     stack_read_valid = 'h0;
     case(stack_rfifo_choice)
-     3'b100: begin
+      3'b100: begin
         stack_cur_rptr = stack_read_fifo_out[2].ray_info.ss_wptr;
         stack_cur_raddr = stack_read_fifo_out[2].ray_info.rayID;
-     3'b010: begin
+      end
+      3'b010: begin
         stack_cur_rptr = stack_read_fifo_out[1].ray_info.ss_wptr;
         stack_cur_raddr = stack_read_fifo_out[1].ray_info.rayID;
-     3'b001: begin
+      end
+      3'b001: begin
         stack_cur_rptr = stack_read_fifo_out[0].ray_info.ss_wptr;
         stack_cur_raddr = stack_read_fifo_out[0].ray_info.rayID;
       end
@@ -255,8 +264,6 @@ endgenerate
   assign stack_is_reading = |stack_rfifo_valid;
 
   logic stack_w_rrptr, stack_w_rrptr_n;
-  assign stack_w_rrptr_n = (|stack_wfifo_valid) ?  ~stack_w_rrptr : stack_w_rrptr ;
-  ff_ar #(1,1'b0) stack_w_rrptr_buf(.d(stack_w_rrptr_n), .q(stack_w_rrptr), .clk, .rst);
   
   logic [1:0] stack_wfifo_valid; // if not stalling and there is something in the write fifo
   logic [1:0] stack_wfifo_choice; // Both bits CAN be set here (resolves read/write conflict)
@@ -266,6 +273,9 @@ endgenerate
   assign stack_same_w0w1_dest = (stack_write_fifo_out[0].ss_wptr == stack_write_fifo_out[1].ss_wptr);
   assign stack_same_rw0_dest = (stack_cur_rptr == stack_write_fifo_out[0].ss_wptr);
   assign stack_same_rw1_dest = (stack_cur_rptr == stack_write_fifo_out[1].ss_wptr);
+  
+  assign stack_w_rrptr_n = (|stack_wfifo_valid) ?  ~stack_w_rrptr : stack_w_rrptr ;
+  ff_ar #(1,1'b0) stack_w_rrptr_buf(.d(stack_w_rrptr_n), .q(stack_w_rrptr), .clk, .rst);
 
   assign stack_wfifo_valid = ~stack_write_fifo_empty;
   
@@ -273,7 +283,7 @@ endgenerate
     stack_wfifo_choice = 'h0;
     stack_wfifo_choice[stack_w_rrptr] = stack_wfifo_valid[stack_w_rrptr];
     stack_wfifo_choice[~stack_w_rrptr] = stack_wfifo_valid[~stack_w_rrptr] & ~(stack_same_w0w1_dest & stack_same_rw0_dest & 
-                                                                                stack_is_reading & stack_wfifo_valid[stack_w_rrptr]) 
+                                                                                stack_is_reading & stack_wfifo_valid[stack_w_rrptr]) ;
   end
 /*
   always_comb begin
@@ -294,7 +304,6 @@ endgenerate
   logic stack_w0_port;
   logic stack_w1_port;
   logic [1:0][1:0] stack_wptr;
-  rayID_t 
   always_comb begin
     if(stack_w_rrptr) begin
       stack_w1_port = (stack_is_reading & stack_same_rw1_dest) ? 1'b1 : 1'b0 ;
@@ -305,7 +314,10 @@ endgenerate
       stack_w1_port = (stack_is_reading & stack_same_rw1_dest)|(stack_wfifo_choice[0] & stack_same_w0w1_dest) ? 1'b1 : 1'b0 ;
     end
   end
-  
+  always_comb begin
+    stack_wptr[0] = stack_write_fifo_out[0].ss_wptr;
+    stack_wptr[1] = stack_write_fifo_out[1].ss_wptr;
+  end
   
   rayID_t addrA_stack[4], addrB_stack[4];
   ss_elem_t wrdataA_stack[4];
@@ -316,10 +328,10 @@ endgenerate
  
   always_comb begin
     for(int i=0; i<3; i++) begin
-      wrenA_stack[i] = (stack_wfifo_choice[1] & stack_wptr[1] == i & ~stack_w1_port) | (stack_wfifo_choic[0] & stack_wptr[0] == i & ~stack_w0_port) ;
-      wrenB_stack[i] = (stack_wfifo_choice[1] & stack_wptr[1] == i & stack_w1_port) | (stack_wfifo_choic[0] & stack_wptr[0] == i & stack_w0_port) ;
+      wrenA_stack[i] = (stack_wfifo_choice[1] & stack_wptr[1] == i & ~stack_w1_port) | (stack_wfifo_choice[0] & stack_wptr[0] == i & ~stack_w0_port) ;
+      wrenB_stack[i] = (stack_wfifo_choice[1] & stack_wptr[1] == i & stack_w1_port) | (stack_wfifo_choice[0] & stack_wptr[0] == i & stack_w0_port) ;
       if(stack_w_rrptr) begin
-        addrA_stack[i] = (stack_read_valid[i] & cur_rptr==i) ? stack_cur_raddr : 
+        addrA_stack[i] = (stack_read_valid[i] & stack_cur_rptr==i) ? stack_cur_raddr : 
                           (stack_wfifo_choice[1] & stack_wptr[1]==i & ~stack_w1_port) ? stack_write_fifo_out[1].rayID : 
                            (stack_wfifo_choice[0] & stack_wptr[0]==i & ~stack_w0_port) ? stack_write_fifo_out[0].rayID : `DC ;
         wrdataA_stack[i] = (stack_wfifo_choice[1] & stack_wptr[1]==i & ~stack_w1_port) ? stack_write_fifo_out[1].elem :
@@ -330,7 +342,7 @@ endgenerate
                            (stack_wfifo_choice[0] & stack_wptr[0]==i & stack_w0_port) ? stack_write_fifo_out[0].elem : `DC;
       end
       else begin
-        addrA_stack[i] = (stack_read_valid[i] & cur_rptr==i) ? stack_cur_raddr : 
+        addrA_stack[i] = (stack_read_valid[i] & stack_cur_rptr==i) ? stack_cur_raddr : 
                           (stack_wfifo_choice[0] & stack_wptr[0]==i & ~stack_w0_port) ? stack_write_fifo_out[0].rayID : 
                            (stack_wfifo_choice[1] & stack_wptr[1]==i & ~stack_w1_port) ? stack_write_fifo_out[1].rayID : `DC ;
         wrdataA_stack[i] = (stack_wfifo_choice[0] & stack_wptr[0]==i & ~stack_w0_port) ? stack_write_fifo_out[0].elem :
@@ -345,21 +357,21 @@ endgenerate
   end
 
 
-  genvar s;
+  //genvar s;
   generate
-    for(s=0; s<4; s++) begin
+    for(i=0; i<4; i++) begin : stacks
       bram_dual_2port_512x48 stack_bram(
-      .aclr(rst[i]),
+      //.aclr(rst),
       .address_a(addrA_stack[i]),
       .address_b(addrB_stack[i]),
-      .clock(clk[i]),
+      .clock(clk),
       .data_a(wrdataA_stack[i]),
       .data_b(wrdataB_stack[i]),
       .wren_a(wrenA_stack[i]),
       .wren_b(wrenB_stack[i]),
       .q_a(rddataA_stack[i]),
       .q_b());
-    end
+    end : stacks
 
   endgenerate
 
@@ -371,16 +383,18 @@ endgenerate
     float_t t_min;
   } stack_VSpipe_in, stack_VSpipe_out;
 
+  /*
   logic stack_VSpipe_valid_us, stack_VSpipe_stall_us;
+    send_int_to_list(8,0,0,1,-2);
   logic stack_VSpipe_valid_ds, stack_VSpipe_stall_ds;
   logic [2:0] num_left_in_stack_fifo;
-  
+  */
   always_comb begin
-    unique case(stack_rfifo_choice);
-      3'b100 : stack_VS_pipe_in = stack_read_fifo_out[2];
-      3'b010 : stack_VS_pipe_in = stack_read_fifo_out[1];
-      3'b001 : stack_VS_pipe_in = stack_read_fifo_out[0];
-      3'b000 : stack_VS_pipe_in = `DC;
+    unique case(stack_rfifo_choice)
+      3'b100 : stack_VSpipe_in = stack_read_fifo_out[2];
+      3'b010 : stack_VSpipe_in = stack_read_fifo_out[1];
+      3'b001 : stack_VSpipe_in = stack_read_fifo_out[0];
+      3'b000 : stack_VSpipe_in = `DC;
     endcase
   end
   assign stack_VSpipe_valid_us = stack_is_reading;
@@ -394,10 +408,8 @@ endgenerate
     .ds_valid(stack_VSpipe_valid_ds),
     .ds_data(stack_VSpipe_out),
     .ds_stall(stack_VSpipe_stall_ds),
-    .exists_in_fifo(),
     .num_left_in_fifo(num_left_in_stack_fifo) );
 
-  assign stack_VSpipe_stall_ds = ss_to_tarb0_stall;
 
 //------------------------------------------------------------------------
 // Stack fifo
@@ -407,6 +419,14 @@ endgenerate
     float_t t_min;
     nodeID_t nodeID;
   } stack_fifo_in, stack_fifo_out;
+
+typedef struct packed {
+  ray_info_t ray_info;
+  nodeID_t nodeID;
+  logic restnode_search; // set if still have not found restart node
+  float_t t_max;
+  float_t t_min;
+} tarb_t ;
 
   logic stack_fifo_full;
   logic stack_fifo_empty;
@@ -432,7 +452,14 @@ endgenerate
     .num_left_in_fifo(num_left_in_stack_fifo) );
 
   assign ss_to_tarb_valid0 = ~stack_fifo_empty;
-  assign ss_to_tarb_data0 = stack_fifo_out;
+  always_comb begin
+    ss_to_tarb_data0.ray_info = stack_fifo_out.ray_info ;
+    ss_to_tarb_data0.nodeID = stack_fifo_out.nodeID ;
+    ss_to_tarb_data0.restnode_search = 1'b0 ;
+    ss_to_tarb_data0.t_max = stack_fifo_out.t_max ;
+    ss_to_tarb_data0.t_min = stack_fifo_out.t_min ;
+  end
+  
   assign stack_fifo_re = ss_to_tarb_valid0 & ~ss_to_tarb_stall0 ;
   assign stack_VSpipe_stall_ds = ss_to_tarb_stall0;
 
@@ -458,23 +485,22 @@ endgenerate
   logic [2:0] rest_read_fifo_re;
   logic [2:0] rest_read_fifo_we;
   always_comb begin
-    rest_read_fifo_in[0].rayID = trav0_to_ss_data.rayID;
-    rest_read_fifo_in[0].is_shadow = trav0_to_ss_data.is_shadow;
+    rest_read_fifo_in[0].rayID = trav0_to_ss_data.ray_info.rayID;
+    rest_read_fifo_in[0].is_shadow = trav0_to_ss_data.ray_info.is_shadow;
     rest_read_fifo_in[0].t_min =  trav0_to_ss_data.t_max;
-    rest_read_fifo_in[1].rayID = trav1_to_ss_data.rayID;
-    rest_read_fifo_in[1].is_shadow = trav1_to_ss_data.is_shadow;
+    rest_read_fifo_in[1].rayID = trav1_to_ss_data.ray_info.rayID;
+    rest_read_fifo_in[1].is_shadow = trav1_to_ss_data.ray_info.is_shadow;
     rest_read_fifo_in[1].t_min =  trav1_to_ss_data.t_max;
-    rest_read_fifo_in[2].rayID = list_to_ss_data.rayID;
-    rest_read_fifo_in[2].is_shadow = list_to_ss_data.is_shadow;
-    rest_read_fifo_in[2].t_min = list_to_ss_data.t_max;
+    rest_read_fifo_in[2].rayID = list_to_ss_data.ray_info.rayID;
+    rest_read_fifo_in[2].is_shadow = list_to_ss_data.ray_info.is_shadow;
+    rest_read_fifo_in[2].t_min = list_to_ss_data.t_max_leaf;
   end
 
 
 
-genvar i;
-generate begin
-  for(i=0; i<3; i+=1) begin
-  fifo #(.DEPTH(3), .WIDTH($bits(rest_read_fifo_in)) ) rest_read_fifo_inst(
+generate
+  for(i=0; i<3; i+=1) begin : rest_read_fifo
+  fifo #(.DEPTH(3), .WIDTH($bits(rest_read_fifo_in[0])) ) rest_read_fifo_inst(
     .clk, .rst,
     .data_in(rest_read_fifo_in[i]),
     .data_out(rest_read_fifo_out[i]),
@@ -484,8 +510,8 @@ generate begin
     .we(rest_read_fifo_we[i]),
     .exists_in_fifo(),
     .num_left_in_fifo() );
-  end
-end
+  end : rest_read_fifo
+endgenerate
 
 //------------------------------------------------------------------------
 // rest write fifos
@@ -519,8 +545,8 @@ end
     rest_write_fifo_in[1].nodeID =  trav1_to_ss_data.rest_node_ID;
     rest_write_fifo_in[1].nodeID_valid =  trav1_to_ss_data.update_restnode_req;
     
-    rest_write_fifo_in[2].rayID = sint_to_ss_data.ray_info.rayID;
-    rest_write_fifo_in[2].t_max_scene =  sint_to_ss_data.t_max;
+    rest_write_fifo_in[2].rayID = sint_to_ss_data.rayID;
+    rest_write_fifo_in[2].t_max_scene =  sint_to_ss_data.t_max_scene;
     rest_write_fifo_in[2].t_max_scene_valid = 1'b1 ;
     rest_write_fifo_in[2].nodeID = 'h0 ;
     rest_write_fifo_in[2].nodeID_valid =  1'b1 ;
@@ -529,32 +555,36 @@ end
 
 
 
-genvar i;
-generate begin
-  for(i=0; i<2; i+=1) begin
-  fifo #(.DEPTH(3), .WIDTH($bits(rest_write_fifo_in)) ) rest_write_fifo_inst(
-    .clk, .rst,
-    .data_in(rest_write_fifo_in[i]),
-    .data_out(rest_write_fifo_out[i]),
-    .full(rest_write_fifo_full[i]),
-    .empty(rest_write_fifo_empty[i]),
-    .re(rest_write_fifo_re[i]),
-    .we(rest_write_fifo_we[i]),
-    .exists_in_fifo(),
-    .num_left_in_fifo() );
-  end
-endgenerate
+  generate 
+    for(i=0; i<3; i+=1) begin : rest_write_fifo
+    fifo #(.DEPTH(3), .WIDTH($bits(rest_write_fifo_in[0])) ) rest_write_fifo_inst(
+      .clk, .rst,
+      .data_in(rest_write_fifo_in[i]),
+      .data_out(rest_write_fifo_out[i]),
+      .full(rest_write_fifo_full[i]),
+      .empty(rest_write_fifo_empty[i]),
+      .re(rest_write_fifo_re[i]),
+      .we(rest_write_fifo_we[i]),
+      .exists_in_fifo(),
+      .num_left_in_fifo() );
+    end : rest_write_fifo
+  endgenerate
 
+  // early declaration of vspipe signals
+  logic rest_VSpipe_valid_us, rest_VSpipe_stall_us;
+  logic rest_VSpipe_valid_ds, rest_VSpipe_stall_ds;
+  logic [2:0] rest_min_num_left;
 
 //------------------------------------------------------------------------
   // rest read arbitration logic
   logic [1:0] rest_r_rrptr, rest_r_rrptr_n;
-  assign rest_r_rrptr_n = (|rest_rfifo_valid) ? (rest_r_rrptr == 2'h2 ? 2''h0 : rest_r_rrptr + 1'b1) : rest_r_rrptr ;
-  ff_ar #(2,2'b0) rest_r_rrptr_buf(.d(rest_r_rrptr_n), .q(rest_r_rrptr), .clk, .rst);
   
   logic [2:0] rest_rfifo_valid, rest_rfifo_choice;
-  assign rest_rfifo_valid = ~rest_read_fifo_empty & {3{rest_VSpipe_stall_us}};
-  
+  assign rest_rfifo_valid = ~rest_read_fifo_empty & ~{3{rest_VSpipe_stall_us}};
+   
+  assign rest_r_rrptr_n = (|rest_rfifo_valid) ? (rest_r_rrptr == 2'h2 ? 2'h0 : rest_r_rrptr + 1'b1) : rest_r_rrptr ;
+  ff_ar #(2,2'b0) rest_r_rrptr_buf(.d(rest_r_rrptr_n), .q(rest_r_rrptr), .clk, .rst);
+ 
   logic [1:0] rest_r_rrptr1, rest_r_rrptr2;
   always_comb begin
     unique case(rest_r_rrptr) 
@@ -580,29 +610,35 @@ endgenerate
     rest_rfifo_choice[rest_r_rrptr2] = rest_rfifo_valid[rest_r_rrptr2] & ~rest_rfifo_valid[rest_r_rrptr] & ~rest_rfifo_valid[rest_r_rrptr1];
   end
 
-  assign rest_write_fifo_re = rest_rfifo_choice;
+  assign rest_read_fifo_re = rest_rfifo_choice;
   
   rayID_t rest_cur_raddr;
   float_t rest_cur_t_min;
   always_comb begin
-    rest_cur_rptr = 'h0;
-    rest_read_valid = 'h0;
-    case(rest_rfifo_choice)
+    unique case(rest_rfifo_choice)
       3'b100: begin
         rest_cur_raddr = rest_read_fifo_out[2].rayID;
         rest_cur_t_min = rest_read_fifo_out[2].t_min;
+      end
       3'b010: begin
         rest_cur_raddr = rest_read_fifo_out[1].rayID;
         rest_cur_t_min = rest_read_fifo_out[1].t_min;
+      end
       3'b001: begin
         rest_cur_raddr = rest_read_fifo_out[0].rayID;
         rest_cur_t_min = rest_read_fifo_out[0].t_min;
+      end
+      3'b00 : begin
+        rest_cur_raddr = 'h0;
+        rest_cur_t_min = 'h0;
       end
     endcase
   end
   logic rest_is_reading;
   assign rest_is_reading = |rest_rfifo_valid;
 
+  logic [2:0] rest_wfifo_valid; // if not stalling and there is something in the write fifo
+  logic [2:0] rest_wfifo_choice; // Both bits CAN be set here (resolves read/write conflict)
 
   logic [1:0] rest_w_rrptr, rest_w_rrptr_n;
   assign rest_w_rrptr_n = (|rest_wfifo_choice) ? (rest_w_rrptr == 2'h2 ? 2'h0 : rest_w_rrptr + 1'b1) : rest_w_rrptr ;
@@ -627,8 +663,6 @@ endgenerate
   end
 
 
-  logic [2:0] rest_wfifo_valid; // if not stalling and there is something in the write fifo
-  logic [2:0] rest_wfifo_choice; // Both bits CAN be set here (resolves read/write conflict)
   
   assign rest_wfifo_valid = ~rest_write_fifo_empty;
   
@@ -648,18 +682,6 @@ endgenerate
   ss_elem_t rddataA_rest;
   ss_elem_t rddataB_rest;
 
-  nodeID
-  t_max_scene
-
-  struct packed {
-    rayID_t rayID;
-    nodeID_t nodeID;
-    logic nodeID_valid;
-    float_t t_max_scene;
-    logic t_max_scene_valid;
-  } rest_write_fifo_in[3], rest_write_fifo_out[3];
-
-
   always_comb begin
     unique case({rest_is_reading,rest_wfifo_choice})
       4'b1_100 : begin
@@ -676,7 +698,7 @@ endgenerate
 				beA_rest = 6'b11_1111;
 				beB_rest = { {2{rest_write_fifo_out[1].nodeID_valid}}, {4{rest_write_fifo_out[1].t_max_scene_valid}} } ;
         addrA_rest = rest_cur_raddr;
-        addrB_rest  rest_write_fifo_out[1].rayID ; 
+        addrB_rest = rest_write_fifo_out[1].rayID ; 
         wrdataA_rest = `DC ;
         wrdataB_rest = {rest_write_fifo_out[1].nodeID, rest_write_fifo_out[1].t_max_scene} ; 
         wrenA_rest = 0;
@@ -686,7 +708,7 @@ endgenerate
 				beA_rest = 6'b11_1111;
 				beB_rest = { {2{rest_write_fifo_out[0].nodeID_valid}}, {4{rest_write_fifo_out[0].t_max_scene_valid}} } ;
         addrA_rest = rest_cur_raddr;
-        addrB_rest  rest_write_fifo_out[0].rayID ; 
+        addrB_rest = rest_write_fifo_out[0].rayID ; 
         wrdataA_rest = `DC ;
         wrdataB_rest = {rest_write_fifo_out[0].nodeID, rest_write_fifo_out[0].t_max_scene} ; 
         wrenA_rest = 0;
@@ -706,7 +728,7 @@ endgenerate
 				beA_rest = 6'b0;
 				beB_rest = { {2{rest_write_fifo_out[2].nodeID_valid}}, {4{rest_write_fifo_out[2].t_max_scene_valid}} } ;
         addrA_rest = `DC;
-        addrB_rest  rest_write_fifo_out[2].rayID ; 
+        addrB_rest = rest_write_fifo_out[2].rayID ; 
         wrdataA_rest = `DC ;
         wrdataB_rest = {rest_write_fifo_out[2].nodeID, rest_write_fifo_out[2].t_max_scene} ; 
         wrenA_rest = 0;
@@ -716,7 +738,7 @@ endgenerate
 				beA_rest = 6'b0;
 				beB_rest = { {2{rest_write_fifo_out[1].nodeID_valid}}, {4{rest_write_fifo_out[1].t_max_scene_valid}} } ;
         addrA_rest = `DC;
-        addrB_rest  rest_write_fifo_out[1].rayID ; 
+        addrB_rest = rest_write_fifo_out[1].rayID ; 
         wrdataA_rest = `DC ;
         wrdataB_rest = {rest_write_fifo_out[1].nodeID, rest_write_fifo_out[1].t_max_scene} ; 
         wrenA_rest = 0;
@@ -726,7 +748,7 @@ endgenerate
 				beA_rest = 6'b0;
 				beB_rest = { {2{rest_write_fifo_out[0].nodeID_valid}}, {4{rest_write_fifo_out[0].t_max_scene_valid}} } ;
         addrA_rest = `DC;
-        addrB_rest  rest_write_fifo_out[0].rayID ; 
+        addrB_rest = rest_write_fifo_out[0].rayID ; 
         wrdataA_rest = `DC ;
         wrdataB_rest = {rest_write_fifo_out[0].nodeID, rest_write_fifo_out[0].t_max_scene} ; 
         wrenA_rest = 0;
@@ -745,8 +767,8 @@ endgenerate
       4'b0_110 : begin
 				beA_rest = { {2{rest_write_fifo_out[1].nodeID_valid}}, {4{rest_write_fifo_out[1].t_max_scene_valid}} } ;
 				beB_rest = { {2{rest_write_fifo_out[2].nodeID_valid}}, {4{rest_write_fifo_out[2].t_max_scene_valid}} } ;
-        addrA_rest  rest_write_fifo_out[1].rayID ; 
-        addrB_rest  rest_write_fifo_out[2].rayID ; 
+        addrA_rest = rest_write_fifo_out[1].rayID ; 
+        addrB_rest = rest_write_fifo_out[2].rayID ; 
         wrdataA_rest = {rest_write_fifo_out[1].nodeID, rest_write_fifo_out[1].t_max_scene } ; 
         wrdataB_rest = {rest_write_fifo_out[2].nodeID, rest_write_fifo_out[2].t_max_scene} ; 
         wrenA_rest = 1;
@@ -755,8 +777,8 @@ endgenerate
       4'b0_101 : begin
 				beA_rest = { {2{rest_write_fifo_out[0].nodeID_valid}}, {4{rest_write_fifo_out[0].t_max_scene_valid}} } ;
 				beB_rest = { {2{rest_write_fifo_out[2].nodeID_valid}}, {4{rest_write_fifo_out[2].t_max_scene_valid}} } ;
-        addrA_rest  rest_write_fifo_out[0].rayID ; 
-        addrB_rest  rest_write_fifo_out[2].rayID ; 
+        addrA_rest = rest_write_fifo_out[0].rayID ; 
+        addrB_rest = rest_write_fifo_out[2].rayID ; 
         wrdataA_rest = {rest_write_fifo_out[0].nodeID, rest_write_fifo_out[0].t_max_scene } ; 
         wrdataB_rest = {rest_write_fifo_out[2].nodeID, rest_write_fifo_out[2].t_max_scene} ; 
         wrenA_rest = 1;
@@ -765,8 +787,8 @@ endgenerate
       4'b0_011 : begin
 				beA_rest = { {2{rest_write_fifo_out[0].nodeID_valid}}, {4{rest_write_fifo_out[0].t_max_scene_valid}} } ;
 				beB_rest = { {2{rest_write_fifo_out[1].nodeID_valid}}, {4{rest_write_fifo_out[1].t_max_scene_valid}} } ;
-        addrA_rest  rest_write_fifo_out[0].rayID ; 
-        addrB_rest  rest_write_fifo_out[1].rayID ; 
+        addrA_rest = rest_write_fifo_out[0].rayID ; 
+        addrB_rest = rest_write_fifo_out[1].rayID ; 
         wrdataA_rest = {rest_write_fifo_out[0].nodeID, rest_write_fifo_out[0].t_max_scene } ; 
         wrdataB_rest = {rest_write_fifo_out[1].nodeID, rest_write_fifo_out[1].t_max_scene} ; 
         wrenA_rest = 1;
@@ -776,7 +798,7 @@ endgenerate
   end
 
   bram_dual_2port_be_512x48 rest_bram(
-  .aclr(rst),
+  //.aclr(rst),
   .address_a(addrA_rest),
   .address_b(addrB_rest),
   .byteena_a(beA_rest),
@@ -794,7 +816,7 @@ endgenerate
   // Buffer for t_maxc cur and a compparison against the tmax of the scene
   float_t minbuf_in, minbuf_out, minbuf_s3;
   float_t maxscene_s3;
-  nopeID_t restnode_s3;
+  nodeID_t restnode_s3;
 
   assign minbuf_in = rest_cur_t_min;
   buf_t3 #(.LAT(2), .WIDTH($bits(minbuf_in))) 
@@ -831,25 +853,27 @@ endgenerate
     logic is_shadow;
   } rest_VSpipe_in, rest_VSpipe_out;
 
+/*
   logic rest_VSpipe_valid_us, rest_VSpipe_stall_us;
   logic rest_VSpipe_valid_ds, rest_VSpipe_stall_ds;
   logic [2:0] rest_min_num_left;
+*/  
   
   always_comb begin
-    unique case(rest_rfifo_choice);
+    unique case(rest_rfifo_choice)
       3'b100 : begin 
-        rest_VS_pipe_in.rayID = rest_read_fifo_out[2].rayID;
-        rest_VS_pipe_in.is_shadow = rest_read_fifo_out[2].is_shadow;
+        rest_VSpipe_in.rayID = rest_read_fifo_out[2].rayID;
+        rest_VSpipe_in.is_shadow = rest_read_fifo_out[2].is_shadow;
       end
       3'b010 : begin 
-        rest_VS_pipe_in.rayID = rest_read_fifo_out[1].rayID;
-        rest_VS_pipe_in.is_shadow = rest_read_fifo_out[1].is_shadow;
+        rest_VSpipe_in.rayID = rest_read_fifo_out[1].rayID;
+        rest_VSpipe_in.is_shadow = rest_read_fifo_out[1].is_shadow;
       end
       3'b001 : begin 
-        rest_VS_pipe_in.rayID = rest_read_fifo_out[0].rayID;
-        rest_VS_pipe_in.is_shadow = rest_read_fifo_out[0].is_shadow;
+        rest_VSpipe_in.rayID = rest_read_fifo_out[0].rayID;
+        rest_VSpipe_in.is_shadow = rest_read_fifo_out[0].is_shadow;
       end
-      3'b000 : rest_VS_pipe_in = `DC;
+      3'b000 : rest_VSpipe_in = `DC;
     endcase
   end
   assign rest_VSpipe_valid_us = rest_is_reading;
@@ -879,6 +903,7 @@ endgenerate
   logic notmiss_fifo_empty;
   logic notmiss_fifo_re;
   logic notmiss_fifo_we;
+  logic [2:0] num_left_in_notmiss_fifo;
   always_comb begin
     notmiss_fifo_in.rayID= rest_VSpipe_out.rayID;
     notmiss_fifo_in.is_shadow = rest_VSpipe_out.is_shadow;
@@ -886,7 +911,7 @@ endgenerate
     notmiss_fifo_in.t_min =  minbuf_s3; 
     notmiss_fifo_in.t_max =  maxscene_s3; 
   end
-  assign notmiss_fifo_we = notmiss_VSpipe_valid_ds & notmiss_s3;
+  assign notmiss_fifo_we = rest_VSpipe_valid_ds & notmiss_s3;
 
   fifo #(.DEPTH(4), .WIDTH($bits(notmiss_fifo_in)) ) notmiss_fifo_inst(
     .clk, .rst,
@@ -899,16 +924,16 @@ endgenerate
     .exists_in_fifo(),
     .num_left_in_fifo(num_left_in_notmiss_fifo) );
 
-  assign notmiss_fifo_re = ss_to_tarb_valid & ~ss_to_tarb_stall;
-  assign ss_to_tarb_valid = ~notmiss_fifo_empty;
+  assign notmiss_fifo_re = ss_to_tarb_valid1 & ~ss_to_tarb_stall1;
+  assign ss_to_tarb_valid1 = ~notmiss_fifo_empty;
   always_comb begin
-    ss_to_tarb_data.ray_info = 'h0 ;
-    ss_to_tarb_data.ray_info.rayID = notmiss_fifo_out.rayID ;
-    ss_to_tarb_data.ray_info.is_shadow = notmiss_fifo_out.is_shadow;
-    ss_to_tarb_data.nodeID = notmiss_fifo_out.nodeID;
-    ss_to_tarb_data.restnode_search = 1'b1 ;
-    ss_to_tarb_data.t_max = notmiss_fifo_out.t_max ;
-    ss_to_tarb_data.t_min = notmiss_fifo_out.t_min ;
+    ss_to_tarb_data1.ray_info = 'h0 ;
+    ss_to_tarb_data1.ray_info.rayID = notmiss_fifo_out.rayID ;
+    ss_to_tarb_data1.ray_info.is_shadow = notmiss_fifo_out.is_shadow;
+    ss_to_tarb_data1.nodeID = notmiss_fifo_out.nodeID;
+    ss_to_tarb_data1.restnode_search = 1'b0 ;
+    ss_to_tarb_data1.t_max = notmiss_fifo_out.t_max ;
+    ss_to_tarb_data1.t_min = notmiss_fifo_out.t_min ;
   end
 
 //------------------------------------------------------------------------
@@ -924,7 +949,7 @@ endgenerate
     miss_fifo_in.rayID = rest_VSpipe_out.rayID;
     miss_fifo_in.is_shadow = rest_VSpipe_out.is_shadow ; 
   end
-  assign miss_fifo_we = miss_VSpipe_valid_ds & miss_s3;
+  assign miss_fifo_we = rest_VSpipe_valid_ds & miss_s3;
 
   fifo #(.DEPTH(4), .WIDTH($bits(miss_fifo_in)) ) miss_fifo_inst(
     .clk, .rst,
@@ -942,7 +967,7 @@ endgenerate
   assign ss_to_shader_data = miss_fifo_out;
   assign rest_min_num_left = (num_left_in_miss_fifo > num_left_in_notmiss_fifo) ? num_left_in_notmiss_fifo : num_left_in_miss_fifo ;
 
-  assign rest_VSpipe_stall = ss_to_tarb_stall | ss_to_shader_stall ;
+  assign rest_VSpipe_stall_ds = ss_to_tarb_stall1 | ss_to_shader_stall ;
 
   // trav0
   assign rest_write_fifo_we[2] = sint_to_ss_valid & ~rest_write_fifo_full[2] ;
@@ -951,8 +976,8 @@ endgenerate
 
   logic list_rest_read_valid;
   logic list_stack_read_valid;
-  assign list_rest_read_valid = list_to_ss_valid & list_to_ss_valid.ray_info.ss_num == 'h0 & ~rest_read_fifo_full[2] ;
-  assign list_stack_read_valid = list_to_ss_valid & list_to_ss_valid.ray_info.ss_num != 'h0 & ~stack_read_fifo_full[2] ;
+  assign list_rest_read_valid = list_to_ss_valid & list_to_ss_data.ray_info.ss_num == 'h0 & ~rest_read_fifo_full[2] ;
+  assign list_stack_read_valid = list_to_ss_valid & list_to_ss_data.ray_info.ss_num != 'h0 & ~stack_read_fifo_full[2] ;
   
   assign rest_read_fifo_we[2] = list_rest_read_valid ;
   assign stack_read_fifo_we[2] = list_stack_read_valid ;
@@ -979,8 +1004,8 @@ endgenerate
           end
         end
         4'b0100 : begin
-          rest_write_fifo_we[0] = ~rest_write_fifo_we[0];
-          trav0_to_ss_stall = rest_write_fifo_we[0];
+          rest_write_fifo_we[0] = ~rest_write_fifo_full[0];
+          trav0_to_ss_stall = rest_write_fifo_full[0];
         end
         4'b0010 : begin
           stack_write_fifo_we[0] = ~stack_write_fifo_full[0]; 
@@ -988,6 +1013,7 @@ endgenerate
         end
         4'b0011 : begin
           stack_write_fifo_we[0] = ~stack_write_fifo_full[0] & ~rest_write_fifo_full[0];
+          rest_write_fifo_we[0] = ~stack_write_fifo_full[0] & ~rest_write_fifo_full[0];
           trav0_to_ss_stall = stack_write_fifo_full[0] | rest_write_fifo_full[0] ;
         end
       endcase
@@ -1014,8 +1040,8 @@ endgenerate
           end
         end
         4'b0100 : begin
-          rest_write_fifo_we[1] = ~rest_write_fifo_we[1];
-          trav1_to_ss_stall = rest_write_fifo_we[1];
+          rest_write_fifo_we[1] = ~rest_write_fifo_full[1];
+          trav1_to_ss_stall = rest_write_fifo_full[1];
         end
         4'b0010 : begin
           stack_write_fifo_we[1] = ~stack_write_fifo_full[1]; 
@@ -1023,6 +1049,7 @@ endgenerate
         end
         4'b0011 : begin
           stack_write_fifo_we[1] = ~stack_write_fifo_full[1] & ~rest_write_fifo_full[1];
+          rest_write_fifo_we[1] = ~stack_write_fifo_full[1] & ~rest_write_fifo_full[1];
           trav1_to_ss_stall = stack_write_fifo_full[1] | rest_write_fifo_full[1] ;
         end
       endcase

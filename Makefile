@@ -78,6 +78,9 @@ lshape:
 	$(CC) $(FLAGS) -top lshape_tb COMMON/*v TBs/lshape_tb.sv
 
 
+ss: 
+	$(CC) $(FLAGS) -top tb_ss COMMON/*v COMMON/altfp*/*.v COMMON/bram/*.v  RAYTRACER/trav/* RAYTRACER/list/* RAYTRACER/raystore/* RAYTRACER/shortstack/*.sv
+
 
 clean:
 	rm -rf simv
