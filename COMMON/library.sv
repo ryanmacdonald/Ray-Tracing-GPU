@@ -153,7 +153,7 @@ endmodule
 
 // depth 2^k
 module fifo
-#(  parameter WIDTH = 32, DEPTH = 10)
+#(  parameter WIDTH = 32, DEPTH = 10, NUM_W = $clog2(DEPTH+1))
 (
   input logic clk, rst,
   input logic [WIDTH-1:0] data_in,
@@ -163,9 +163,9 @@ module fifo
   output logic exists_in_fifo,
   output logic empty,
   output logic [WIDTH-1:0] data_out,
-  output logic [$clog2(DEPTH):0] num_left_in_fifo);
+  output logic [NUM_W-1:0] num_left_in_fifo);
 
-  localparam K = $clog2(DEPTH);
+  localparam K = NUM_W;
 
   logic write_valid, read_valid;
 
@@ -361,7 +361,7 @@ module minimum2 #(parameter WIDTH = 4)
 endmodule: minimum2
 
 
-module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
+module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20, NUM_W = $clog2(DEPTH+2)) (
   input logic clk, rst,
   input logic us_valid,
   input logic [WIDTH-1:0] us_data,
@@ -371,8 +371,7 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20) (
   output logic [WIDTH-1:0] ds_data,
   input logic ds_stall,
 
-  input logic [$clog2(DEPTH+1):0] num_left_in_fifo);
-  localparam NUM_W = $clog2(DEPTH+1)+1;
+  input logic [NUM_W-1:0] num_left_in_fifo);
 
   logic [DEPTH-1:0] valid_buf, valid_buf_n;
   assign valid_buf_n = {~us_stall & us_valid,valid_buf[DEPTH-1:1]};

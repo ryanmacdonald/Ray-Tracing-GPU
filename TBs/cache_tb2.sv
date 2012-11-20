@@ -330,6 +330,7 @@ module cache_tb2;
 	end
 
 	// introduce random stalls from downstream
+	// TODO: these don't work. they show up one cycle late.
 	initial begin
 		forever begin
 			@(posedge clk);

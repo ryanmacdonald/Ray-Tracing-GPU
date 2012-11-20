@@ -9,12 +9,12 @@ typedef struct packed {
 } rs_arb_to_trav_pipe_t;
 
 typedef struct packed {
-	lcache_to_rs_t lcache_to_rs;
+	lcache_to_rs_t lcache_to_rs_data;
 	logic data_sel;
 } rs_arb_to_lcache_pipe_t;
 
 typedef struct packed {
-	list_to_rs_t list_to_rs;
+	list_to_rs_t list_to_rs_data;
 	logic data_sel;
 } rs_arb_to_list_pipe_t;
 
@@ -22,37 +22,37 @@ module raystore(
 
 	// upstream interface
 
-	input  trav_to_rs_t    trav_to_rs0,
-	input  logic           trav_to_rs0_valid,
-	output logic           trav_to_rs0_stall,
+	input  trav_to_rs_t    trav0_to_rs_data,
+	input  logic           trav0_to_rs_valid,
+	output logic           trav0_to_rs_stall,
 
-	input  trav_to_rs_t    trav_to_rs1,
-	input  logic           trav_to_rs1_valid,
-	output logic           trav_to_rs1_stall,
+	input  trav_to_rs_t    trav1_to_rs_data,
+	input  logic           trav1_to_rs_valid,
+	output logic           trav1_to_rs_stall,
 
-	input  lcache_to_rs_t  lcache_to_rs,
+	input  lcache_to_rs_t  lcache_to_rs_data,
 	input  logic           lcache_to_rs_valid,
 	output logic           lcache_to_rs_stall,
 
-	input  list_to_rs_t    list_to_rs,
+	input  list_to_rs_t    list_to_rs_data,
 	input  logic           list_to_rs_valid,
 	output logic           list_to_rs_stall,
 
 	// downstream interface
 
-	output rs_to_trav_t    rs_to_trav0,
+	output rs_to_trav_t    rs_to_trav0_data,
 	output logic           rs_to_trav0_valid,
 	input  logic           rs_to_trav0_stall,
 
-	output rs_to_trav_t    rs_to_trav1,
+	output rs_to_trav_t    rs_to_trav1_data,
 	output logic           rs_to_trav1_valid,
 	input  logic           rs_to_trav1_stall,
 
-	output rs_to_icache_t  rs_to_icache,
+	output rs_to_icache_t  rs_to_icache_data,
 	output logic           rs_to_icache_valid,
 	input  logic           rs_to_icache_stall,
 
-	output rs_to_pcalc_t   rs_to_pcalc,
+	output rs_to_pcalc_t   rs_to_pcalc_data,
 	output logic           rs_to_pcalc_valid,
 	input  logic           rs_to_pcalc_stall,
 
@@ -75,8 +75,8 @@ module raystore(
 	counter #(.W(2), .RV(2'b00)) round_robin_pointer(.cnt(rrp), .clr(1'b0), .inc(rrp_inc), .clk, .rst);
 
 	raystore_arb rsa(
-		.us_valid({list_to_rs_valid, lcache_to_rs_valid, trav_to_rs1_valid, trav_to_rs0_valid}),
-		.us_stall({list_to_rs_stall, lcache_to_rs_stall, trav_to_rs1_stall, trav_to_rs0_stall}),
+		.us_valid({list_to_rs_valid, lcache_to_rs_valid, trav1_to_rs_valid, trav0_to_rs_valid}),
+		.us_stall({list_to_rs_stall, lcache_to_rs_stall, trav1_to_rs_stall, trav0_to_rs_stall}),
 		.pipe_stall(us_pipe_stalls),
 		.pipe_valid(us_pipe_valids),
 		.data_sel,
@@ -91,7 +91,7 @@ module raystore(
 	logic [1:0] nlif0;
 
 	rs_arb_to_trav_pipe_t pvs0_data_in;
-	assign pvs0_data_in.trav_to_rs = trav_to_rs0;
+	assign pvs0_data_in.trav_to_rs = trav0_to_rs_data;
 	assign pvs0_data_in.data_sel = data_sel[0];
 
 	rs_arb_to_trav_pipe_t pvs0_data_out;
@@ -165,7 +165,7 @@ module raystore(
 		.re(f0_re),
 		.full(), // not used
 		.empty(f0_empty),
-		.data_out(rs_to_trav0),
+		.data_out(rs_to_trav0_data),
 		.num_left_in_fifo(nlif0),
 		.exists_in_fifo()
 	);
@@ -176,7 +176,7 @@ module raystore(
 	logic [1:0] nlif1;
 
 	rs_arb_to_trav_pipe_t pvs1_data_in;
-	assign pvs1_data_in.trav_to_rs = trav_to_rs1;
+	assign pvs1_data_in.trav_to_rs = trav1_to_rs_data;
 	assign pvs1_data_in.data_sel = data_sel[1];
 
 	rs_arb_to_trav_pipe_t pvs1_data_out;
@@ -250,7 +250,7 @@ module raystore(
 		.re(f1_re),
 		.full(), // not used
 		.empty(f1_empty),
-		.data_out(rs_to_trav1),
+		.data_out(rs_to_trav1_data),
 		.num_left_in_fifo(nlif1),
 		.exists_in_fifo()
 	);
@@ -262,7 +262,7 @@ module raystore(
 	logic [1:0] nlif2;
 
 	rs_arb_to_lcache_pipe_t pvs2_data_in;
-	assign pvs2_data_in.lcache_to_rs = lcache_to_rs;
+	assign pvs2_data_in.lcache_to_rs_data = lcache_to_rs_data;
 	assign pvs2_data_in.data_sel = data_sel[2];
 
 	rs_arb_to_lcache_pipe_t pvs2_data_out;
@@ -285,9 +285,9 @@ module raystore(
 
 	rs_to_icache_t f2_data_in;
 
-	assign f2_data_in.ray_info  = pvs2_data_out.lcache_to_rs.ray_info;
-	assign f2_data_in.ln_tri = pvs2_data_out.lcache_to_rs.ln_tri;
-	assign f2_data_in.triID  = pvs2_data_out.lcache_to_rs.triID;
+	assign f2_data_in.ray_info  = pvs2_data_out.lcache_to_rs_data.ray_info;
+	assign f2_data_in.ln_tri = pvs2_data_out.lcache_to_rs_data.ln_tri;
+	assign f2_data_in.triID  = pvs2_data_out.lcache_to_rs_data.triID;
 
 	assign f2_data_in.ray_vec = (pvs2_data_out.data_sel) ? rd_data1 : rd_data0;
 
@@ -304,7 +304,7 @@ module raystore(
 		.re(f2_re),
 		.full(), // not used
 		.empty(f2_empty),
-		.data_out(rs_to_icache),
+		.data_out(rs_to_icache_data),
 		.num_left_in_fifo(nlif2),
 		.exists_in_fifo()
 	);
@@ -316,7 +316,7 @@ module raystore(
 	logic [1:0] nlif3;
 
 	rs_arb_to_list_pipe_t pvs3_data_in;
-	assign pvs3_data_in.list_to_rs = list_to_rs;
+	assign pvs3_data_in.list_to_rs_data = list_to_rs_data;
 	assign pvs3_data_in.data_sel = data_sel[3];
 
 	rs_arb_to_list_pipe_t pvs3_data_out;
@@ -339,8 +339,8 @@ module raystore(
 
 	rs_to_pcalc_t f3_data_in;
 
-	assign f3_data_in.rayID  = pvs3_data_out.list_to_rs.rayID;
-	// TODO: other things for list_to_rs struct...
+	assign f3_data_in.rayID  = pvs3_data_out.list_to_rs_data.rayID;
+	// TODO: other things for list_to_rs_data struct...
 
 	assign f3_data_in.ray_vec = (pvs3_data_out.data_sel) ? rd_data1 : rd_data0;
 
@@ -357,7 +357,7 @@ module raystore(
 		.re(f3_re),
 		.full(), // not used
 		.empty(f3_empty),
-		.data_out(rs_to_pcalc),
+		.data_out(rs_to_pcalc_data),
 		.num_left_in_fifo(nlif3),
 		.exists_in_fifo()
 	);
@@ -369,19 +369,19 @@ module raystore(
 
 	always_comb begin
 		case(mux_sel0)
-			2'b00: addr0 = trav_to_rs0.ray_info.rayID;
-			2'b01: addr0 = trav_to_rs1.ray_info.rayID;
-			2'b10: addr0 = lcache_to_rs.ray_info.rayID;
-			2'b11: addr0 = list_to_rs.rayID;
+			2'b00: addr0 = trav0_to_rs_data.ray_info.rayID;
+			2'b01: addr0 = trav1_to_rs_data.ray_info.rayID;
+			2'b10: addr0 = lcache_to_rs_data.ray_info.rayID;
+			2'b11: addr0 = list_to_rs_data.rayID;
 		endcase
 	end
 
 	always_comb begin
 		case(mux_sel1)
-			2'b00: addr1 = trav_to_rs0.ray_info.rayID;
-			2'b01: addr1 = trav_to_rs1.ray_info.rayID;
-			2'b10: addr1 = lcache_to_rs.ray_info.rayID;
-			2'b11: addr1 = list_to_rs.rayID;
+			2'b00: addr1 = trav0_to_rs_data.ray_info.rayID;
+			2'b01: addr1 = trav1_to_rs_data.ray_info.rayID;
+			2'b10: addr1 = lcache_to_rs_data.ray_info.rayID;
+			2'b11: addr1 = list_to_rs_data.rayID;
 		endcase
 	end
 
