@@ -80,7 +80,7 @@ module ryan_demo(
 				.pkt_rec(pkt_rec),.cnt11());
 
 	ps2_parse	  parse(.clk,.rst_b(~rst),
-				.ps2_pkt_DH(shift_data[7:0]),
+				.ps2_pkt_DH(shift_data[30:23]),
 				.rec_ps2_pkt(pkt_rec),.keys(keys));
 
 	logic[31:0] pw;

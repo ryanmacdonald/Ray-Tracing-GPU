@@ -16,9 +16,11 @@ module ps2_demo(input logic clk,
 		   inout PS2_CLK,
 		   inout PS2_DAT);
 
-	logic start,rst, stripes_sel, sq_sel;
-	assign start = ~btns[0];
-	assign rst   = btns[3];
+	logic start, start_btn, rst, stripes_sel, sq_sel;
+	assign start = btns[0];
+	assign rst   = ~btns[3];
+
+	negedge_detector nd(.in(start_btn),.ed(start),.clk,.rst);
 
 	assign stripes_sel = switches[0];
 	assign sq_sel = switches[1];
@@ -43,7 +45,7 @@ module ps2_demo(input logic clk,
                                 .pkt_rec(pkt_rec),.cnt11());
 
         ps2_parse         parse(.clk,.rst_b(~rst),
-                                .ps2_pkt_DH(shift_data[7:0]),
+                                .ps2_pkt_DH(shift_data[30:23]),
                                 .rec_ps2_pkt(pkt_rec),.keys(keys));
 
 
@@ -60,11 +62,12 @@ module ps2_demo(input logic clk,
 
 
 	always_comb begin
+		sq_col_n = sq_col; sq_row_n = sq_row;
 		case({keys.w[0],keys.a[0],keys.s[0],keys.d[0]})
 			4'b1000: sq_row_n = sq_row - 9'd1;
-			4'b0100: sq_col_n = sq_col + 9'd1;
+			4'b0001: sq_col_n = sq_col + 9'd1;
 			4'b0010: sq_row_n = sq_row + 9'd1;
-			4'b0001: sq_col_n = sq_col - 9'd1;
+			4'b0100: sq_col_n = sq_col - 9'd1;
 			default:begin
 				sq_col_n = sq_col; sq_row_n = sq_row;
 			end	
