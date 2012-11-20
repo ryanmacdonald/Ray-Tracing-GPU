@@ -48,6 +48,15 @@ module ryan_demo(
 
 	keys_t keys;
 	logic rendering_done, render_frame;
+
+	
+	logic[18:0] rendcnt, rendcnt_n;
+	assign rendcnt_n = pb_re ? ( rendering_done ? 19'b1 : rendcnt + 19'b1) : rendcnt;
+	ff_ar #(19,0) pb_cnt(.q(rendcnt),.d(rendcnt_n),.clk,rst);
+
+	assign rendering_done = (rendcnt == 19'd307200);
+
+
 	vector_t E, U, V, W;
 	camera_controller cc(.clk,.rst,.v0,.v1,.v2,
 			     .keys(keys),.rendering_done,.render_frame,
@@ -119,6 +128,7 @@ module ryan_demo(
 				.ssf_ray_out,.ssh_ray_out,.tf_ray_out,
 				.tf_ds_stall,.ssf_ds_stall,.ssh_ds_stall,
 				.pb_data(pb_data_in),
+				.pb_full,
 				.pb_we);
 
 

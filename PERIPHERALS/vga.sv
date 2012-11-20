@@ -80,3 +80,22 @@ module stripes(
     assign vga_color[0] = blue | cyan | purple | white;
 
 endmodule
+
+
+
+module square(
+	output logic[2:0] vga_color,
+	input logic[9:0] vga_row,
+	input logic[9:0] vga_col,
+	input logic[9:0] sq_row,
+	input logic[9:0] sq_col);
+
+	always_comb begin
+		if((sq_row < vga_row && vga_row < sq_row+9'd50) &&
+		   (sq_col < vga_col && vga_col < sq_col+9'd50)) begin
+			vga_color = 3'b100;
+		end
+		else vga_color = 3'b111;
+	end
+
+endmodule
