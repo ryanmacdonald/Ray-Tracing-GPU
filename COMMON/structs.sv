@@ -89,6 +89,13 @@
 `define VGA_CYC25_PER_SCREEN  1*(`VGA_VS_TS * `VGA_HS_TS) // 1* to cast as 32 bit integer
 ////////////////////// End of Defines for VGA //////////////////////
 
+
+////////////////////// Definies for shader /////////////////////////
+`define MISS_COLOR 24'hff_ff_ff
+`define TRI_0_COLOR 24'hff_00_ff
+`define TRI_1_COLOR 24'h00_FF_00
+
+
 typedef struct packed {
   logic sign;
   logic [7:0] exp;
