@@ -44,10 +44,10 @@ int_wrap:
 	$(CC) $(FLAGS) -top int_wrap COMMON/*v  COMMON/altfp*/*.v RAYTRACER/int/*.sv RAYTRACER/int/int_wrap.sv
 
 new_int: 
-	$(CC) $(FLAGS) -top tb_int_unit COMMON/*v COMMON/altfp*/*.v COMMON/altb*/*/*v RAYTRACER/int/*.sv
+	$(CC) $(FLAGS) -top tb_int_unit COMMON/*v COMMON/altfp*/*.v COMMON/altb*/*v RAYTRACER/int/*.sv
 
 trav: 
-	$(CC) $(FLAGS) -top tb_trav_unit COMMON/*v COMMON/altfp*/*.v COMMON/altb*/*/*v RAYTRACER/trav/*.sv RAYTRACER/raystore/*v
+	$(CC) $(FLAGS) -top tb_trav_unit COMMON/*v COMMON/altfp*/*.v COMMON/altb*/*v RAYTRACER/trav/*.sv RAYTRACER/raystore/*v
 
 prg_int: 
 	$(CC) $(FLAGS) -top tb_int_prg COMMON/*v  COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv TBs/tb_int_prg.sv
@@ -82,8 +82,8 @@ ps2_demo:
 ss: 
 	$(CC) $(FLAGS) -top tb_ss COMMON/*v COMMON/altfp*/*.v COMMON/bram/*.v  RAYTRACER/trav/* RAYTRACER/list/* RAYTRACER/raystore/* RAYTRACER/shortstack/*.sv
 
-shade: 
-	$(CC) $(FLAGS) -top simple_shader_unit COMMON/*v COMMON/altfp*/*.v COMMON/bram/*.v  RAYTRACER/shader/*.sv
+shader: 
+	$(CC) $(FLAGS) -top simple_shader_unit COMMON/*v COMMON/altfp*/*.v COMMON/bram/*.v COMMON/altb*/*v RAYTRACER/shader/*.sv
 
 ryan:
 	$(CC) $(FLAGS) -top tb_ryan_demo COMMON/*v COMMON/altfp*/*.v PS2/* COMMON/altbram_fifo/altbramfifo_w211_d16/*v RAYTRACER/scene_int/* PRG/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv CAMERA/*v TBs/tb_ryan_demo.sv DEMOS/ryan_demo.sv 

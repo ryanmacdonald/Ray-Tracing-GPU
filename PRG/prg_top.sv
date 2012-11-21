@@ -7,15 +7,15 @@ module prg_top(input logic clk, rst,
 	       input logic start,
 	       input vector_t E, U, V, W,
 	       input float_t pw,
-	       input logic int_to_prg_stall,
-	       output logic ready, done,
-	       output prg_ray_t prg_data);
+	       input logic prg_to_shader_stall,
+	       output logic prg_to_shader_valid, done,
+	       output prg_ray_t prg_to_shader_data);
 	
 	`ifndef SYNTH
 	shortreal px_q,py_q,pz_q;
-	assign px_q = $bitstoshortreal(prg_data.dir.x);
-	assign py_q = $bitstoshortreal(prg_data.dir.y);
-	assign pz_q = $bitstoshortreal(prg_data.dir.z);
+	assign px_q = $bitstoshortreal(prg_to_shader_data.dir.x);
+	assign py_q = $bitstoshortreal(prg_to_shader_data.dir.y);
+	assign pz_q = $bitstoshortreal(prg_to_shader_data.dir.z);
 	`endif
 
 
@@ -32,11 +32,11 @@ module prg_top(input logic clk, rst,
 	
   // TODO replace .K with .DEPTH 
 	//fifo #(.WIDTH($bits(ray_t)),.K(4)) q(.clk,.rst,.data_in(prg_out),.we(rb_we),.re(rb_re),
-	//				     .full(rb_full),.empty(rb_empty),.data_out(prg_data));
+	//				     .full(rb_full),.empty(rb_empty),.data_out(prg_to_shader_data));
 
 	
 	altbramfifo_w211_d16 rb(.clock(clk),.data(prg_out),.rdreq(rb_re),.wrreq(rb_we),
-				.empty(rb_empty),.full(rb_full),.q(prg_data));
+				.empty(rb_empty),.full(rb_full),.q(prg_to_shader_data));
 					    
 
 	ff_ar_en #(10,0)   xr(.q(x),.d(nextX),.en(count_en),.clk,.rst);
@@ -47,14 +47,16 @@ module prg_top(input logic clk, rst,
 	assign nextX = (x == 'd639) ? 0 : x + 1;
 	assign nextY = (x == 'd639) ? y - 1 : y;
 
-	assign count_en = ~int_to_prg_stall && v2;
+	assign count_en = ~prg_to_shader_stall && v2;
 
 	assign rb_we = rayReady;
-	assign rb_re = ~rb_empty && ~int_to_prg_stall && v0;
+	
+  // TODO used to be anded with v0
+  assign rb_re = ~rb_empty && ~prg_to_shader_stall;
 
-	assign ready = rb_re;
+	assign prg_to_shader_valid = rb_re;
 
-	assign x_y_valid = ~int_to_prg_stall;
+	assign x_y_valid = ~prg_to_shader_stall;
 
 
 endmodule: prg_top

@@ -5,12 +5,12 @@ module simple_shader_unit(
 
 
   input logic prg_to_shader_valid,
-  input prg_to_shader_t prg_to_shader_data,
+  input prg_ray_t prg_to_shader_data,
   output logic prg_to_shader_stall,
 
   
   input logic pcalc_to_shader_valid,
-  input pcalc_to_shader_t pcalc_to_shader_data,
+  input rs_to_pcalc_t pcalc_to_shader_data,
   output logic pcalc_to_shader_stall,
 
   input logic int_to_shader_valid,
@@ -26,9 +26,9 @@ module simple_shader_unit(
   output logic ss_to_shader_stall,
 
   
-  output logic pb_we;
-  input logic pb_full;
-  output pixel_buffer_entry_t pb_data_in;
+  output logic pb_we,
+  input logic pb_full,
+  output pixel_buffer_entry_t pb_data_out,
  
 
   output logic shader_to_sint_valid,
@@ -37,7 +37,7 @@ module simple_shader_unit(
 
 	output logic raystore_we,
 	output rayID_t raystore_write_addr,
-	output ray_vec_t raystore_write_data,
+	output ray_vec_t raystore_write_data
 
 
   );
@@ -53,25 +53,25 @@ module simple_shader_unit(
 	logic	  rayID_wrreq;
 	logic	  rayID_empty;
 	logic	  rayID_full;
- 
+  logic [8:0] num_rays_in_fifo;
 
   altbramfifo_w9_d512 rayID_fifo(
-	.clock (clk),
+	.aclr(rst),
+  .clock (clk),
 	.data ( rayID_fifo_in),
 	.rdreq(rayID_rdreq),
 	.wrreq(rayID_wrreq),
 	.empty(rayID_empty),
 	.full(rayID_full),
 	.q(rayID_fifo_out ),
-  .usedw(rayID_num_fifo));
-
+  .usedw(num_rays_in_fifo) );
 
 //------------------------------------------------------------------------
   // rayID initialization logic
-  logic is_init_n;  // State bit for initializing 
+  logic is_init, is_init_n;  // State bit for initializing 
   rayID_t rayID_cnt, rayID_cnt_n;
   assign rayID_cnt_n = is_init ? rayID_cnt + 1'b1 : 'h0 ;
-  assign is_init_n = is_init ? (rayID_cnt == 9'h511) : 1'b0 ;
+  assign is_init_n = is_init ? (rayID_cnt == 9'd511) : 1'b0 ;
   ff_ar #($bits(rayID_t),'h0) rayID_cnt_buf(.d(rayID_cnt_n), .q(rayID_cnt), .clk, .rst);
   ff_ar #(1,1'b1) is_init_buf(.d(is_init_n), .q(is_init), .clk, .rst);
   
@@ -88,7 +88,7 @@ module simple_shader_unit(
   assign waddr_ray_data = rayID_fifo_out;
   assign wrdata_ray_data = prg_to_shader_data.pixelID;
 
-  bram_dual_rw_512x ray_data_bram(
+  bram_dual_rw_512x19 ray_data_bram(
   //.aclr(rst),
   .rdaddress(raddr_ray_data),
   .wraddress(waddr_ray_data),
@@ -127,7 +127,7 @@ module simple_shader_unit(
 
 
   // ray_data Fifo instantiation
-  packed struct {
+  struct packed {
     pixelID_t pixelID;
     triID_t triID;
     logic is_hit;
@@ -147,7 +147,7 @@ module simple_shader_unit(
   assign ray_data_fifo_we = ray_data_VSpipe_valid_ds;
   assign ray_data_VSpipe_stall_ds = pb_full & ~ray_data_fifo_empty;
   
-  fifo #(.DEPTH(5), .WIDTH($bits(ray_data_fifo_in)) ) ray_data_fifo_inst(
+  fifo #(.DEPTH(3), .WIDTH($bits(ray_data_fifo_in)) ) ray_data_fifo_inst(
     .clk, .rst,
     .data_in(ray_data_fifo_in),
     .data_out(ray_data_fifo_out),
@@ -164,7 +164,7 @@ module simple_shader_unit(
   // output to pixel buffer
       // call calc_color function here.
   always_comb begin
-    pb_data_out.color = calc_color(ray_Data_fifo_out.is_hit,ray_data_fifo_out.triID)
+    pb_data_out.color = calc_color(ray_data_fifo_out.is_hit,ray_data_fifo_out.triID);
     pb_data_out.pixelID = ray_data_fifo_out.pixelID;
   end
 
@@ -181,17 +181,17 @@ module simple_shader_unit(
   to_shader_t int_data_in;
   to_shader_t ss_data_in;
   always_comb begin
-    pcalc_data_in.ray_info = pcalc_to_shader_data.ray_info ;
-    pcalc_data_in.triid = pcalc_to_shader_data.triId ;
+    pcalc_data_in.ray_info = pcalc_to_shader_data.rayID ;
+    pcalc_data_in.triID = pcalc_to_shader_data.triID ;
     pcalc_data_in.is_hit = 1'b1;
-    int_data_in.ray_info = int_to_shader_data.ray_info ;
-    int_data_in.triid = `DC ;
+    int_data_in.ray_info = int_to_shader_data.rayID;
+    int_data_in.triID = `DC ;
     int_data_in.is_hit = 1'b1;
-    sint_data_in.ray_info = sint_to_shader_data.ray_info ;
+    sint_data_in.ray_info = sint_to_shader_data.rayID ;
     sint_data_in.triID = `DC ;
     sint_data_in.is_hit = 1'b0;
-    ss_data_in.ray_info = ss_to_shader_data.ray_info ;
-    ss_data_in.triId = `DC ;
+    ss_data_in.ray_info = ss_to_shader_data.rayID ;
+    ss_data_in.triID = `DC ;
     ss_data_in.is_hit = 1'b0;
   end
 
@@ -220,7 +220,7 @@ module simple_shader_unit(
 
  end
 
-  arbitor arbitor_inst(
+  arbitor #(.NUM_IN(4), .WIDTH($bits(to_shader_t))) arbitor_inst(
 		.clk,
 		.rst,
 		.valid_us(arb_valid_us),
@@ -244,20 +244,31 @@ module simple_shader_unit(
 
 //------------------------------------------------------------------------
   // PRG -> sint/rs path
+  ray_vec_t prg_ray_vec;
+  assign prg_ray_vec.origin = prg_to_shader_data.origin;
+  assign prg_ray_vec.dir = prg_to_shader_data.dir;
 
   assign prg_to_shader_stall = shader_to_sint_stall | rayID_empty;
   assign shader_to_sint_valid = prg_to_shader_valid & ~rayID_empty;
+  always_comb begin
+    shader_to_sint_data.rayID = rayID_fifo_out;
+    shader_to_sint_data.is_shadow = 1'b0;
+    shader_to_sint_data.ray_vec = prg_ray_vec;
+  end
   assign rayID_rdreq = prg_to_shader_valid & ~prg_to_shader_stall ;
   assign wren_ray_data = prg_to_shader_valid & ~prg_to_shader_stall ;
 
 
+  assign raystore_we = shader_to_sint_valid;
+  assign raystore_write_addr = rayID_fifo_out;
+  assign raystore_write_data = prg_ray_vec ;
 
 //------------------------------------------------------------------------
 
   function color_t calc_color(logic is_hit, triID_t triID);
     if(~is_hit) return `MISS_COLOR;
     else begin
-      unique case(triID);
+      unique case(triID)
         16'h0 : return `TRI_0_COLOR;
         16'h1 : return `TRI_1_COLOR;
       endcase

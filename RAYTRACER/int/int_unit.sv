@@ -62,8 +62,14 @@ module int_unit(
   logic pipe_ds_stall;
   logic [5:0] num_in_fifo;
 
+	logic	  list_full;
+	logic	  larb_full;
+  
+  logic [7:0] list_num_in_fifo, larb_num_in_fifo;
+  logic [8:0] list_num_fifo, larb_num_fifo ;
+  assign list_num_fifo = {list_full,list_num_in_fifo};
+  assign larb_num_fifo = {larb_full,larb_num_in_fifo};
 
-  logic [5:0] list_num_fifo, larb_num_fifo ;
 
 
   always_comb begin
@@ -74,10 +80,10 @@ module int_unit(
   end
   
   logic int_us_stall;
-  logic [5:0] min_num_left_in_fifo;
-  assign min_num_left_in_fifo = 6'd45 - (list_num_fifo>larb_num_fifo ? list_num_fifo : larb_num_fifo) ;
+  logic [8:0] min_num_left_in_fifo;
+  assign min_num_left_in_fifo = 9'd256 - (list_num_fifo>larb_num_fifo ? list_num_fifo : larb_num_fifo) ;
   // The math pipleile is 45 latency
-  pipe_valid_stall #(.WIDTH($bits(int_pipe_in)), .DEPTH(45)) pipe_inst(
+  pipe_valid_stall #(.WIDTH($bits(int_pipe_in)), .DEPTH(45), .NUM_W(9)) pipe_inst(
     .clk, .rst,
     .us_valid(icache_to_int_valid),
     .us_data(int_pipe_in),
@@ -93,14 +99,12 @@ module int_unit(
   logic	  list_rdreq;
 	logic	  list_wrreq;
 	logic	  list_empty;
-	logic	  list_full;
 
   int_to_list_t list_fifo_in, list_fifo_out;
 
 	logic	  larb_rdreq;
 	logic	  larb_wrreq;
 	logic	  larb_empty;
-	logic	  larb_full;
   
   leaf_info_t larb_fifo_in, larb_fifo_out;
   
@@ -132,26 +136,28 @@ module int_unit(
   assign larb_wrreq = pipe_ds_valid & (~is_last);
 
   // Should be 129
-  altbramfifo_w144_d45 list_fifo(
-	.clock (clk),
+  altbramfifo_w129_d256 list_fifo(
+	.aclr(rst),
+  .clock (clk),
 	.data ( list_fifo_in),
 	.rdreq(list_rdreq),
 	.wrreq(list_wrreq),
 	.empty(list_empty),
 	.full(list_full),
 	.q(list_fifo_out ),
-  .usedw(list_num_fifo));
+  .usedw(list_num_in_fifo));
 
   // Should be 33
-  altbramfifo_w144_d45 larb_fifo(
-	.clock (clk),
+  altbramfifo_w33_d256 larb_fifo(
+	.aclr(rst),
+  .clock (clk),
 	.data ( larb_fifo_in),
 	.rdreq(larb_rdreq),
 	.wrreq(larb_wrreq),
 	.empty(larb_empty),
 	.full(larb_full),
 	.q(larb_fifo_out ),
-  .usedw(larb_num_fifo));
+  .usedw(larb_num_in_fifo));
 
   assign int_to_list_data = list_fifo_out;
   assign int_to_list_valid = ~list_empty;

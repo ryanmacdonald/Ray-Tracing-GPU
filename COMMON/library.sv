@@ -446,6 +446,10 @@ module lshape #(parameter SIDE_W = 10, UNSTALL_W = 100, DEPTH = 20)
 
 endmodule
 */
+`ifndef FUCKING_STRUCTS
+  `include "COMMON/structs.sv"
+  `define FUCKING_STRUCTS
+`endif
 
 module arbitor #(parameter NUM_IN=4, WIDTH = 10) (
 
@@ -469,10 +473,10 @@ module arbitor #(parameter NUM_IN=4, WIDTH = 10) (
   
   genvar j;
   generate
-    for(j=0; j<NUM_IN; j++) begin
+    for(j=0; j<NUM_IN; j++) begin : hurrdurr_rptr
       assign rrptr_arr_n[j] = ~stall_s1 & (|valid_us) ? (rrptr_arr[j] == (NUM_IN-1) ? 'h0 : rrptr_arr[j] + 1'b1) : rrptr_arr[j] ;
       ff_ar #($clog2(NUM_IN),j) rrptr_arr_buf(.d(rrptr_arr_n[j]), .q(rrptr_arr[j]), .clk, .rst);
-    end 
+    end :hurrdurr_rptr
   endgenerate
 
   logic [NUM_IN-1:0] choice;

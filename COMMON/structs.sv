@@ -1,6 +1,8 @@
 `default_nettype none
 // uncomment the following line when synthesizing to board
 //`define SYNTH
+`ifndef FUCKING_STRUCTS
+  `define FUCKING_STRUCTS
 
 `ifdef SYNTH
 	`define DC 'h0
@@ -403,10 +405,6 @@ typedef struct packed {
 
 } icache_to_int_t ;
 
-typedef struct packed {
-    ray_vec_t ray_vec;
-} pcalc_to_rs_t;
-
 
 // int_to_list_t
 typedef struct packed {
@@ -419,9 +417,13 @@ typedef struct packed {
 
 } int_to_list_t ;
 
-
 typedef struct packed {
   rayID_t rayID;
+} int_to_shader_t;
+
+
+typedef struct packed {
+  ray_info_t ray_info;
   bari_uv_t uv;
   float_t t_int;
   triID_t triID;
@@ -441,8 +443,11 @@ typedef struct packed {
 } ss_to_shader_t;
 
 typedef struct packed {
-    rayID_t rayID;
-    ray_vec_t ray_vec;
+  rayID_t rayID;
+  bari_uv_t uv;
+  float_t t_int;
+  triID_t triID;
+  ray_vec_t ray_vec;
 } rs_to_pcalc_t;
 
 /*
@@ -454,4 +459,4 @@ typedef struct packed {
 } int_to_mailbox;
 */
 
-
+`endif
