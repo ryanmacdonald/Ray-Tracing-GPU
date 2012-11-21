@@ -52,7 +52,7 @@ module ryan_demo(
 	
 	logic[18:0] rendcnt, rendcnt_n;
 	assign rendcnt_n = pb_re ? ( rendering_done ? 19'b1 : rendcnt + 19'b1) : rendcnt;
-	ff_ar #(19,0) pb_cnt(.q(rendcnt),.d(rendcnt_n),.clk,rst);
+	ff_ar #(19,0) pb_cnt(.q(rendcnt),.d(rendcnt_n),.clk,.rst);
 
 	assign rendering_done = (rendcnt == 19'd307200);
 
@@ -93,7 +93,8 @@ module ryan_demo(
 	logic prg_ready, us_stall;
 	prg_ray_t prg_data;
 	prg		  prg(.clk,.rst,.v0,.v1,.v2,.start(start),
-			      .E,.U,.V,.W,.pw,.int_to_prg_stall(us_stall),.ready(prg_ready),.done(),.prg_data);	  
+			      .E,.U,.V,.W,.pw,.prg_to_int_stall(us_stall),
+			      .prg_to_int_valid(prg_ready),.done(),.prg_data);	  
 
 	shader_to_sint_t ray_in;
 	assign ray_in.rayID = prg_data.pixelID;

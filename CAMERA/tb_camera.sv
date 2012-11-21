@@ -29,11 +29,28 @@ module tb_camera;
 		keys.pressed <= 0;
 		@(posedge clk);
 		fork 
+			render_done_ctrl(200);
 			render_done_ctrl(300);
-			key_release_ctrl(200);
+			key_release_ctrl(500);
 		join
-		render_done_ctrl(50);
-		render_done_ctrl(50);
+
+		@(posedge clk);
+		keys.w[0] <= 1;
+		keys.pressed <= 1;	
+		@(posedge clk);
+		keys.w[0] <= 0;
+		keys.pressed <= 0;
+		@(posedge clk);
+		fork 
+			render_done_ctrl(200);
+			render_done_ctrl(300);
+			key_release_ctrl_w(500);
+		join
+
+
+
+		//render_done_ctrl(50);
+		//render_done_ctrl(50);
 
 		repeat(1000) @(posedge clk);	
 
@@ -82,5 +99,20 @@ module tb_camera;
 
 	endtask
 
+	task key_release_ctrl_w(int cycles);
+
+
+		repeat(cycles) @(posedge clk);
+
+		keys.w[1] <= 1;
+		keys.released <= 1;
+
+		@(posedge clk);
+
+		keys.w[1] <= 0;
+		keys.released <= 0;		
+
+
+	endtask
 
 endmodule: tb_camera

@@ -31,7 +31,7 @@ module camera_datapath (input logic clk, rst,
 `endif
 
 	logic[31:0] shift, move_val, move_val_n;
-	logic[2:0] last_key;
+	//logic[2:0] last_key;
 	logic update_cam;
 	vector_t E_n,U_n,V_n,W_n;
 	vector_t nextCam,nextCam_n;
@@ -41,14 +41,14 @@ module camera_datapath (input logic clk, rst,
 	sync_to_v #(0) vs(.synced_signal(update_cam),.clk,.rst,.v0,.v1,.v2,
 			  .signal_to_sync(ld_curr_camera));
 
-	ff_ar_en #(32,0) sr(.q(shift),.d(cnt),.en(render_frame&&ld_curr_camera),.clk,.rst);
+	//ff_ar_en #(32,0) sr(.q(shift),.d(cnt),.en(render_frame&&ld_curr_camera),.clk,.rst);
 	
 
 	////// FP INSTANTIATIONS AND LOGIC //////
 
 	
 	logic[31:0] conv_dataa, conv_result;
-	assign conv_dataa = shift;
+	assign conv_dataa = cnt;
 	altfp_convert conv(.dataa(conv_dataa),.result(conv_result),
 			   .clock(clk),.aclr(rst));
 
@@ -117,7 +117,7 @@ module camera_datapath (input logic clk, rst,
 			nextCam_n.z = add_1_result;
 		end
 
-		case(last_key)
+		case(key)
 			`UPOS: vector_sel = U;
 			`UNEG: vector_sel = U;
 			`VPOS: vector_sel = V;
@@ -129,11 +129,11 @@ module camera_datapath (input logic clk, rst,
 
 		comp_sel = v2 ? vector_sel.x : (v0 ? vector_sel.y : vector_sel.z);
 
-		mult_2_datab = last_key[0] ? {~comp_sel[31],comp_sel[30:0]} : comp_sel;
+		mult_2_datab = key[0] ? {~comp_sel[31],comp_sel[30:0]} : comp_sel;
 
 	end	
 
-	ff_ar_en #(3,0) kreg(.q(last_key),.d(key),.en(ld_curr_camera),.clk,.rst);
+	//ff_ar_en #(3,0) kreg(.q(last_key),.d(key),.en(ld_curr_camera),.clk,.rst);
 
 	always_ff @(posedge clk, posedge rst) begin
 		if(rst) begin
