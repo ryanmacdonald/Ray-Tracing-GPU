@@ -42,9 +42,6 @@ module simple_shader_unit(
 
   );
 
-
-
-
 //------------------------------------------------------------------------
   // rayID Fifo instantiation
   rayID_t rayID_fifo_in, rayID_fifo_out;
@@ -71,7 +68,7 @@ module simple_shader_unit(
   logic is_init, is_init_n;  // State bit for initializing 
   rayID_t rayID_cnt, rayID_cnt_n;
   assign rayID_cnt_n = is_init ? rayID_cnt + 1'b1 : 'h0 ;
-  assign is_init_n = is_init ? (rayID_cnt == 9'd511) : 1'b0 ;
+  assign is_init_n = is_init ? (rayID_cnt == 9'd511 ? 1'b0 : 1'b1) : 1'b0 ;
   ff_ar #($bits(rayID_t),'h0) rayID_cnt_buf(.d(rayID_cnt_n), .q(rayID_cnt), .clk, .rst);
   ff_ar #(1,1'b1) is_init_buf(.d(is_init_n), .q(is_init), .clk, .rst);
   
@@ -146,7 +143,8 @@ module simple_shader_unit(
   assign ray_data_fifo_re = ~pb_full & ~ray_data_fifo_empty;
   assign ray_data_fifo_we = ray_data_VSpipe_valid_ds;
   assign ray_data_VSpipe_stall_ds = pb_full & ~ray_data_fifo_empty;
-  
+  assign pb_we = ray_data_fifo_re ;
+
   fifo #(.DEPTH(3), .WIDTH($bits(ray_data_fifo_in)) ) ray_data_fifo_inst(
     .clk, .rst,
     .data_in(ray_data_fifo_in),
@@ -168,9 +166,10 @@ module simple_shader_unit(
     pb_data_out.pixelID = ray_data_fifo_out.pixelID;
   end
 
+
 //------------------------------------------------------------------------
   typedef struct packed {
-    ray_info_t ray_info;
+    rayID_t rayID;
     triID_t triID;
     logic is_hit;
   } to_shader_t;
@@ -181,16 +180,16 @@ module simple_shader_unit(
   to_shader_t int_data_in;
   to_shader_t ss_data_in;
   always_comb begin
-    pcalc_data_in.ray_info = pcalc_to_shader_data.rayID ;
+    pcalc_data_in.rayID = pcalc_to_shader_data.rayID ;
     pcalc_data_in.triID = pcalc_to_shader_data.triID ;
     pcalc_data_in.is_hit = 1'b1;
-    int_data_in.ray_info = int_to_shader_data.rayID;
+    int_data_in.rayID = int_to_shader_data.rayID;
     int_data_in.triID = `DC ;
     int_data_in.is_hit = 1'b1;
-    sint_data_in.ray_info = sint_to_shader_data.rayID ;
+    sint_data_in.rayID = sint_to_shader_data.rayID ;
     sint_data_in.triID = `DC ;
     sint_data_in.is_hit = 1'b0;
-    ss_data_in.ray_info = ss_to_shader_data.rayID ;
+    ss_data_in.rayID = ss_to_shader_data.rayID ;
     ss_data_in.triID = `DC ;
     ss_data_in.is_hit = 1'b0;
   end
@@ -237,9 +236,9 @@ module simple_shader_unit(
     ray_data_VSpipe_in.is_hit = arb_data_ds.is_hit;
   end
   assign ray_data_VSpipe_valid_us = arb_valid_ds;
-  assign raddr_ray_data = arb_data_ds.ray_info.rayID;
+  assign raddr_ray_data = arb_data_ds.rayID;
   
-  assign rayID_fifo_in = is_init ? rayID_cnt : arb_data_ds.ray_info.rayID;
+  assign rayID_fifo_in = is_init ? rayID_cnt : arb_data_ds.rayID;
   assign rayID_wrreq = is_init | (arb_valid_ds & ~arb_stall_ds);
 
 //------------------------------------------------------------------------
@@ -270,7 +269,7 @@ module simple_shader_unit(
     else begin
       unique case(triID)
         16'h0 : return `TRI_0_COLOR;
-        16'h1 : return `TRI_1_COLOR;
+        16'h4 : return `TRI_1_COLOR;
       endcase
     end
 
