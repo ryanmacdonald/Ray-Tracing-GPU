@@ -7,40 +7,55 @@ module cache_tb2;
 
 /*	parameter SIDE_W=8,
               ADDR_W=16,
-              RDATA_W=288,
-              BLK_W=0,
+              LINE_W=288,
+              BO_W=0,
               INDEX_W=11,
               TAG_W=5,
               NUM_LINES=(1<<INDEX_W); */
 
 	// parameters for icache
 	parameter	I_SIDE_W=8, // TODO
+
 				I_ADDR_W=16,
-				I_RDATA_W=288,
-				I_BASE_ADDR=0, // TODO
-				I_BLK_W=0,
+				I_BO_W=0,
 				I_TAG_W=5,
 				I_INDEX_W=11,
+
+				I_LINE_W=288,
+				I_NUM_BLK = 1,
+				I_BLK_W = I_LINE_W/I_NUM_BLK,
+
+				I_BASE_ADDR=0, // TODO
 				I_NUM_LINES=1392;
 
 	// parameters for tcaches
 	parameter	T_SIDE_W=8, // TODO
+
 				T_ADDR_W=16,
-				T_RDATA_W=384,
-				T_BASE_ADDR=0, // TODO
-				T_BLK_W=3,
+				T_BO_W=3,
 				T_TAG_W=4,
 				T_INDEX_W=9,
+	
+				T_LINE_W=384,
+				T_NUM_BLK = 8,
+				T_BLK_W = T_LINE_W/T_NUM_BLK,
+
+				T_BASE_ADDR=0, // TODO
 				T_NUM_LINES=510;
 
 	// parameters for lcache
 	parameter	L_SIDE_W=8, // TODO
+
 				L_ADDR_W=16,
-				L_RDATA_W=256,
-				L_BASE_ADDR=0, // TODO
-				L_BLK_W=4,
+				L_BO_W=4,
 				L_TAG_W=2,
 				L_INDEX_W=10,
+
+				L_LINE_W=256,
+				L_NUM_BLK=16,
+				L_BLK_W=L_LINE_W/L_NUM_BLK,
+
+				L_BASE_ADDR=0, // TODO
 				L_NUM_LINES=1000;
 
 
@@ -88,10 +103,10 @@ module cache_tb2;
 	logic               ic_us_stall, t0c_us_stall, t1c_us_stall, lc_us_stall;
 
 	// downstream interface
-	logic [I_RDATA_W-1:0] ic_ds_rdata;
-	logic [T_RDATA_W-1:0] t0c_ds_rdata;
-	logic [T_RDATA_W-1:0] t1c_ds_rdata;
-	logic [L_RDATA_W-1:0] lc_ds_rdata;
+	logic [I_BLK_W-1:0] ic_ds_rdata;
+	logic [T_BLK_W-1:0] t0c_ds_rdata;
+	logic [T_BLK_W-1:0] t1c_ds_rdata;
+	logic [L_BLK_W-1:0] lc_ds_rdata;
 	logic [I_SIDE_W-1:0]  ic_ds_sb_data;
 	logic [T_SIDE_W-1:0]  t0c_ds_sb_data;
 	logic [T_SIDE_W-1:0]  t1c_ds_sb_data;
@@ -138,17 +153,17 @@ module cache_tb2;
 
 	//////////////// copied directly from cache_tb.sv ////////////////
 	int num_reads = 210;
-	logic [I_RDATA_W+I_SIDE_W-1:0] ic_read_table [210];
-	logic [I_RDATA_W+I_SIDE_W-1:0] ic_issue_table [210];
+	logic [I_BLK_W+I_SIDE_W-1:0] ic_read_table [210];
+	logic [I_BLK_W+I_SIDE_W-1:0] ic_issue_table [210];
 
-	logic [T_RDATA_W+T_SIDE_W-1:0] t0c_read_table [210];
-	logic [T_RDATA_W+T_SIDE_W-1:0] t0c_issue_table [210];
+	logic [T_BLK_W+T_SIDE_W-1:0] t0c_read_table [210];
+	logic [T_BLK_W+T_SIDE_W-1:0] t0c_issue_table [210];
 
-	logic [T_RDATA_W+T_SIDE_W-1:0] t1c_read_table [210];
-	logic [T_RDATA_W+T_SIDE_W-1:0] t1c_issue_table [210];
+	logic [T_BLK_W+T_SIDE_W-1:0] t1c_read_table [210];
+	logic [T_BLK_W+T_SIDE_W-1:0] t1c_issue_table [210];
 
-	logic [L_RDATA_W+L_SIDE_W-1:0] lc_read_table [210];
-	logic [L_RDATA_W+L_SIDE_W-1:0] lc_issue_table [210];
+	logic [L_BLK_W+L_SIDE_W-1:0] lc_read_table [210];
+	logic [L_BLK_W+L_SIDE_W-1:0] lc_issue_table [210];
 
 	integer a, b;
 	integer ic_pre_id, ic_post_id;
@@ -343,65 +358,77 @@ module cache_tb2;
 
 	//////////////// tasks ////////////////
 
-	logic [I_RDATA_W/32][31:0] ic_data;
+	logic [I_BLK_W/32][31:0] ic_data;
 	int ic_translated_addr;
 	task do_ic_read(input [I_ADDR_W-1:0] addr, input logic [I_SIDE_W-1:0] side);
 		ic_us_valid <= 1'b1;
 		ic_us_addr <= addr;
 		ic_us_sb_data <= side;
-		ic_translated_addr = (I_RDATA_W/32)*addr[I_ADDR_W-1:I_BLK_W] + I_BASE_ADDR;
-		for(i=0; i<(I_RDATA_W/32); i++)
+		ic_translated_addr = (I_LINE_W/32)*addr[I_ADDR_W-1:I_BO_W] + I_BASE_ADDR; // TODO
+		for(i=0; i<(I_BLK_W/32); i++)
 			ic_data[i] = dram.mem_array[ic_translated_addr+i];
 		ic_issue_table[side] = {ic_data, side};
-		$display("ic addr: %h (t+i: %h). DRAM: %h side: %h",addr,addr[I_ADDR_W-1:I_BLK_W],ic_data,side);
+		$display("ic addr: %h (t+i: %h). DRAM: %h side: %h",addr,addr[I_ADDR_W-1:I_BO_W],ic_data,side);
 		@(posedge clk);
 		while(ic_us_stall)
 			@(posedge clk);
 	endtask
 
-	logic [T_RDATA_W/32][31:0] t0c_data;
+	logic [T_LINE_W/32][31:0] t0c_data; // 8 memory reads of 32 bits each
+	logic [T_NUM_BLK][T_BLK_W-1:0] t0c_data_blocks; // 16 blocks, each 16 bits
 	int t0c_translated_addr;
+	int t0c_line_num;
 	task do_t0c_read(input [T_ADDR_W-1:0] addr, input logic [T_SIDE_W-1:0] side);
+		t0c_line_num = addr[T_ADDR_W-1:T_BO_W];
 		t0c_us_valid <= 1'b1;
 		t0c_us_addr <= addr;
 		t0c_us_sb_data <= side;
-		t0c_translated_addr = (T_RDATA_W/32)*addr[T_ADDR_W-1:T_BLK_W] + T_BASE_ADDR;
-		for(i=0; i<(T_RDATA_W/32); i++)
+		t0c_translated_addr = (T_LINE_W/32)*t0c_line_num + T_BASE_ADDR; // TODO
+		for(i=0; i<(T_LINE_W/32); i++) // grab the line
 			t0c_data[i] = dram.mem_array[t0c_translated_addr+i];
-		t0c_issue_table[side] = {t0c_data, side};
-		$display("t0c addr: %h (t+i: %h). DRAM: %h side: %h",addr,addr[T_ADDR_W-1:T_BLK_W],t0c_data,side);
+		t0c_data_blocks = t0c_data; // grab the block
+		t0c_issue_table[side] = {t0c_data_blocks[addr[T_BO_W-1:0]], side};
+		$display("lc addr: %h (t+i: %h bo: %h). DRAM: %h side: %h",addr,t0c_line_num,addr[T_BO_W-1:0],t0c_data,side);
 		@(posedge clk);
 		while(t0c_us_stall)
 			@(posedge clk);
 	endtask
 
-	logic [T_RDATA_W/32][31:0] t1c_data;
+	logic [T_LINE_W/32][31:0] t1c_data; // 8 memory reads of 32 bits each
+	logic [T_NUM_BLK][T_BLK_W-1:0] t1c_data_blocks; // 16 blocks, each 16 bits
 	int t1c_translated_addr;
+	int t1c_line_num;
 	task do_t1c_read(input [T_ADDR_W-1:0] addr, input logic [T_SIDE_W-1:0] side);
+		t1c_line_num = addr[T_ADDR_W-1:T_BO_W];
 		t1c_us_valid <= 1'b1;
 		t1c_us_addr <= addr;
 		t1c_us_sb_data <= side;
-		t1c_translated_addr = (T_RDATA_W/32)*addr[T_ADDR_W-1:T_BLK_W] + T_BASE_ADDR;
-		for(i=0; i<(T_RDATA_W/32); i++)
+		t1c_translated_addr = (T_LINE_W/32)*t1c_line_num + T_BASE_ADDR; // TODO
+		for(i=0; i<(T_LINE_W/32); i++) // grab the line
 			t1c_data[i] = dram.mem_array[t1c_translated_addr+i];
-		t1c_issue_table[side] = {t1c_data, side};
-		$display("t1c addr: %h (t+i: %h). DRAM: %h side: %h",addr,addr[T_ADDR_W-1:T_BLK_W],t1c_data,side);
+		t1c_data_blocks = t1c_data; // grab the block
+		t1c_issue_table[side] = {t1c_data_blocks[addr[T_BO_W-1:0]], side};
+		$display("lc addr: %h (t+i: %h bo: %h). DRAM: %h side: %h",addr,t1c_line_num,addr[T_BO_W-1:0],t1c_data,side);
 		@(posedge clk);
 		while(t1c_us_stall)
 			@(posedge clk);
 	endtask
 
-	logic [L_RDATA_W/32][31:0] lc_data;
+	logic [L_LINE_W/32][31:0] lc_data; // 8 memory reads of 32 bits each
+	logic [L_NUM_BLK][L_BLK_W-1:0] lc_data_blocks; // 16 blocks, each 16 bits
 	int lc_translated_addr;
+	int lc_line_num;
 	task do_lc_read(input [L_ADDR_W-1:0] addr, input logic [L_SIDE_W-1:0] side);
+		lc_line_num = addr[L_ADDR_W-1:L_BO_W];
 		lc_us_valid <= 1'b1;
 		lc_us_addr <= addr;
 		lc_us_sb_data <= side;
-		lc_translated_addr = (L_RDATA_W/32)*addr[L_ADDR_W-1:L_BLK_W] + L_BASE_ADDR;
-		for(i=0; i<(L_RDATA_W/32); i++)
+		lc_translated_addr = (L_LINE_W/32)*lc_line_num + L_BASE_ADDR; // TODO
+		for(i=0; i<(L_LINE_W/32); i++) // grab the line
 			lc_data[i] = dram.mem_array[lc_translated_addr+i];
-		lc_issue_table[side] = {lc_data, side};
-		$display("lc addr: %h (t+i: %h). DRAM: %h side: %h",addr,addr[L_ADDR_W-1:L_BLK_W],lc_data,side);
+		lc_data_blocks = lc_data; // grab the block
+		lc_issue_table[side] = {lc_data_blocks[addr[L_BO_W-1:0]], side};
+		$display("lc addr: %h (t+i: %h bo: %h). DRAM: %h side: %h",addr,lc_line_num,addr[L_BO_W-1:0],lc_data,side);
 		@(posedge clk);
 		while(lc_us_stall)
 			@(posedge clk);
@@ -417,11 +444,12 @@ module cache_tb2;
 
 	cache_and_miss_handler #(
          .ADDR_W(I_ADDR_W),
-         .RDATA_W(I_RDATA_W),
+         .LINE_W(I_LINE_W),
+         .BLK_W(I_BLK_W),
          .TAG_W(I_TAG_W),
          .INDEX_W(I_INDEX_W),
          .NUM_LINES(I_NUM_LINES),
-         .BLK_W(I_BLK_W),
+         .BO_W(I_BO_W),
          .BASE_ADDR(I_BASE_ADDR))
 		icache (
 			.us_sb_data(ic_us_sb_data),
@@ -443,11 +471,12 @@ module cache_tb2;
 	//////////////////////// Traversal Cache 0 ////////////////////////
 	cache_and_miss_handler #(
          .ADDR_W(T_ADDR_W),
-         .RDATA_W(T_RDATA_W),
+         .LINE_W(T_LINE_W),
+         .BLK_W(T_BLK_W),
          .TAG_W(T_TAG_W),
          .INDEX_W(T_INDEX_W),
          .NUM_LINES(T_NUM_LINES),
-         .BLK_W(T_BLK_W),
+         .BO_W(T_BO_W),
          .BASE_ADDR(T_BASE_ADDR))
 		t0cache (
 			.us_sb_data(t0c_us_sb_data),
@@ -469,11 +498,12 @@ module cache_tb2;
 	//////////////////////// Traversal Cache 1 ////////////////////////
 	cache_and_miss_handler #(
          .ADDR_W(T_ADDR_W),
-         .RDATA_W(T_RDATA_W),
+         .LINE_W(T_LINE_W),
+         .BLK_W(T_BLK_W),
          .TAG_W(T_TAG_W),
          .INDEX_W(T_INDEX_W),
          .NUM_LINES(T_NUM_LINES),
-         .BLK_W(T_BLK_W),
+         .BO_W(T_BO_W),
          .BASE_ADDR(T_BASE_ADDR))
 		t1cache (
 			.us_sb_data(t1c_us_sb_data),
@@ -496,11 +526,12 @@ module cache_tb2;
 
 	cache_and_miss_handler #(
          .ADDR_W(L_ADDR_W),
-         .RDATA_W(L_RDATA_W),
+         .LINE_W(L_LINE_W),
+         .BLK_W(L_BLK_W),
          .TAG_W(L_TAG_W),
          .INDEX_W(L_INDEX_W),
          .NUM_LINES(L_NUM_LINES),
-         .BLK_W(L_BLK_W),
+         .BO_W(L_BO_W),
          .BASE_ADDR(L_BASE_ADDR))
 		lcache (
 			.us_sb_data(lc_us_sb_data),

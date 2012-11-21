@@ -1,5 +1,5 @@
 module miss_handler
-#(parameter RDATA_W = 64,
+#(parameter LINE_W = 64,
             TAG_W = 3,
 	        INDEX_W=4,
 	        BASE_ADDR = 0
@@ -16,7 +16,7 @@ module miss_handler
 
 	// interface with cache
 	// data from miss handler
-	output logic [RDATA_W-1:0] from_mh_data,
+	output logic [LINE_W-1:0] from_mh_data,
 	output logic               from_mh_valid,
 	input  logic               to_mh_stall,
 
@@ -25,11 +25,12 @@ module miss_handler
 	input  logic                      to_mh_valid,
 	output logic                      from_mh_stall);
 
-	localparam NUM_REQ = RDATA_W/32;
+	localparam NUM_REQ = LINE_W/32;
 	assign transSize = NUM_REQ; // NOTE: comment this when testing with only one read at a time
 
 	/**************** address translator ****************/
 
+	// TODO: just concatenate the upper bits of BASE_ADDR with the address
 	logic [24:0] translated_addr;
 	generate
 		case(NUM_REQ)
@@ -72,13 +73,13 @@ module miss_handler
 	/**************** data register ****************/
 
 	logic [NUM_REQ][31:0] next_from_mh_data;
-	logic [$clog2(RDATA_W)-1:0] data_reg_index_lo, data_reg_index_hi;
+	logic [$clog2(LINE_W)-1:0] data_reg_index_lo, data_reg_index_hi;
 	always_comb begin
 		next_from_mh_data = from_mh_data;
 		if(ld_data_inc_addr)
 			next_from_mh_data[addr_cnt] = readData;
 	end
-	ff_ar #(.W(RDATA_W)) data_reg(.clk, .rst, .q(from_mh_data), .d(next_from_mh_data));
+	ff_ar #(.W(LINE_W)) data_reg(.clk, .rst, .q(from_mh_data), .d(next_from_mh_data));
 
 	/**************** state machine ****************/
 

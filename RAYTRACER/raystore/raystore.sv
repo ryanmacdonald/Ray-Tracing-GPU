@@ -18,6 +18,7 @@ typedef struct packed {
 	logic data_sel;
 } rs_arb_to_list_pipe_t;
 
+// TODO: verify that this still works given that structs have changed
 module raystore(
 
 	// upstream interface

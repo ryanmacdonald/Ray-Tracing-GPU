@@ -7,13 +7,14 @@ module cache
 #(parameter 
 	SIDE_W=8,
 	ADDR_W=8,
-	RDATA_W=16,
+	LINE_W=16,
+	BLK_W=8,
 
 	// NOTE: following should add up to ADDR_W
 	TAG_W=3,
 	INDEX_W=4,
 	NUM_LINES=(1<<INDEX_W), // TODO: make sure block ram only has this many lines
-	BLK_W=1,
+	BO_W=1,
 
 	RIF_DEPTH=(`DEPTH+3),
 	MRF_DEPTH=(RIF_DEPTH+`DEPTH)
@@ -29,7 +30,7 @@ module cache
 
 	// miss handler interface
 	// data from miss handler
-	input  logic [RDATA_W-1:0] from_mh_data,
+	input  logic [LINE_W-1:0] from_mh_data,
 	input  logic               from_mh_valid,
 	output logic               to_mh_stall,
 
@@ -39,7 +40,7 @@ module cache
 	input  logic                      from_mh_stall,
 
 	// downstream interface
-	output logic [RDATA_W-1:0] ds_rdata,
+	output logic [BLK_W-1:0] ds_rdata,
 	output logic [SIDE_W-1:0]  ds_sb_data,
 	output logic               ds_valid,
 	input  logic               ds_stall
@@ -51,7 +52,7 @@ typedef struct packed {
 } pvs_data_t;
 
 typedef struct packed {
-	logic [RDATA_W-1:0] rdata;
+	logic [BLK_W-1:0] rdata;
 	logic [SIDE_W-1:0] side;
 	logic [ADDR_W-1:0] addr;
 } hdf_data_t;
@@ -68,12 +69,12 @@ typedef struct packed {
 	// inputs to cache storage
 	logic [ADDR_W-1:0] waddr;
 	logic [ADDR_W-1:0] raddr;
-	logic [RDATA_W-1:0] wdata;
+	logic [LINE_W-1:0] wdata;
 	logic cache_we;
 	logic [TAG_W-1:0] pipe_tag;
 
 	// outputs of cache storage
-	logic [RDATA_W-1:0] rdata;
+	logic [BLK_W-1:0] rdata;
 	logic miss;
 	logic hit;
 
@@ -143,7 +144,7 @@ typedef struct packed {
 	assign ds_valid = ~hdf_empty;
 
 	// cache storage assignments
-	assign pipe_tag = pvs_ds_data.addr[TAG_W+INDEX_W+BLK_W-1:INDEX_W+BLK_W]; // just tag
+	assign pipe_tag = pvs_ds_data.addr[TAG_W+INDEX_W+BO_W-1:INDEX_W+BO_W]; // just tag
 	assign raddr = (rif_re) ? rif_data_out.addr: us_addr;
 	assign waddr = rif_data_out.addr;
 	assign wdata = from_mh_data;
@@ -159,7 +160,7 @@ typedef struct packed {
 	// MRF assignments
 	assign mrf_we = pvs_ds_valid & miss & ~exists_in_mrf;
 	assign mrf_re = ~from_mh_stall;
-	assign mrf_data_in = pvs_ds_data.addr[ADDR_W-1:BLK_W]; // tag and index
+	assign mrf_data_in = pvs_ds_data.addr[ADDR_W-1:BO_W]; // tag and index
 
 	// HDF assignments
 	assign hdf_data_in.side = pvs_ds_data.side;
@@ -186,11 +187,12 @@ typedef struct packed {
 	cache_storage #(
 		.SIDE_W(SIDE_W),
 		.ADDR_W(ADDR_W),
-		.RDATA_W(RDATA_W),
+		.LINE_W(LINE_W),
+		.BLK_W(BLK_W),
 		.TAG_W(TAG_W),
 		.INDEX_W(INDEX_W),
 		.NUM_LINES(NUM_LINES),
-		.BLK_W(BLK_W))
+		.BO_W(BO_W))
 	csu (.*);
 
 	pipe_valid_stall #(.WIDTH($bits(pvs_data_t)), .DEPTH(`DEPTH)) pvs(
@@ -265,24 +267,23 @@ module cache_storage
 #(parameter 
 	SIDE_W=8,
 	ADDR_W=8,
-	RDATA_W=16,
+	LINE_W=16,
+	BLK_W=8,
 
 	TAG_W=3,
 	INDEX_W=4,
 	NUM_LINES=(1<<INDEX_W),
-	BLK_W=1,
-
-	RIF_DEPTH=(`DEPTH+3),
-	MRF_DEPTH=(`DEPTH+3)
+	BO_W=1,
+	NUM_BLK=(1<<BO_W)
 )(
 		// upstream side
 	input logic [ADDR_W-1:0] waddr,
-	input logic [RDATA_W-1:0] wdata,
+	input logic [NUM_BLK][BLK_W-1:0] wdata,
 	input logic cache_we,
 	input logic [ADDR_W-1:0] raddr,
 	// downstream side
 	input logic [TAG_W-1:0] pipe_tag,
-	output  logic [RDATA_W-1:0] rdata,
+	output  logic [BLK_W-1:0] rdata,
 	output logic miss,
 	output logic hit,
 	input logic clk, rst
@@ -291,15 +292,26 @@ module cache_storage
 	// NOTE: this is just a simulation model
 	// TODO: implement real block rams
 
-	logic [RDATA_W-1:0] way0 [1<<(INDEX_W)];
-	logic [RDATA_W-1:0] way1 [1<<(INDEX_W)];
+	logic [1<<(INDEX_W)][NUM_BLK][BLK_W-1:0] way0;
+	logic [1<<(INDEX_W)][NUM_BLK][BLK_W-1:0] way1;
 
 	logic hit0, hit1;
 
 	logic [TAG_W:0] tagstore0 [1<<(INDEX_W)]; // no -1 because one bit is needed for valid
 	logic [TAG_W:0] tagstore1 [1<<(INDEX_W)];
 
-	logic [RDATA_W-1:0] rdata0a, rdata0b, rdata1a, rdata1b;
+	logic [BLK_W-1:0] rdata0a, rdata0b, rdata1a, rdata1b;
+
+	logic [BO_W-1:0] rd_bo;
+	generate
+		if(BO_W != 0) begin : bo_w_case
+			assign rd_bo = raddr[BO_W-1:0];
+		end
+		else begin
+			assign rd_bo = 1'b0;
+		end
+	endgenerate 
+
 
 	logic [TAG_W-1:0] tag0a, tag0b, tag1a, tag1b;
 	logic [TAG_W-1:0] wr_tag; 
@@ -307,9 +319,10 @@ module cache_storage
 
 	logic valid0a, valid0b, valid1a, valid1b;
 
-	assign rd_index = raddr[INDEX_W+BLK_W-1:BLK_W];
-	assign wr_tag = waddr[TAG_W+INDEX_W+BLK_W-1:INDEX_W+BLK_W];
-	assign wr_index = waddr[INDEX_W+BLK_W-1:BLK_W];
+	assign rd_index = raddr[INDEX_W+BO_W-1:BO_W];
+	assign wr_tag = waddr[TAG_W+INDEX_W+BO_W-1:INDEX_W+BO_W];
+	assign wr_index = waddr[INDEX_W+BO_W-1:BO_W];
+
 
 	logic way_choice;
 
@@ -329,8 +342,8 @@ module cache_storage
 		end
 		else begin
 
-			rdata0a <= way0[rd_index];
-			rdata1a <= way1[rd_index];
+			rdata0a <= way0[rd_index][rd_bo];
+			rdata1a <= way1[rd_index][rd_bo];
 
 			{valid0a,tag0a} <= tagstore0[rd_index];
 			{valid1a,tag1a} <= tagstore1[rd_index];
@@ -347,11 +360,11 @@ module cache_storage
 				end
 				if(rd_index == wr_index) begin
 					if(way_choice) begin
-						rdata0a <= wdata;
+						rdata0a <= wdata[rd_bo];
 						{valid0a,tag0a} <= {1'b1,wr_tag};
 					end
 					else begin
-						rdata1a <= wdata;
+						rdata1a <= wdata[rd_bo];
 						{valid1a,tag1a} <= {1'b1,wr_tag};
 					end
 				end

@@ -66,7 +66,7 @@ module t32_tb;
                                                         .zs_dqm(dram_dqm),
                                                         .zs_ras_n(dram_ras_n),
                                                         .zs_we_n(dram_we_n),
-                                                        .clk(dram_clk));
+                                                        .clk(clk)); // would be dram_clk in synthesis
 
     //////////// CLOCK AND RESET INITIAL BLOCK ////////////
 
@@ -82,8 +82,11 @@ module t32_tb;
 
     //////////// MAIN INITIAL BLOCK ////////////
 
-    int j;
+    int j, row, col;
     logic [7:0] message [128];
+	integer file;
+
+	logic [7:0] upper_byte, lower_byte;
 
     initial begin
 
@@ -124,7 +127,28 @@ module t32_tb;
 
         send_EOT();
 
+/*        while(t32.tsr.cnt < `num_rays)
+        	@(posedge clk); */
+
 		repeat(`VGA_CYC25_PER_SCREEN*2) @(posedge clk);
+
+		file = $fopen("screen.txt","w");
+		$fwrite(file, "640 480 3\n");
+		for(row=0; row<480; row++) begin
+			for(col=0; col < (640*3/2); col++) begin
+				upper_byte = sr.memory[row*640*3/2+col][15:8];
+				lower_byte = sr.memory[row*640*3/2+col][7:0];
+				if(upper_byte === 8'bx)
+					upper_byte = 'b0;
+				if(lower_byte === 8'bx)
+					lower_byte = 'b0;
+				$fwrite(file, "%d %d ", upper_byte, lower_byte);
+	//			if(j % 4 == 3)
+	//				$fwrite(file, "\n");
+			end
+//			$fwrite(file,"\n");
+		end
+
 		repeat(100) @(posedge clk);
 
         $finish;

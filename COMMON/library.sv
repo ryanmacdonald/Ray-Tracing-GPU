@@ -224,7 +224,7 @@ module fifo
   always_comb begin
     exists_in_fifo = 1'b0;
     for(i=0; i < DEPTH; i++) begin
-      if(queue[i][WIDTH-1] == data_in && queue[i][WIDTH]) // AND with valid bit
+      if(queue[i][WIDTH-1:0] == data_in && queue[i][WIDTH]) // AND with valid bit
         exists_in_fifo = 1'b1;
     end
   end

@@ -34,7 +34,8 @@ module scene_loader(
     ff_ar_en #(8,8'd0) data_register2 (.q(data_reg2), .d(xmodem_data_byte), .en(en_dr2), .clk, .rst);
 
     assign sl_addr = {meta_block_num, sl_block_num, byte_cnt[6:2]};
-    assign sl_io = {xmodem_data_byte, data_reg2, data_reg1, data_reg0};
+//    assign sl_io = {xmodem_data_byte, data_reg2, data_reg1, data_reg0};
+    assign sl_io = {data_reg0, data_reg1, data_reg2, xmodem_data_byte}; // NOTE: this is new
     assign sl_we = send & xmodem_saw_valid_msg_byte;
 
     assign block_done = (byte_cnt == 7'd127);

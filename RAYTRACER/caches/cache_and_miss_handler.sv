@@ -2,11 +2,12 @@ module cache_and_miss_handler
 #(parameter 
 	SIDE_W=8,
 	ADDR_W=8,
-	RDATA_W=16,
+	LINE_W=16,
+	BLK_W=8,
 	TAG_W=3,
 	INDEX_W=4,
 	NUM_LINES=(1<<INDEX_W),
-	BLK_W=1,
+	BO_W=1,
 	BASE_ADDR=0) (
 
 	// upstream interface
@@ -16,7 +17,7 @@ module cache_and_miss_handler
 	output logic               us_stall,
 
 	// downstream interface
-	output logic [RDATA_W-1:0] ds_rdata,
+	output logic [BLK_W-1:0] ds_rdata,
 	output logic [SIDE_W-1:0]  ds_sb_data,
 	output logic               ds_valid,
 	input  logic               ds_stall,
@@ -31,7 +32,7 @@ module cache_and_miss_handler
 	input logic clk, rst
 );
 
-	logic [RDATA_W-1:0] from_mh_data;
+	logic [LINE_W-1:0] from_mh_data;
 	logic               from_mh_valid;
 	logic               to_mh_stall;
 	logic [TAG_W+INDEX_W-1:0]  to_mh_addr;
@@ -40,15 +41,16 @@ module cache_and_miss_handler
 
 	cache #(.SIDE_W(SIDE_W),
             .ADDR_W(ADDR_W),
-            .RDATA_W(RDATA_W),
+            .LINE_W(LINE_W),
+            .BLK_W(BLK_W),
             .TAG_W(TAG_W),
             .INDEX_W(INDEX_W),
             .NUM_LINES(NUM_LINES),
-            .BLK_W(BLK_W))
+            .BO_W(BO_W))
 			c(.*);
 
 	miss_handler
-		#(.RDATA_W(RDATA_W),
+		#(.LINE_W(LINE_W),
 		  .TAG_W(TAG_W),
 		  .INDEX_W(INDEX_W),
 		  .BASE_ADDR(BASE_ADDR))
