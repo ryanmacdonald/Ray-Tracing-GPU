@@ -128,7 +128,7 @@ typedef struct packed {
 
 // TODO: change width back to [8:0]
 typedef struct packed {
-  logic [18:0] ID;
+  logic [8:0] ID;
 } rayID_t;
 
 
