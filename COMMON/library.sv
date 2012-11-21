@@ -487,10 +487,12 @@ module arbitor #(parameter NUM_IN=4, WIDTH = 10) (
     chosen_data = `DC;
     choice[rrptr_arr[0]] = ~stall_s1 & valid_us[rrptr_arr[0]];
     chosen = ~stall_s1 & valid_us[rrptr_arr[0]];
-    if(chosen) 
+    if(chosen) chosen_data = data_us[rrptr_arr[0]];
     for(int i=1; i<NUM_IN; i++) begin
       choice[rrptr_arr[i]] = chosen ? 1'b0 : ~stall_s1 & valid_us[rrptr_arr[i]] ;
+      if(~chosen & ~stall_s1 & valid_us[rrptr_arr[i]]) chosen_data = data_us[rrptr_arr[i]];
       chosen = chosen | (~stall_s1 & valid_us[rrptr_arr[i]]) ;
+
     end
   end
 
