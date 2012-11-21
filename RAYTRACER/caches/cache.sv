@@ -264,7 +264,7 @@ endmodule
 
 // TODO: make wdata able to write only certain blocks
 module cache_storage
-#(parameter 
+#(parameter
 	SIDE_W=8,
 	ADDR_W=8,
 	LINE_W=16,
@@ -390,5 +390,98 @@ module cache_storage
 //  * instantiate and wire block rams
 //  * implement some replacement policy
 //  * think about byte enable for tagstore
+
+	// TODO: define these signals
+	logic [] way0_data_in;
+	logic [] way0_data_out;
+	logic [] way1_data_in;
+	logic [] way1_data_out;
+	logic [] ts_data_in;
+	logic [] ts_data_out;
+	logic [1:0] ts_be;
+	logic [] cache_addr;
+
+	generate
+		if(NUM_LINES == 1024 && LINE_W == 288) begin : icache_generate
+			bram_single_rw_1024x288 way0_bram(
+				.aclr(rst),
+				.address(cache_addr),
+				.clock(clk),
+				.data(way0_data_in),
+				.wren(cache_we),
+				.q(way0_data_out));
+
+			bram_single_rw_1024x288 way1_bram(
+				.aclr(rst),
+				.address(cache_addr),
+				.clock(clk),
+				.data(way1_data_in),
+				.wren(cache_we),
+				.q(way1_data_out));
+
+			// TODO: change this to have byte enable
+			bram_single_rw_1024x16 tagstore_bram(
+				.aclr(rst),
+				.address(cache_addr),
+				.clock(clk),
+				.data(ts_data_in),
+				.wren(cache_we),
+				.q(ts_data_out));
+
+		end
+		if(NUM_LINES == 512 && LINE_W == 384) begin : tcache_generate
+			bram_single_rw_512x384 way0_bram(
+				.aclr(rst),
+				.address(cache_addr),
+				.clock(clk),
+				.data(way0_data_in),
+				.wren(cache_we),
+				.q(way0_data_out));
+
+			bram_single_rw_512x384 way1_bram(
+				.aclr(rst),
+				.address(cache_addr),
+				.clock(clk),
+				.data(way1_data_in),
+				.wren(cache_we),
+				.q(way1_data_out));
+
+			bram_single_rw_512x16 (
+				.aclr(rst),
+				.address(cache_addr),
+				.byteena(),
+				.clock(clk),
+				.data(ts_data_in),
+				.wren(cache_we),
+				.q(ts_data_out));
+		end
+		if(NUM_LINES == 1024 && LINE_W == 256) begin : lcache_generate
+			bram_single_rw_1024x256 way0_bram(
+				.aclr(rst),
+				.address(cache_addr),
+				.clock(clk),
+				.data(way0_data_in),
+				.wren(cache_we),
+				.q(way0_data_out));
+
+			bram_single_rw_1024x256 way1_bram(
+				.aclr(rst),
+				.address(cache_addr),
+				.clock(clk),
+				.data(way1_data_in),
+				.wren(cache_we),
+				.q(way0_data_out));
+
+			// TODO: change this to have byte enable
+			bram_single_rw_1024x16 tagstore_bram(
+				.aclr(rst),
+				.address(cache_addr),
+				.clock(clk),
+				.data(ts_data_in),
+				.wren(cache_we),
+				.q(ts_data_out));
+
+		end
+	endgenerate
 
 endmodule
