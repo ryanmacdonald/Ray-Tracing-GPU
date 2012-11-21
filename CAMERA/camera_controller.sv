@@ -45,9 +45,11 @@ module camera_controller(
 	logic[2:0] last_key, last_key_n;
 	ff_ar #(3,0) kr(.q(last_key),.d(last_key_n),.clk,.rst);
 
+	enum logic {IDLE, RENDERING} state, nextState;
+
 	logic[31:0] cnt, cnt_n;
 	logic cnt_cl;
-	assign cnt_n = cnt_cl ? 0 : (rendering  ? cnt + 10'd1 : 0);
+	assign cnt_n = cnt_cl||(state == IDLE) ? 0 : (rendering  ? cnt + 10'd1 : 0);
 	ff_ar #(32,0) ct(.q(cnt),.d(cnt_n),.clk,.rst);
 
 	always_comb begin
@@ -68,7 +70,7 @@ module camera_controller(
 		end
 	end
 
-	enum logic {IDLE, RENDERING} state, nextState;
+
 
 	// Assumes that a key press will never be shorter than a render
 	always_comb begin
