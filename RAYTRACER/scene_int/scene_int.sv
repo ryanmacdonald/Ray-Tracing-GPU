@@ -32,7 +32,7 @@ module scene_int(input shader_to_sint_t ray_in,
 
 	logic ds_valid, ds_stall;
 	logic[$bits(rayID_t):0] us_data, ds_data;
-	logic[5:0] num_left_in_fifo;
+	logic[4:0] num_left_in_fifo;
 	assign us_data = {ray_in.rayID,ray_in.is_shadow};
 	assign isShadow = ds_data[0];
 	pipe_valid_stall #(.WIDTH($bits(rayID_t)+1),.DEPTH(17)) pvs
@@ -40,11 +40,13 @@ module scene_int(input shader_to_sint_t ray_in,
 			      .ds_valid(ds_valid),.ds_data(ds_data),.ds_stall(ds_stall),
 			      .num_left_in_fifo(num_left_in_fifo));
 
+	assign ds_stall = tf_ds_stall || ssf_ds_stall || ssh_ds_stall;
+
 	/* TARB FIFO */	
 
 	sint_entry_t tf_data_in, tf_data_out;
 	logic tf_we, tf_re, tf_full, tf_empty;
-	logic[5:0] tf_num_left_in_fifo;
+	logic[4:0] tf_num_left_in_fifo;
 	assign tf_we = ds_valid && ~miss;
 	assign tf_re = tf_ds_valid && ~tf_ds_stall;
 	assign tf_ds_valid = ~tf_empty;
@@ -76,7 +78,7 @@ module scene_int(input shader_to_sint_t ray_in,
 
 	sint_to_ss_t ssf_data_in, ssf_data_out;
 	logic ssf_we, ssf_re, ssf_full, ssf_empty;
-	logic[5:0] ssf_num_left_in_fifo;
+	logic[4:0] ssf_num_left_in_fifo;
 	assign ssf_we = ds_valid && ~miss; 
 	assign ssf_re = ssf_ds_valid && ~ssf_ds_stall;
 	assign ssf_ds_valid = ~ssf_empty;
@@ -102,7 +104,7 @@ module scene_int(input shader_to_sint_t ray_in,
 
 	sint_to_shader_t ssh_data_in, ssh_data_out;
 	logic ssh_we, ssh_re, ssh_full, ssh_empty;
-	logic[5:0] ssh_num_left_in_fifo;
+	logic[4:0] ssh_num_left_in_fifo;
 	assign ssh_we = ds_valid && miss;
 	assign ssh_re = ssh_ds_valid && ~ssh_ds_stall;
 	assign ssh_ds_valid = ~ssh_empty;
@@ -120,7 +122,7 @@ module scene_int(input shader_to_sint_t ray_in,
 
 	
 	// Need to give stall unit the minimum of num_lefts
-	minimum3 #(6) min(num_left_in_fifo,ssh_num_left_in_fifo,
+	minimum3 #(5) min(num_left_in_fifo,ssh_num_left_in_fifo,
 			  ssf_num_left_in_fifo,tf_num_left_in_fifo);
 
 

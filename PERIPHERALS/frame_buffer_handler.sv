@@ -135,7 +135,7 @@ module fbh_reader(
     logic [3:0] abc_sr_q;
     logic [15:0] a_q, b_q, c_q;
     logic a_en, b_en, c_en;
-    logic [2:0] stripes_color;
+    logic [2:0] stripes_color, square_color;
 
     // address counter
     logic addr_cnt_inc, addr_cnt_clr;
@@ -168,6 +168,7 @@ module fbh_reader(
     ff_ar_en #(24,24'd0) pixel_reg(.q(pixel_reg_q), .d(pixel_reg_d), .en(flip_pixel_mux_sel), .clk, .rst);
 
     stripes stripes_inst(.vga_color(stripes_color), .vga_row, .vga_col);
+    //square   square_inst(.vga_color(square_color),.vga_row, .vga_col, .sq_row, .sq_col);
 
     // VGA output
     assign VGA_RGB = (stripes_sel) ? { stripes_color[2],7'b0, stripes_color[1],7'b0, stripes_color[0],7'b0} : pixel_reg_q;

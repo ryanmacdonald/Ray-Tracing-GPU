@@ -43,7 +43,7 @@ module tb_ryan_demo;
 
 		start <= 0;
 
-		repeat(10000) @(posedge clk);
+		repeat(10000000) @(posedge clk);
 
 		$finish;
 
