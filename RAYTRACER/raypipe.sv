@@ -1,52 +1,7 @@
 `default_nettype none
 
-module raypipe #(
-
-	// parameters for icache
-	parameter	I_SIDE_W=8, // TODO
-
-				I_ADDR_W=16,
-				I_BO_W=0,
-				I_TAG_W=5,
-				I_INDEX_W=11,
-
-				I_LINE_W=288,
-				I_NUM_BLK = 1,
-				I_BLK_W = I_LINE_W/I_NUM_BLK,
-
-				I_BASE_ADDR=0, // TODO
-				I_NUM_LINES=1392,
-
-	// parameters for tcaches
-	      T_SIDE_W=8, // TODO
-
-				T_ADDR_W=16,
-				T_BO_W=3,
-				T_TAG_W=4,
-				T_INDEX_W=9,
-	
-				T_LINE_W=384,
-				T_NUM_BLK = 8,
-				T_BLK_W = T_LINE_W/T_NUM_BLK,
-
-				T_BASE_ADDR=0, // TODO
-				T_NUM_LINES=510,
-
-	// parameters for lcache
-	      L_SIDE_W=8, // TODO
-
-				L_ADDR_W=16,
-				L_BO_W=4,
-				L_TAG_W=2,
-				L_INDEX_W=10,
-
-				L_LINE_W=256,
-				L_NUM_BLK=16,
-				L_BLK_W=L_LINE_W/L_NUM_BLK,
-
-				L_BASE_ADDR=0, // TODO
-				L_NUM_LINES=1000 ) (
-  
+module raypipe
+ (
   input clk, rst,
   	
   // Interface to PRG
@@ -295,14 +250,14 @@ module raypipe #(
   
 	cache_and_miss_handler #(
          .SIDE_W($bits(lcache_to_icache_t)),
-         .ADDR_W(I_ADDR_W),
-         .LINE_W(I_LINE_W),
-         .BLK_W(I_BLK_W),
-         .TAG_W(I_TAG_W),
-         .INDEX_W(I_INDEX_W),
-         .NUM_LINES(I_NUM_LINES),
-         .BO_W(I_BO_W),
-         .BASE_ADDR(I_BASE_ADDR))
+         .ADDR_W(`I_ADDR_W),
+         .LINE_W(`I_LINE_W),
+         .BLK_W(`I_BLK_W),
+         .TAG_W(`I_TAG_W),
+         .INDEX_W(`I_INDEX_W),
+         .NUM_LINES(`I_NUM_LINES),
+         .BO_W(`I_BO_W),
+         .BASE_ADDR(`I_BASE_ADDR))
 		icache (
 			.us_sb_data(ic_us_sb_data),
 			.us_valid(ic_us_valid),
@@ -323,14 +278,14 @@ module raypipe #(
 	//////////////////////// Traversal Cache 0 ////////////////////////
 	cache_and_miss_handler #(
          .SIDE_W($bits(tarb_t)),
-         .ADDR_W(T_ADDR_W),
-         .LINE_W(T_LINE_W),
-         .BLK_W(T_BLK_W),
-         .TAG_W(T_TAG_W),
-         .INDEX_W(T_INDEX_W),
-         .NUM_LINES(T_NUM_LINES),
-         .BO_W(T_BO_W),
-         .BASE_ADDR(T_BASE_ADDR))
+         .ADDR_W(`T_ADDR_W),
+         .LINE_W(`T_LINE_W),
+         .BLK_W(`T_BLK_W),
+         .TAG_W(`T_TAG_W),
+         .INDEX_W(`T_INDEX_W),
+         .NUM_LINES(`T_NUM_LINES),
+         .BO_W(`T_BO_W),
+         .BASE_ADDR(`T_BASE_ADDR))
 		t0cache (
 			.us_sb_data(t0c_us_sb_data),
 			.us_valid(t0c_us_valid),
@@ -353,14 +308,14 @@ module raypipe #(
 
 	cache_and_miss_handler #(
          .SIDE_W($bits(leaf_info_t)),
-         .ADDR_W(L_ADDR_W),
-         .LINE_W(L_LINE_W),
-         .BLK_W(L_BLK_W),
-         .TAG_W(L_TAG_W),
-         .INDEX_W(L_INDEX_W),
-         .NUM_LINES(L_NUM_LINES),
-         .BO_W(L_BO_W),
-         .BASE_ADDR(L_BASE_ADDR))
+         .ADDR_W(`L_ADDR_W),
+         .LINE_W(`L_LINE_W),
+         .BLK_W(`L_BLK_W),
+         .TAG_W(`L_TAG_W),
+         .INDEX_W(`L_INDEX_W),
+         .NUM_LINES(`L_NUM_LINES),
+         .BO_W(`L_BO_W),
+         .BASE_ADDR(`L_BASE_ADDR))
 		lcache (
 			.us_sb_data(lc_us_sb_data),
 			.us_valid(lc_us_valid),
