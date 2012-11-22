@@ -1,7 +1,6 @@
 `default_nettype none
 
-module raypipe
- (
+module raypipe (
   input clk, rst,
   	
   // Interface to PRG
