@@ -18,9 +18,9 @@
 module int_unit(
   input logic clk, rst,
   
-  input logic icache_to_int_valid,
-  input icache_to_int_t icache_to_int_data,
-  output logic icache_to_int_stall,
+  input logic rs_to_int_valid,
+  input rs_to_int_t rs_to_int_data,
+  output logic rs_to_int_stall,
 
   output logic int_to_list_valid,
   output int_to_list_t int_to_list_data,
@@ -46,8 +46,8 @@ module int_unit(
 
 
   // int_math instantiation
-  assign int_cacheline = icache_to_int_data.tri_cacheline;
-  assign ray_vec = icache_to_int_data.ray_vec;
+  assign int_cacheline = rs_to_int_data.tri_cacheline;
+  assign ray_vec = rs_to_int_data.ray_vec;
   int_math fat_ass_unit(.*);
 
    
@@ -73,10 +73,10 @@ module int_unit(
 
 
   always_comb begin
-    int_pipe_in.ray_info = icache_to_int_data.ray_info ;
-    int_pipe_in.triID = icache_to_int_data.triID ;
-    int_pipe_in.ln_tri.lnum_left = icache_to_int_data.ln_tri.lnum_left - 1'b1;
-    int_pipe_in.ln_tri.lindex = icache_to_int_data.ln_tri.lindex + 1'b1;
+    int_pipe_in.ray_info = rs_to_int_data.ray_info ;
+    int_pipe_in.triID = rs_to_int_data.triID ;
+    int_pipe_in.ln_tri.lnum_left = rs_to_int_data.ln_tri.lnum_left - 1'b1;
+    int_pipe_in.ln_tri.lindex = rs_to_int_data.ln_tri.lindex + 1'b1;
   end
   
   logic int_us_stall;
@@ -85,7 +85,7 @@ module int_unit(
   // The math pipleile is 45 latency
   pipe_valid_stall #(.WIDTH($bits(int_pipe_in)), .DEPTH(45), .NUM_W(9)) pipe_inst(
     .clk, .rst,
-    .us_valid(icache_to_int_valid),
+    .us_valid(rs_to_int_valid),
     .us_data(int_pipe_in),
     .us_stall(int_us_stall),
     .ds_valid(pipe_ds_valid),
@@ -94,7 +94,7 @@ module int_unit(
     .num_left_in_fifo(min_num_left_in_fifo) );
  
   assign pipe_ds_stall = int_to_larb_stall | int_to_list_stall ;
-  assign icache_to_int_stall = int_us_stall & icache_to_int_valid ;
+  assign rs_to_int_stall = int_us_stall & rs_to_int_valid ;
 
   logic	  list_rdreq;
 	logic	  list_wrreq;

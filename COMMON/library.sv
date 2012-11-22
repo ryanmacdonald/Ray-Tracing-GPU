@@ -24,6 +24,21 @@ module shifter #(parameter W=8, RV={W{1'b0}}) (
 
 endmodule
 
+module shifter2 #(parameter W=8, RV={W{1'b0}}) (
+    input logic [W-1:0] d,
+    input logic ld, shift,
+    output logic q,
+    input logic clk, rst);
+
+    logic [W-1:0] shifted_bits, d_bits;
+    assign q = d_bits[W-1];
+	  assign shifted_bits = ld ? d : {d_bits[W-2:0],1'b0} ;
+    
+    assign en_ff = ld | shift;
+    ff_ar_en #(W,RV) r(.q(d_bits), .d(shifted_bits), .en(en_ff), .clk, .rst);
+
+endmodule
+
 module counter #(parameter W=8, RV={W{1'b0}}) (
     output logic [W-1:0] cnt,
     input logic clr, inc,

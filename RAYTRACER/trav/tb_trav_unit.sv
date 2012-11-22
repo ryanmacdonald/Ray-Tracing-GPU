@@ -3,46 +3,46 @@ module tb_trav_unit();
   logic clk, rst;
 
 //////////////// interface with  raystore /////////////////
-	trav_to_rs_t    trav_to_rs0;
-	logic           trav_to_rs0_valid;
-	logic           trav_to_rs0_stall;
+	trav_to_rs_t    trav0_to_rs_data;
+	logic           trav0_to_rs_valid;
+	logic           trav0_to_rs_stall;
 
-	trav_to_rs_t    trav_to_rs1;
-	bit             trav_to_rs1_valid;
-	bit             trav_to_rs1_stall;
+	trav_to_rs_t    trav1_to_rs_data;
+	bit             trav1_to_rs_valid;
+	bit             trav1_to_rs_stall;
 
-	assign trav_to_rs1_valid = 1'b1;
-	assign trav_to_rs1 = 'b0;
+	assign trav1_to_rs_valid = 1'b1;
+	assign trav1_to_rs_data = 'b0;
 
-	lcache_to_rs_t  lcache_to_rs;
-	bit             lcache_to_rs_valid;
-	bit             lcache_to_rs_stall;
+	icache_to_rs_t  icache_to_rs_data;
+	bit             icache_to_rs_valid;
+	bit             icache_to_rs_stall;
 
-	assign lcache_to_rs_valid = 1'b1;
-	assign lcache_to_rs = 'b0;
+	assign icache_to_rs_valid = 1'b1;
+	assign icache_to_rs_data = 'b0;
 
-	list_to_rs_t    list_to_rs;
+	list_to_rs_t    list_to_rs_data;
 	bit             list_to_rs_valid;
 	bit             list_to_rs_stall;
 
 	assign list_to_rs_valid = 1'b1;
-	assign list_to_rs = 'b0;
+	assign list_to_rs_data = 'b0;
 
 	// downstream interface
 
-	rs_to_trav_t    rs_to_trav0;
+	rs_to_trav_t    rs_to_trav0_data;
 	bit             rs_to_trav0_valid;
 	bit             rs_to_trav0_stall;
 
-	rs_to_trav_t    rs_to_trav1;
+	rs_to_trav_t    rs_to_trav1_data;
 	bit             rs_to_trav1_valid;
 	bit             rs_to_trav1_stall;
 
-	rs_to_icache_t  rs_to_icache;
-	bit             rs_to_icache_valid;
-	bit             rs_to_icache_stall;
+	rs_to_int_t  rs_to_int_data;
+	bit             rs_to_int_valid;
+	bit             rs_to_int_stall;
 
-	rs_to_pcalc_t   rs_to_pcalc;
+	rs_to_pcalc_t   rs_to_pcalc_data;
 	bit             rs_to_pcalc_valid;
 	bit             rs_to_pcalc_stall;
 
@@ -228,14 +228,14 @@ module tb_trav_unit();
 
   // Deal with trav ->rs -> trav
 
-	assign trav_to_rs0_valid = trav_to_rs_valid;
-	assign trav_to_rs0 = trav_to_rs_data;
-	assign trav_to_rs_stall = trav_to_rs0_stall;
+	assign trav0_to_rs_valid = trav_to_rs_valid;
+	assign trav0_to_rs_data = trav_to_rs_data;
+	assign trav_to_rs_stall = trav0_to_rs_stall;
 
 	raystore rs(.*);
 
 	assign rs_to_trav_valid = rs_to_trav0_valid;
-	assign rs_to_trav_data = rs_to_trav0;
+	assign rs_to_trav_data = rs_to_trav0_data;
 	assign rs_to_trav0_stall = rs_to_trav_stall;
 
 /*	

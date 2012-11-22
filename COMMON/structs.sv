@@ -32,11 +32,14 @@
 `endif
 
 // Number of caches and max read size for memory interface
-`define numcaches 4
+`define numcaches 3
 `define maxTrans 64
 
 // Number of primary rays for PRG
 `define num_rays 307200
+// Pixel width
+`define PW `FP_1
+
 
 // Epsilon = 10^-20 for now?
 `define EPSILON 32'h1E3C_E508
@@ -156,6 +159,16 @@ typedef struct packed{
   logic[18:0] pixelID;
 } pixelID_t;
 
+typedef struct packed {
+  float_t xmin;
+  float_t xmax;
+  float_t ymin;
+  float_t ymax;
+  float_t zmin;
+  float_t zmax;
+} AABB_t;
+
+
 typedef struct packed{
   pixelID_t pixelID;
   vector_t origin;
@@ -232,10 +245,13 @@ typedef struct packed {
   logic released;
 } keys_t;
 
+typedef struct packed {
+  logic [15:0] ID;
+} lindex_t;
 
 // type containting leaf node triangle info
 typedef struct packed {
-  logic [12:0] lindex; // current index
+  lindex_t lindex; // current index
   logic [4:0] lnum_left; // number of triangles left
 } ln_tri_t;
 
@@ -369,41 +385,36 @@ typedef struct packed {
 
 typedef struct packed {
   ray_info_t ray_info;
- // float_t t_max_leaf;
   ln_tri_t ln_tri;
 } leaf_info_t;
 
     
-// lcache_to_rs
+// lcache_to_icache
 typedef struct packed {
   ray_info_t ray_info;
-//  float_t t_max_leaf;
   ln_tri_t ln_tri;
   triID_t triID;
-} lcache_to_rs_t;
+} lcache_to_icache_t;
 
 
-// rs_to_icache_t
+// icache_to_rs_t
 typedef struct packed {
   ray_info_t ray_info;
-//  float_t t_max_leaf;
   ln_tri_t ln_tri;
   triID_t triID;
-  ray_vec_t ray_vec;
+  int_cacheline_t tri_cacheline;
+} icache_to_rs_t ;
 
-} rs_to_icache_t ;
 
-
-// icache_to_int_t
+// rs_to_int_t
 typedef struct packed {
   ray_info_t ray_info;
-//  float_t t_max_leaf;
   ln_tri_t ln_tri;
   triID_t triID;
   ray_vec_t ray_vec;
   int_cacheline_t tri_cacheline;
 
-} icache_to_int_t ;
+} rs_to_int_t ;
 
 
 // int_to_list_t
@@ -423,7 +434,7 @@ typedef struct packed {
 
 
 typedef struct packed {
-  ray_info_t ray_info;
+  rayID_t rayID;
   bari_uv_t uv;
   float_t t_int;
   triID_t triID;
