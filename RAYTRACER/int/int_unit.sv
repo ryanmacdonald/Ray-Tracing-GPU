@@ -135,7 +135,6 @@ module int_unit(
   assign list_wrreq = pipe_ds_valid & (hit | is_last);
   assign larb_wrreq = pipe_ds_valid & (~is_last);
 
-  // Should be 129
   altbramfifo_w129_d256 list_fifo(
 	.aclr(rst),
   .clock (clk),
@@ -147,8 +146,8 @@ module int_unit(
 	.q(list_fifo_out ),
   .usedw(list_num_in_fifo));
 
-  // Should be 33
-  altbramfifo_w33_d256 larb_fifo(
+  // Should be 36
+  altbramfifo_w36_d256 larb_fifo(
 	.aclr(rst),
   .clock (clk),
 	.data ( larb_fifo_in),
