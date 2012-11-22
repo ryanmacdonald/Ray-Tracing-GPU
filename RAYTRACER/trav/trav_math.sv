@@ -69,7 +69,7 @@ module trav_math(
   logic nan_add, overflow_add, underflow_add, zero_add;
 
   assign inA_add = split_in;
-  assign inB_add = {1'b1,origin_in[30:0]};
+  assign inB_add = {~origin_in[31],origin_in[30:0]};
   altfp_add add(
   .aclr(rst ),
   .clock(clk ),

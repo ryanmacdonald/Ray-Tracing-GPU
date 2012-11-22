@@ -86,7 +86,7 @@ module int_math(
   logic nan_div, overflow_div, underflow_div, zero_div, division_by_zero_div;
 
   assign inA_div = originp_z;
-  assign inB_div = {1'b0,dirp_z[30:0]};
+  assign inB_div = {~dirp_z[31],dirp_z[30:0]};
   altfp_div div1 (
   .aclr(rst ),
   .clock(clk ),

@@ -77,12 +77,12 @@ module tb_ss();
 //  assign trav1_to_rs_valid = 1'b1;
 //  assign trav1_to_rs1_data = 'b0;
 
-	lcache_to_rs_t  lcache_to_rs_data;
-	bit             lcache_to_rs_valid;
-	bit             lcache_to_rs_stall;
+	icache_to_rs_t  icache_to_rs_data;
+	bit             icache_to_rs_valid;
+	bit             icache_to_rs_stall;
 
-//  assign lcache_to_rs_valid = 1'b1;
-//  assign lcache_to_rs_data = 'b0;
+//  assign icache_to_rs_valid = 1'b1;
+//  assign icache_to_rs_data = 'b0;
 
 	
   // downstream interface
@@ -95,9 +95,9 @@ module tb_ss();
 	logic           rs_to_trav1_valid;
 	bit             rs_to_trav1_stall;
 
-	rs_to_icache_t  rs_to_icache_data;
-	logic           rs_to_icache_valid;
-	bit             rs_to_icache_stall;
+	rs_to_int_t  rs_to_int_data;
+	logic           rs_to_int_valid;
+	bit             rs_to_int_stall;
 
 	rs_to_pcalc_t   rs_to_pcalc_data;
 	logic           rs_to_pcalc_valid;
@@ -172,7 +172,7 @@ module tb_ss();
     trav0_to_tarb_stall <= trav0_to_tarb_valid & r.r[0];
     trav0_to_larb_stall <= trav0_to_larb_valid & r.r[1];
     ss_to_shader_stall <= ss_to_shader_valid & r.r[2];
-    rs_to_icache_stall <= rs_to_icache_valid & r.r[3];
+    rs_to_int_stall <= rs_to_int_valid & r.r[3];
     rs_to_pcalc_stall <= rs_to_pcalc_valid & r.r[4];
     rs_to_trav1_stall <= rs_to_trav1_valid & r.r[5];
     ss_to_tarb_stall0 <= ss_to_tarb_valid0 & r.r[6];
@@ -444,9 +444,9 @@ module tb_ss();
 		.trav1_to_rs_data,
 		.trav1_to_rs_valid,
 		.trav1_to_rs_stall,
-		.lcache_to_rs_data,
-		.lcache_to_rs_valid,
-		.lcache_to_rs_stall,
+		.icache_to_rs_data,
+		.icache_to_rs_valid,
+		.icache_to_rs_stall,
 		.list_to_rs_data,
 		.list_to_rs_valid,
 		.list_to_rs_stall,
@@ -456,9 +456,9 @@ module tb_ss();
 		.rs_to_trav1_data,
 		.rs_to_trav1_valid,
 		.rs_to_trav1_stall,
-		.rs_to_icache_data,
-		.rs_to_icache_valid,
-		.rs_to_icache_stall,
+		.rs_to_int_data,
+		.rs_to_int_valid,
+		.rs_to_int_stall,
 		.rs_to_pcalc_data,
 		.rs_to_pcalc_valid,
 		.rs_to_pcalc_stall,

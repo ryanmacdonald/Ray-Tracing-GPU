@@ -29,9 +29,9 @@ module raystore_tb;
 	logic           trav_to_rs1_valid;
 	logic           trav_to_rs1_stall;
 
-	lcache_to_rs_t  lcache_to_rs;
-	logic           lcache_to_rs_valid;
-	logic           lcache_to_rs_stall;
+	icache_to_rs_t  icache_to_rs;
+	logic           icache_to_rs_valid;
+	logic           icache_to_rs_stall;
 
 	list_to_rs_t    list_to_rs;
 	logic           list_to_rs_valid;
@@ -47,9 +47,9 @@ module raystore_tb;
 	logic           rs_to_trav1_valid;
 	logic           rs_to_trav1_stall;
 
-	rs_to_icache_t  rs_to_icache;
-	logic           rs_to_icache_valid;
-	logic           rs_to_icache_stall;
+	rs_to_int_t  rs_to_int;
+	logic           rs_to_int_valid;
+	logic           rs_to_int_stall;
 
 	rs_to_pcalc_t   rs_to_pcalc;
 	logic           rs_to_pcalc_valid;
@@ -95,8 +95,8 @@ module raystore_tb;
 		trav_to_rs1 <= 'b0;
 		trav_to_rs1_valid <= 1'b0;
 
-		lcache_to_rs <= 'b0;
-		lcache_to_rs_valid <= 1'b0;
+		icache_to_rs <= 'b0;
+		icache_to_rs_valid <= 1'b0;
 
 		list_to_rs <= 'b0;
 		list_to_rs_valid <= 1'b0;
@@ -140,8 +140,8 @@ module raystore_tb;
 				$display("rs_to_trav0: origin: %h dir: %h",rs_to_trav0.origin, rs_to_trav0.dir);
 			if(rs_to_trav1_valid && ~rs_to_trav1_valid)
 				$display("rs_to_trav1: origin: %h dir: %h",rs_to_trav1.origin, rs_to_trav1.dir);
-			if(rs_to_icache_valid && ~rs_to_icache_valid)
-				$display("rs_to_icache: %h",rs_to_icache);
+			if(rs_to_int_valid && ~rs_to_int_valid)
+				$display("rs_to_int: %h",rs_to_int);
 			if(rs_to_pcalc_valid && ~rs_to_pcalc_valid)
 				$display("rs_to_pcacl: %h",rs_to_pcalc);
 		end
@@ -149,7 +149,7 @@ module raystore_tb;
 
 	assign rs_to_trav0_stall  = (rs_to_trav0_valid  && r[0] < 20)? 1 : 0;
 	assign rs_to_trav1_stall  = (rs_to_trav1_valid  && r[1] < 20)? 1 : 0;
-	assign rs_to_icache_stall = (rs_to_icache_stall && r[2] < 20)? 1 : 0;
+	assign rs_to_int_stall = (rs_to_int_stall && r[2] < 20)? 1 : 0;
 	assign rs_to_pcalc_stall  = (rs_to_pcalc_stall  && r[3] < 20)? 1 : 0;
 
 	task write_to_rs(input ray_vec_c ray_in, input [8:0] addr);
@@ -199,12 +199,12 @@ module raystore_tb;
 		$display("******************************************************");
 		$display("reading from %h",addr);
 		$display("******************************************************");
-		lcache_to_rs <= $random;
-		lcache_to_rs.ray_info.rayID <= addr;
-		lcache_to_rs_valid <= 1'b1;
+		icache_to_rs <= $random;
+		icache_to_rs.ray_info.rayID <= addr;
+		icache_to_rs_valid <= 1'b1;
 
 		@(posedge clk);
-		lcache_to_rs_valid <= 1'b0;
+		icache_to_rs_valid <= 1'b0;
 
 	endtask
 

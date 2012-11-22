@@ -35,7 +35,7 @@ t_comp:
 	$(CC) $(FLAGS) -top tb_t_comp COMMON/*v COMMON/altfp_comp/altfp_comp.v RAYTRACER/int/p_calc.sv RAYTRACER/int/t_comp.sv RAYTRACER/int/TBs/tb_t_comp.sv
 
 scene_int:
-	$(CC) $(FLAGS) -top tb_scene_int COMMON/*v COMMON/altfp_compare/altfp_compare.v COMMON/altfp_add/altfp_add.v COMMON/altfp_div/altfp_div.v RAYTRACER/scene_int/*v
+	$(CC) $(FLAGS) -top scene_int COMMON/*v COMMON/altfp_compare/altfp_compare.v COMMON/altfp_add/altfp_add.v COMMON/altfp_div/altfp_div.v RAYTRACER/scene_int/*v
 
 int_math: 
 	$(CC) $(FLAGS) -top tb_int_math COMMON/*v COMMON/altfp*/*.v RAYTRACER/int/*.sv RAYTRACER/int/TBs/tb_int_math.sv
@@ -53,10 +53,10 @@ prg_int:
 	$(CC) $(FLAGS) -top tb_int_prg COMMON/*v  COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv TBs/tb_int_prg.sv
 
 prg:
-	$(CC) $(FLAGS) -top tb_prg COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v PRG/*.sv
+	$(CC) $(FLAGS) -top tb_prg COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v COMMON/altb*/*v PRG/*.sv
 
 prg_int_stall:
-	$(CC) $(FLAGS) -top tb_prg COMMON/*v COMMON/altbram_fifo/*/*v PERIPHERALS/*.sv COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv
+	$(CC) $(FLAGS) -top tb_prg COMMON/*v COMMON/altbram_fifo/*v PERIPHERALS/*.sv COMMON/altfp*/*.v RAYTRACER/int/*.sv PRG/*.sv
 
 cam:
 	$(CC) $(FLAGS) -top  camera_controller COMMON/*v COMMON/altfp_convert/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v CAMERA/camera_controller.sv
@@ -84,6 +84,9 @@ ss:
 
 shader: 
 	$(CC) $(FLAGS) -top tb_shade COMMON/*v COMMON/altfp*/*.v COMMON/bram/*.v COMMON/altb*/*v RAYTRACER/shader/*.sv
+
+pipedemo: 
+	$(CC) $(FLAGS) -top pipedemo COMMON/*v COMMON/altfp*/*.v COMMON/bram/*.v COMMON/altb*/*v RAYTRACER/*/*v PRG/*sv RAYTRACER/raypipe.sv DEMOS/pipedemo.sv
 
 ryan:
 	$(CC) $(FLAGS) -top tb_ryan_demo COMMON/*v COMMON/altfp*/*.v PS2/* COMMON/altbram_fifo/altbramfifo_w211_d16/*v RAYTRACER/scene_int/* PRG/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv CAMERA/*v TBs/tb_ryan_demo.sv DEMOS/ryan_demo.sv 
