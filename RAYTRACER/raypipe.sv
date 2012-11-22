@@ -7,15 +7,15 @@ module raypipe #(
 
 				I_ADDR_W=16,
 				I_BO_W=0,
-				I_TAG_W=5,
-				I_INDEX_W=11,
+				I_TAG_W=6,
+				I_INDEX_W=10,
 
 				I_LINE_W=288,
 				I_NUM_BLK = 1,
 				I_BLK_W = I_LINE_W/I_NUM_BLK,
 
 				I_BASE_ADDR=0, // TODO
-				I_NUM_LINES=1392,
+				I_NUM_LINES=1024,
 
 	// parameters for tcaches
 	      T_SIDE_W=8, // TODO
@@ -30,7 +30,7 @@ module raypipe #(
 				T_BLK_W = T_LINE_W/T_NUM_BLK,
 
 				T_BASE_ADDR=0, // TODO
-				T_NUM_LINES=510,
+				T_NUM_LINES=512,
 
 	// parameters for lcache
 	      L_SIDE_W=8, // TODO
@@ -45,7 +45,7 @@ module raypipe #(
 				L_BLK_W=L_LINE_W/L_NUM_BLK,
 
 				L_BASE_ADDR=0, // TODO
-				L_NUM_LINES=1000 ) (
+				L_NUM_LINES=1024 ) (
   
   input clk, rst,
   	

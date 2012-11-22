@@ -75,7 +75,7 @@ module pipedemo(
   //initial $display($bits({addr_cache_to_sdram,transSize,readReq,pb_we,pb_data_out}));
   assign shift_out = {addr_cache_to_sdram,transSize,readReq,pb_we,pb_data_out};
 
-  
+  raypipe rp(.*); 
  
 	logic[1:0] cnt, cnt_n;
 	assign cnt_n = (cnt == 2'b10) ? 2'b00 : cnt + 2'b1;
