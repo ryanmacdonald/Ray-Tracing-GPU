@@ -6,6 +6,7 @@
 module xmodem(
     output logic xmodem_done,
     output logic xmodem_saw_valid_block,      // to scene loader
+    output logic xmodem_saw_invalid_block,      // to scene loader
     output logic xmodem_saw_valid_msg_byte,       // to scene loader
     output logic [7:0] xmodem_data_byte,  // to scene loader
     output logic [7:0] sl_block_num, // to scene loader
@@ -17,11 +18,12 @@ module xmodem(
 );
 
 	logic saw_valid_msg_byte;
-	logic saw_valid_block;
+	logic saw_valid_block, saw_invalid_block;
 	logic [7:0] data_byte;
 
 	assign xmodem_saw_valid_msg_byte = saw_valid_msg_byte;
 	assign xmodem_saw_valid_block = saw_valid_block;
+	assign xmodem_saw_invalid_block = saw_invalid_block;
 	assign xmodem_data_byte = data_byte;
 
     logic start;
@@ -44,6 +46,7 @@ module xmodem(
 
     assign saw_valid_msg_byte = saw_valid_byte & saw_msg_byte;
     assign saw_valid_block = saw_block && valid_block;
+    assign saw_invalid_block = saw_block && ~valid_block;
 
     xmodem_bitlevel_fsmd xbitfsmd(.*);
     xmodem_blocklevel_fsmd xblkfsmd(.*);

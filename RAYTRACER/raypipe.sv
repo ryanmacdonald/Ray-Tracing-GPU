@@ -66,9 +66,12 @@ module raypipe #(
   // Interface to Pixel Buffer
   output logic pb_we,
   input logic pb_full,
-  output pixel_buffer_entry_t pb_data_out
+  output pixel_buffer_entry_t pb_data_us
 
   );
+
+  pixel_buffer_entry_t pb_data_out;
+  assign pb_data_us = pb_data_out;
 
   // prg_to_shader 
   logic prg_to_shader_valid;

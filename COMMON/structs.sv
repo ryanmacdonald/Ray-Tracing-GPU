@@ -32,7 +32,7 @@
 `endif
 
 // Number of caches and max read size for memory interface
-`define numcaches 3
+`define numcaches 4
 `define maxTrans 64
 
 // Number of primary rays for PRG
@@ -43,6 +43,44 @@
 
 // Epsilon = 10^-20 for now?
 `define EPSILON 32'h1E3C_E508
+
+////////////////////// Defines for Caches //////////////////////
+// parameters for icache
+`define	I_SIDE_W              8 // TODO
+`define I_ADDR_W              16
+`define I_BO_W                0
+`define I_TAG_W               6
+`define I_INDEX_W             10
+`define I_LINE_W              288
+`define I_NUM_BLK             1
+`define I_BLK_W               `I_LINE_W/`I_NUM_BLK,
+`define I_BASE_ADDR           0 // TODO
+`define I_NUM_LINES           1024
+
+// parameters for tcaches
+`define T_SIDE_W              8 // TODO
+`define T_ADDR_W              16
+`define T_BO_W                3
+`define T_TAG_W               4
+`define T_INDEX_W             9
+`define T_LINE_W              384
+`define T_NUM_BLK             8
+`define T_BLK_W               `T_LINE_W/`T_NUM_BLK
+`define T_BASE_ADDR           0 // TODO
+`define T_NUM_LINES           512
+
+// parameters for lcache
+`define L_SIDE_W              8 // TODO
+`define L_ADDR_W              16
+`define L_BO_W                4
+`define L_TAG_W               2
+`define L_INDEX_W             10
+`define L_LINE_W              256
+`define L_NUM_BLK             16
+`define L_BLK_W               `L_LINE_W/`L_NUM_BLK,
+`define L_BASE_ADDR           0 // TODO
+`define L_NUM_LINES           1024
+////////////////////// End of Defines for Caches //////////////////////
 
 ////////////////////// Defines for XMODEM //////////////////////
 `define CLK_FREQ        50000000
@@ -95,7 +133,7 @@
 ////////////////////// End of Defines for VGA //////////////////////
 
 
-////////////////////// Definies for shader /////////////////////////
+////////////////////// Defines for shader /////////////////////////
 `define MISS_COLOR 24'hff_ff_ff
 `define TRI_0_COLOR 24'hff_00_ff
 `define TRI_1_COLOR 24'h00_FF_00

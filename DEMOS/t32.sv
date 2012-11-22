@@ -56,6 +56,7 @@ module t_minus_32_days(
 
     logic xmodem_done, sl_done;
     logic xmodem_saw_valid_block;
+    logic xmodem_saw_invalid_block;
     logic xmodem_saw_valid_msg_byte;
     logic [7:0] xmodem_data_byte;
     logic [7:0] sl_block_num;

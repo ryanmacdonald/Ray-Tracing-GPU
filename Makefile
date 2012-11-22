@@ -10,6 +10,9 @@ default: trtr.sv
 trtr:
 	$(CC) $(FLAGS) -top trtr_tb COMMON/*v COMMON/altfp*/*.v RAYTRACER/int/* PRG/*v TBs/trtr_tb.sv PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv DEMOS/trtr.sv 
 
+t15:
+	$(CC) $(FLAGS) -top t15_tb COMMON/*v COMMON/altfp*/*.v COMMON/bram/*v COMMON/altbram_fifo/*v TBs/t15_tb.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v SDRAM/submodules/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/temporary_scene_retriever.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv CAMERA/*.sv RAYTRACER/raypipe.sv  RAYTRACER/*/*v PRG/*v  DEMOS/t15.sv
+
 t32:
 	$(CC) $(FLAGS) -top t32_tb COMMON/*v COMMON/altfp*/*.v TBs/t32_tb.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v SDRAM/submodules/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/temporary_scene_retriever.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv DEMOS/t32.sv
 
@@ -21,6 +24,9 @@ cache2:
 
 cache:
 	$(CC) $(FLAGS) -top cache_tb COMMON/*v RAYTRACER/caches/cache.sv TBs/cache_tb.sv
+
+sl:
+	$(CC) $(FLAGS) -top sl_tb COMMON/*v PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv TBs/sl_tb.sv
 
 fbh:
 	$(CC) $(FLAGS) -top fbh_tb COMMON/*v COMMON/altfp*/*v PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/sram.sv TBs/fbh_tb.sv

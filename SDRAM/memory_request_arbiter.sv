@@ -1,5 +1,4 @@
 
-`define numcaches 4
 `define maxTrans 64
 
 // Caches send requests to sdram, which handles these
