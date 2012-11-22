@@ -287,7 +287,7 @@ module cache_storage
 )(
 		// upstream side
 	input logic [ADDR_W-1:0] waddr,
-	input logic [NUM_BLK][BLK_W-1:0] wdata,
+	input logic [0:NUM_BLK-1][BLK_W-1:0] wdata,
 	input logic cache_we,
 	input logic [ADDR_W-1:0] raddr,
 	// downstream side
@@ -315,7 +315,7 @@ module cache_storage
 	logic [$clog2(NUM_LINES)-1:0] cache_addr;
 	logic way0_we, way1_we;
 
-	logic [NUM_BLK][BLK_W-1:0] rdata_line;
+	logic [0:NUM_BLK-1][BLK_W-1:0] rdata_line;
 	logic hit0, hit1;
 	logic valid0, valid1;
 

@@ -22,6 +22,9 @@ cache2:
 cache:
 	$(CC) $(FLAGS) -top cache_tb COMMON/*v RAYTRACER/caches/cache.sv TBs/cache_tb.sv
 
+sl:
+	$(CC) $(FLAGS) -top sl_tb COMMON/*v PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv TBs/sl_tb.sv
+
 fbh:
 	$(CC) $(FLAGS) -top fbh_tb COMMON/*v COMMON/altfp*/*v PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/sram.sv TBs/fbh_tb.sv
 

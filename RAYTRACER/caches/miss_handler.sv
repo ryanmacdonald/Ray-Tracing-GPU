@@ -41,7 +41,11 @@ module miss_handler
 				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-1:0],3'b000} + to_mh_addr; end
 			12: begin : addr_translator
 				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-1:0],3'b000} + {to_mh_addr[TAG_W+INDEX_W-1:0],2'b00}; end
-//			default: begin $fatal("need NUM_REQ to be one of the options in addr_translator case statement"); end
+			default: begin : addr_translator
+				initial begin
+					assert(1) $fatal("need NUM_REQ to be one of the options in addr_translator case statement");
+				end
+			end
 		endcase
 	endgenerate
 
@@ -73,7 +77,7 @@ module miss_handler
 
 	/**************** data register ****************/
 
-	logic [NUM_REQ][31:0] next_from_mh_data;
+	logic [0:NUM_REQ-1][31:0] next_from_mh_data;
 	logic [$clog2(LINE_W)-1:0] data_reg_index_lo, data_reg_index_hi;
 	always_comb begin
 		next_from_mh_data = from_mh_data;
