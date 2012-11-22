@@ -120,7 +120,7 @@ module t_minus_15_days(
 
 	// TODO: instantiate PS/2 controller
 
-	camera_controller ccu(.*);
+//	camera_controller ccu(.*);
 
     xmodem xm(.*);
 

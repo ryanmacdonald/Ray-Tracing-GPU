@@ -2,6 +2,9 @@
 
 `define CLOCK_PERIOD 20
 
+`define MAX_PIXEL_IDS        1000
+`define MAX_SCENE_FILE_BYTES 20000
+
 module t15_tb;
 
     // general IO
@@ -47,23 +50,69 @@ module t15_tb;
  
     logic clk;
 
+    //////////// pixel ID checker code ////////////
+	pixelID_t pixelIDs_us [`MAX_PIXEL_IDS];
+	pixelID_t pixelIDs_ds [`MAX_PIXEL_IDS];
+
+	logic pixel_valid_us, pixel_valid_ds;
+
+	assign pixel_valid_us = t15.rp.prg_to_shader_valid & ~t15.rp.prg_to_shader_stall;
+	assign pixel_valid_ds = t15.pb_we;
+
+	int num_pixels_us = 0;
+	int num_pixels_ds = 0;
+
+	initial begin
+		forever begin
+			@(posedge clk);
+			if(pixel_valid_us)
+				pixelIDs_us[num_pixels_us++] = t15.rp.prg_to_shader_data.pixelID;
+			if(num_pixels_us >= `MAX_PIXEL_IDS)
+				$display("warning: num_pixels_us >= `MAX_PIXEL_IDS");
+		end
+	end
+
+	initial begin
+		forever begin
+			@(posedge clk);
+			if(pixel_valid_ds)
+				pixelIDs_ds[num_pixels_ds++] = t15.pb_data_us.pixelID;
+			if(num_pixels_us >= `MAX_PIXEL_IDS)
+				$display("warning: num_pixels_us != `MAX_PIXEL_IDS");
+		end
+	end
+
+	final begin
+		if(num_pixels_ds != num_pixels_us) begin
+			$display("WARNING: num_pixel_ds != num_pixels_us");
+		end
+	end
+
+	//////////// end of pixel ID checker code ////////////
+
 	initial begin
 		clk <= 1'b0;
-		btns[0] <= 1'b1;
+		btns[3] <= 1'b1;
 		#1;
-		btns[0] <= 1'b0;
+		btns[3] <= 1'b0;
 		#1;
-		btns[0] <= 1'b1;
+		btns[3] <= 1'b1;
 		#1;
 		forever #(`CLOCK_PERIOD) clk = ~clk;
 	end
 
     logic [7:0] message [128];
-    int j;
+    int j, r;
+    int kdfp;
+
+    logic [7:0] file_contents [`MAX_SCENE_FILE_BYTES];
 
 	initial begin
 		switches <= 'b0;
 		btns[2:0] <= 3'b111;
+
+		@(posedge clk);
+		t15.render_frame <= 1'b0;
 
 	    // Hit start button
         @(posedge clk);
@@ -71,13 +120,24 @@ module t15_tb;
         repeat(100) @(posedge clk);
         btns[0] <= 1'b1;
 
+        kdfp = $fopen("kdtree.bin", "rb");
+        r = $fread(file_contents,kdfp);
+		$fclose(kdfp);
+
+		// TODO: right now the sample scene is just one block. make this based on r later.
         for(j=0; j<128; j++)
-            message[j] = $random % 8'hFF;
+            message[j] = file_contents[j];
 
 		send_block(message, 1, 0);
 		send_EOT();
 
-		repeat(10) @(posedge clk);
+		@(posedge clk);
+		t15.render_frame <= 1'b1;
+		@(posedge clk);
+		t15.render_frame <= 1'b0;
+
+		repeat(1000) @(posedge clk);
+		$finish;
 	end
 
     logic rst;

@@ -296,7 +296,7 @@ module trav_unit(
       assert(!(trav_fifo_full & ds_valid_pipe_vs));
       assert(trav_fifo_empty || ($onehot({only_low,only_high,trav_lo_then_hi,trav_hi_then_lo})));
       assert(trav_fifo_empty || (t_max > t_min));
-      assert(!(low_empty & high_empty));
+      assert(trav_fifo_empty || !(low_empty & high_empty));
     end
   `endif
  

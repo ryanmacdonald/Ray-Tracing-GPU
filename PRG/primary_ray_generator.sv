@@ -25,8 +25,8 @@ module prg(input logic clk, rst,
 	logic x_y_valid;
 	logic idle;
 	logic rb_we,rb_re,rb_full,rb_empty;
-	logic[9:0] x, nextX;
-	logic[8:0] y, nextY;
+	logic[$clog2(`VGA_NUM_COLS)-1:0] x, nextX;
+	logic[$clog2(`VGA_NUM_ROWS)-1:0] y, nextY;
 	
 	prg_ray_t prg_out;
 	logic[3:0] num_in_rb, num_left_in_rb;
@@ -45,13 +45,13 @@ module prg(input logic clk, rst,
 			  .ds_stall(prg_to_shader_stall),
 			  .num_left_in_fifo({2'b0,num_left_in_rb}));
 	    
-	ff_ar_en #(10,0)   xr(.q(x),.d(nextX),.en(x_y_valid),.clk,.rst);
-	ff_ar_en #(9,479)  yr(.q(y),.d(nextY),.en(x_y_valid),.clk,.rst);
+	ff_ar_en #($clog2(`VGA_NUM_COLS),0)   xr(.q(x),.d(nextX),.en(x_y_valid),.clk,.rst);
+	ff_ar_en #($clog2(`VGA_NUM_ROWS),`VGA_NUM_ROWS-1)  yr(.q(y),.d(nextY),.en(x_y_valid),.clk,.rst);
 
 	prg_pl poop(.prg_data(prg_out),.*);
 
-	assign nextX = (x == 'd639) ? 0 : x + 1;
-	assign nextY = (x == 'd639) ? y - 1 : y;
+	assign nextX = (x == `VGA_NUM_COLS-1) ? 0 : x + 1;
+	assign nextY = (x == `VGA_NUM_COLS-1) ? y - 1 : y;
 
 	assign rb_we = ds_valid;
 	assign rb_re = ~rb_empty && ~prg_to_shader_stall && v0;

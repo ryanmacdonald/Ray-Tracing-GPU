@@ -230,7 +230,7 @@ module simple_shader_unit(
 		.data_ds(arb_data_ds)
 	);
  
-  assign arb_stall_ds = arb_valid_ds & ray_data_VSpipe_stall_us;
+  assign arb_stall_ds = arb_valid_ds & (ray_data_VSpipe_stall_us | is_init);
   always_comb begin
     ray_data_VSpipe_in.triID = arb_data_ds.triID;
     ray_data_VSpipe_in.is_hit = arb_data_ds.is_hit;

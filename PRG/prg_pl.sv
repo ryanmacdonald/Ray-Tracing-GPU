@@ -1,22 +1,4 @@
-
 `default_nettype none
-
-`define screen_width  640
-`define screen_height 480 
-`define num_rays 307200
-
-// defines for -w/2 and -h/2 //half width = -4, half height = -3
-`ifndef SYNTH
-	`define half_screen_width  $shortrealtobits(-320.0)
-	`define half_screen_height $shortrealtobits(-240.0)
-	// D = 6 for now
-	`define D $shortrealtobits(100)
-`else
-	`define half_screen_width  32'hC080_0000 // -4
-	`define half_screen_height 32'hC040_0000 // -3
-	// D = 6 for now
-	`define D 32'h4080_0000 // 4
-`endif
 
 // -frame_done asserted from FBH
 // -output rayReady asserted every three cycles when
@@ -24,8 +6,8 @@
 module prg_pl(input logic clk, rst,
 	   input logic v0, v1, v2,
 	   input logic start,
-	   input logic[$clog2(`screen_width)-1:0] x,
-	   input logic[$clog2(`screen_height)-1:0] y,
+	   input logic[$clog2(`VGA_NUM_COLS)-1:0] x,
+	   input logic[$clog2(`VGA_NUM_ROWS)-1:0] y,
 	   input vector_t E, U, V, W,
 	   input float_t pw,
 	   output logic idle, rayReady, done,
@@ -51,7 +33,8 @@ module prg_pl(input logic clk, rst,
 	vector_t prayD,wD;
 
 	// RayID
-	logic[$clog2(`num_rays)-1:0] rayID,nextrayID;
+	logic[18:0] rayID,nextrayID; // TODO: rename this to be pixelID
+								 // TODO: this 19:0 is hardcoded. should not do that.
 
 	assign prg_data.pixelID  = rayID;
 	assign prg_data.origin = E;

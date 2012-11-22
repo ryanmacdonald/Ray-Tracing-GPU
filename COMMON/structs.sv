@@ -19,9 +19,9 @@
 	`define INIT_CAM_Y 32'h40400000
 	`define INIT_CAM_Z 32'hC1200000
 `else
-	`define INIT_CAM_X 32'h00000000
-	`define INIT_CAM_Y 32'h00000000
-	`define INIT_CAM_Z 32'hC1200000
+	`define INIT_CAM_X $shortrealtobits(1.0)
+	`define INIT_CAM_Y $shortrealtobits(1.0)
+	`define INIT_CAM_Z $shortrealtobits(-1.25)
 `endif
 
 
@@ -38,11 +38,32 @@
 // Number of primary rays for PRG
 `define num_rays 307200
 // Pixel width
-`define PW `FP_1
+`ifdef SYNTH
+	`define PW `FP_1 // TODO: make this considerably smaller
+`else
+	`define PW $shortrealtobits(0.25)
+`endif
 
 
 // Epsilon = 10^-20 for now?
 `define EPSILON 32'h1E3C_E508
+
+
+////////////////////// Defines for PRG //////////////////////
+`define num_rays (`VGA_NUM_ROWS*`VGA_NUM_COLS*1) // 307200
+// defines for -w/2 and -h/2 //half width = -4, half height = -3
+`ifndef SYNTH
+	`define half_screen_width  $shortrealtobits(-`VGA_NUM_COLS/2.0)
+	`define half_screen_height $shortrealtobits(-`VGA_NUM_ROWS/2.0)
+	// D = 6 for now
+	`define D $shortrealtobits(`PW*`VGA_NUM_ROWS/2.0) // 45 degrees viewing angle
+`else
+	`define half_screen_width  32'hC080_0000 // -4
+	`define half_screen_height 32'hC040_0000 // -3
+	// D = 6 for now
+	`define D 32'h4080_0000 // 4
+`endif
+////////////////////// End of Defines for PRG //////////////////////
 
 ////////////////////// Defines for Caches //////////////////////
 // parameters for icache
@@ -106,8 +127,8 @@
 	`define VGA_NUM_ROWS        10'd480
 	`define VGA_NUM_COLS        10'd640
 `else // use a very low resolution in simulation
-	`define VGA_NUM_ROWS        10'd9
-	`define VGA_NUM_COLS        10'd12
+	`define VGA_NUM_ROWS        10'd10
+	`define VGA_NUM_COLS        10'd10
 `endif
 
 // following in terms of 25 MHz clock
