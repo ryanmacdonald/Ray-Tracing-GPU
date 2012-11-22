@@ -13,7 +13,7 @@ module cache
 	// NOTE: following should add up to ADDR_W
 	TAG_W=3,
 	INDEX_W=4,
-	NUM_LINES=(1<<INDEX_W), // TODO: make sure block ram only has this many lines
+	NUM_LINES=(1<<INDEX_W),
 	BO_W=1,
 
 	RIF_DEPTH=(`DEPTH+3),
@@ -72,6 +72,7 @@ typedef struct packed {
 	logic [LINE_W-1:0] wdata;
 	logic cache_we;
 	logic [TAG_W-1:0] pipe_tag;
+	logic [BO_W-1:0] pipe_bo;
 
 	// outputs of cache storage
 	logic [BLK_W-1:0] rdata;
@@ -149,6 +150,15 @@ typedef struct packed {
 	assign waddr = rif_data_out.addr;
 	assign wdata = from_mh_data;
 	assign cache_we = rif_re & rif_wait_flag;
+
+	generate
+		if(BO_W != 0) begin : bo_w_case
+			assign pipe_bo = pvs_ds_data.addr[BO_W-1:0]; // just block offset
+		end
+		else begin
+			assign pipe_bo = 1'b0;
+		end
+	endgenerate 
 
 	// PVS assignments
 	assign pvs_ds_stall = ds_stall;
@@ -262,7 +272,6 @@ typedef struct packed {
 
 endmodule
 
-// TODO: make wdata able to write only certain blocks
 module cache_storage
 #(parameter
 	SIDE_W=8,
@@ -283,123 +292,70 @@ module cache_storage
 	input logic [ADDR_W-1:0] raddr,
 	// downstream side
 	input logic [TAG_W-1:0] pipe_tag,
+	input logic [BO_W-1:0] pipe_bo,
 	output  logic [BLK_W-1:0] rdata,
 	output logic miss,
 	output logic hit,
 	input logic clk, rst
 );
 
-	// NOTE: this is just a simulation model
-	// TODO: implement real block rams
+	localparam TAG_PAD_W = 7 - TAG_W;
 
-	logic [1<<(INDEX_W)][NUM_BLK][BLK_W-1:0] way0;
-	logic [1<<(INDEX_W)][NUM_BLK][BLK_W-1:0] way1;
+	// flips every clock cycle; used for pseudo random replacement
+	logic way_choice;
+	ff_ar way_choice_ff(.q(way_choice), .d(~way_choice), .clk, .rst);
 
+	logic [LINE_W-1:0] way0_data_in;
+	logic [LINE_W-1:0] way0_data_out;
+	logic [LINE_W-1:0] way1_data_in;
+	logic [LINE_W-1:0] way1_data_out;
+	logic [15:0] ts_data_in;
+	logic [15:0] ts_data_out;
+	logic [1:0] ts_be;
+	logic [$clog2(NUM_LINES)-1:0] cache_addr;
+	logic way0_we, way1_we;
+
+	logic [NUM_BLK][BLK_W-1:0] rdata_line;
 	logic hit0, hit1;
+	logic valid0, valid1;
 
-	logic [TAG_W:0] tagstore0 [1<<(INDEX_W)]; // no -1 because one bit is needed for valid
-	logic [TAG_W:0] tagstore1 [1<<(INDEX_W)];
-
-	logic [BLK_W-1:0] rdata0a, rdata0b, rdata1a, rdata1b;
-
-	logic [BO_W-1:0] rd_bo;
-	generate
-		if(BO_W != 0) begin : bo_w_case
-			assign rd_bo = raddr[BO_W-1:0];
-		end
-		else begin
-			assign rd_bo = 1'b0;
-		end
-	endgenerate 
-
-
-	logic [TAG_W-1:0] tag0a, tag0b, tag1a, tag1b;
-	logic [TAG_W-1:0] wr_tag; 
-	logic [INDEX_W-1:0] rd_index, wr_index;
-
-	logic valid0a, valid0b, valid1a, valid1b;
+	logic [INDEX_W-1:0] rd_index;
+	logic [INDEX_W-1:0] wr_index;
+	logic [TAG_W-1:0] wr_tag;
 
 	assign rd_index = raddr[INDEX_W+BO_W-1:BO_W];
 	assign wr_tag = waddr[TAG_W+INDEX_W+BO_W-1:INDEX_W+BO_W];
 	assign wr_index = waddr[INDEX_W+BO_W-1:BO_W];
 
+	assign way0_data_in = wdata;
+	assign way1_data_in = wdata;
+	assign ts_data_in = {1'b1,{TAG_PAD_W{1'b0}}, wr_tag, 1'b1,{TAG_PAD_W{1'b0}}, wr_tag};
+	assign ts_be = {way0_we, way1_we};
+	assign cache_addr = cache_we ? wr_index : rd_index;
+	assign way0_we = cache_we & ~way_choice;
+	assign way1_we = cache_we & way_choice;
 
-	logic way_choice;
+	// these flip flops are needed so that once we get the data from the tagstore,
+	// we know which way we wrote to. this is needed because the output is xxxx for
+	// the byte we don't write to in the tagstore so the valid bit will be x. this means
+	// we have to use the write enable bit from 2 cycles ago to decide whether it is a hit or miss
+	logic way0_we1, way0_we2;
+	ff_ar way0_we_ff0(.q(way0_we1), .d(way0_we), .clk, .rst);
+	ff_ar way0_we_ff1(.q(way0_we2), .d(way0_we1), .clk, .rst);
 
-	int i;
-	always_ff @(posedge clk, posedge rst) begin
+	logic way1_we1, way1_we2;
+	ff_ar way1_we_ff0(.q(way1_we1), .d(way1_we), .clk, .rst);
+	ff_ar way1_we_ff1(.q(way1_we2), .d(way1_we1), .clk, .rst);
 
-		// initialize tagstore valid bits to 0
-		if(rst) begin
-			valid0a <= 1'b0;
-			valid1a <= 1'b0;
-			valid0b <= 1'b0;
-			valid1b <= 1'b0;
-			for(i=0; i < 1<<INDEX_W; i++) begin
-				tagstore0[i][TAG_W] <= 1'b0;
-				tagstore1[i][TAG_W] <= 1'b0;
-			end
-		end
-		else begin
+	assign valid0 = ts_data_out[15] & way0_we2; // needs to be consistent with ts_data_in
+	assign valid1 = ts_data_out[7] & way1_we2; // needs to be consistent with ts_data_in
+	assign hit0 = valid0 && (ts_data_out[TAG_W+7:8] == pipe_tag);
+	assign hit1 = valid1 && (ts_data_out[TAG_W-1:0] == pipe_tag);
 
-			rdata0a <= way0[rd_index][rd_bo];
-			rdata1a <= way1[rd_index][rd_bo];
-
-			{valid0a,tag0a} <= tagstore0[rd_index];
-			{valid1a,tag1a} <= tagstore1[rd_index];
-
-			if(cache_we) begin
-				way_choice = {$random} % 2;
-				if(way_choice) begin // set valid bits to one
-					way0[wr_index] <= wdata;
-					tagstore0[wr_index] <= {1'b1,wr_tag};
-				end
-				else begin
-					way1[wr_index] <= wdata;
-					tagstore1[wr_index] <= {1'b1,wr_tag};
-				end
-				if(rd_index == wr_index) begin
-					if(way_choice) begin
-						rdata0a <= wdata[rd_bo];
-						{valid0a,tag0a} <= {1'b1,wr_tag};
-					end
-					else begin
-						rdata1a <= wdata[rd_bo];
-						{valid1a,tag1a} <= {1'b1,wr_tag};
-					end
-				end
-			end
-
-			rdata0b <= rdata0a;
-			rdata1b <= rdata1a;
-
-			{valid0b,tag0b} <= {valid0a, tag0a};
-			{valid1b,tag1b} <= {valid1a, tag1a};
-		end
-	end
-
-	assign hit0 = (pipe_tag == tag0b) && valid0b;
-	assign hit1 = (pipe_tag == tag1b) && valid1b;
-
-	assign rdata = hit0 ? rdata0b : rdata1b;
-
+	assign rdata_line = hit0 ? way0_data_out : way1_data_out;
+	assign rdata = rdata_line[pipe_bo];
 	assign hit = hit0 | hit1;
 	assign miss = ~hit;
-
-// TODO:
-//  * instantiate and wire block rams
-//  * implement some replacement policy
-//  * think about byte enable for tagstore
-
-	// TODO: define these signals
-	logic [] way0_data_in;
-	logic [] way0_data_out;
-	logic [] way1_data_in;
-	logic [] way1_data_out;
-	logic [] ts_data_in;
-	logic [] ts_data_out;
-	logic [1:0] ts_be;
-	logic [] cache_addr;
 
 	generate
 		if(NUM_LINES == 1024 && LINE_W == 288) begin : icache_generate
@@ -408,7 +364,7 @@ module cache_storage
 				.address(cache_addr),
 				.clock(clk),
 				.data(way0_data_in),
-				.wren(cache_we),
+				.wren(way0_we),
 				.q(way0_data_out));
 
 			bram_single_rw_1024x288 way1_bram(
@@ -416,18 +372,18 @@ module cache_storage
 				.address(cache_addr),
 				.clock(clk),
 				.data(way1_data_in),
-				.wren(cache_we),
+				.wren(way1_we),
 				.q(way1_data_out));
 
-			// TODO: change this to have byte enable
-			bram_single_rw_1024x16 tagstore_bram(
+			// TODO: Ross cannot spell bram, apparently
+			brwam_single_rw_1024x16 tagstore_bram(
 				.aclr(rst),
 				.address(cache_addr),
+				.byteena(ts_be),
 				.clock(clk),
 				.data(ts_data_in),
-				.wren(cache_we),
+				.wren(way0_we | way1_we),
 				.q(ts_data_out));
-
 		end
 		if(NUM_LINES == 512 && LINE_W == 384) begin : tcache_generate
 			bram_single_rw_512x384 way0_bram(
@@ -435,7 +391,7 @@ module cache_storage
 				.address(cache_addr),
 				.clock(clk),
 				.data(way0_data_in),
-				.wren(cache_we),
+				.wren(way0_we),
 				.q(way0_data_out));
 
 			bram_single_rw_512x384 way1_bram(
@@ -443,16 +399,16 @@ module cache_storage
 				.address(cache_addr),
 				.clock(clk),
 				.data(way1_data_in),
-				.wren(cache_we),
+				.wren(way1_we),
 				.q(way1_data_out));
 
-			bram_single_rw_512x16 (
+			bram_single_rw_512x16 tagstore_bram(
 				.aclr(rst),
 				.address(cache_addr),
 				.byteena(),
 				.clock(clk),
 				.data(ts_data_in),
-				.wren(cache_we),
+				.wren(way0_we | way1_we),
 				.q(ts_data_out));
 		end
 		if(NUM_LINES == 1024 && LINE_W == 256) begin : lcache_generate
@@ -461,7 +417,7 @@ module cache_storage
 				.address(cache_addr),
 				.clock(clk),
 				.data(way0_data_in),
-				.wren(cache_we),
+				.wren(way0_we),
 				.q(way0_data_out));
 
 			bram_single_rw_1024x256 way1_bram(
@@ -469,16 +425,17 @@ module cache_storage
 				.address(cache_addr),
 				.clock(clk),
 				.data(way1_data_in),
-				.wren(cache_we),
-				.q(way0_data_out));
+				.wren(way1_we),
+				.q(way1_data_out));
 
-			// TODO: change this to have byte enable
-			bram_single_rw_1024x16 tagstore_bram(
+			// TODO: Ross cannot spell bram, apparently
+			brwam_single_rw_1024x16 tagstore_bram(
 				.aclr(rst),
 				.address(cache_addr),
+				.byteena(ts_be),
 				.clock(clk),
 				.data(ts_data_in),
-				.wren(cache_we),
+				.wren(way0_we | way1_we),
 				.q(ts_data_out));
 
 		end

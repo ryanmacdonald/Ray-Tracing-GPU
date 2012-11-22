@@ -18,15 +18,15 @@ module cache_tb2;
 
 				I_ADDR_W=16,
 				I_BO_W=0,
-				I_TAG_W=5,
-				I_INDEX_W=11,
+				I_TAG_W=6, // NOTE: no longer 5
+				I_INDEX_W=10, // NOTE: no longer 11
 
 				I_LINE_W=288,
 				I_NUM_BLK = 1,
 				I_BLK_W = I_LINE_W/I_NUM_BLK,
 
 				I_BASE_ADDR=0, // TODO
-				I_NUM_LINES=1392;
+				I_NUM_LINES=1024; // NOTE: no longer 1392
 
 	// parameters for tcaches
 	parameter	T_SIDE_W=8, // TODO
@@ -41,7 +41,7 @@ module cache_tb2;
 				T_BLK_W = T_LINE_W/T_NUM_BLK,
 
 				T_BASE_ADDR=0, // TODO
-				T_NUM_LINES=510;
+				T_NUM_LINES=512; // NOTE: no longer 510
 
 	// parameters for lcache
 	parameter	L_SIDE_W=8, // TODO
@@ -56,7 +56,7 @@ module cache_tb2;
 				L_BLK_W=L_LINE_W/L_NUM_BLK,
 
 				L_BASE_ADDR=0, // TODO
-				L_NUM_LINES=1000;
+				L_NUM_LINES=1024; // NOTE: no longer 1000
 
 
     logic[`numcaches-1:0][24:0] addr_cache_to_sdram;
@@ -134,10 +134,11 @@ module cache_tb2;
 
 		repeat(10000) @(posedge clk); // give sdram time to initialize
 
-		repeat(1000) begin
+		$display("writing data to sdram...");
+		repeat(100000) begin
 			@(posedge clk);
 			data_out = $random;
-			$display("writeData: %h",data_out);
+//			$display("writeData: %h",data_out);
 			writeReq <= 1'b1;
 			writeData <= data_out;
 			while(~doneWrite) begin
@@ -146,6 +147,7 @@ module cache_tb2;
 			end
 			sl_addr <= sl_addr + 1'b1;
 		end
+		$display("done");
 		@(posedge clk);
 		sl_done <= 1'b1;
 		writeReq <= 1'b0;
@@ -250,7 +252,7 @@ module cache_tb2;
 	
 				@(posedge clk);
 				repeat(200) begin
-					do_ic_read({$random} % (100), ic_pre_id[I_SIDE_W-1:0]);
+					do_ic_read({$random} % (I_ADDR_W), ic_pre_id[I_SIDE_W-1:0]);
 					ic_pre_id++;
 				end
 				ic_us_valid <= 1'b0;
@@ -267,7 +269,7 @@ module cache_tb2;
 	
 				@(posedge clk);
 				repeat(200) begin
-					do_t0c_read({$random} % (100), t0c_pre_id[T_SIDE_W-1:0]);
+					do_t0c_read({$random} % (1<<T_ADDR_W), t0c_pre_id[T_SIDE_W-1:0]);
 					t0c_pre_id++;
 				end
 				t0c_us_valid <= 1'b0;
@@ -276,7 +278,7 @@ module cache_tb2;
 			begin
 				@(posedge clk);
 				repeat(210) begin
-					do_t1c_read({$random} % (100), t1c_pre_id[T_SIDE_W-1:0]);
+					do_t1c_read({$random} % (1<<T_ADDR_W), t1c_pre_id[T_SIDE_W-1:0]);
 					t1c_pre_id++;
 				end
 				t1c_us_valid <= 1'b0;
@@ -285,14 +287,14 @@ module cache_tb2;
 			begin
 				@(posedge clk);
 				repeat(210) begin
-					do_lc_read({$random} % (100), lc_pre_id[T_SIDE_W-1:0]);
+					do_lc_read({$random} % (1<<L_ADDR_W), lc_pre_id[T_SIDE_W-1:0]);
 					lc_pre_id++;
 				end
 				lc_us_valid <= 1'b0;
 			end
 		join // END OF FORK
 
-		repeat(500) @(posedge clk); // allow the reads to retire
+		repeat(1000) @(posedge clk); // allow the reads to retire
 
 		$display("num_reads: %d",num_reads);
 
@@ -388,7 +390,7 @@ module cache_tb2;
 			t0c_data[i] = dram.mem_array[t0c_translated_addr+i];
 		t0c_data_blocks = t0c_data; // grab the block
 		t0c_issue_table[side] = {t0c_data_blocks[addr[T_BO_W-1:0]], side};
-		$display("lc addr: %h (t+i: %h bo: %h). DRAM: %h side: %h",addr,t0c_line_num,addr[T_BO_W-1:0],t0c_data,side);
+		$display("t0c addr: %h (t+i: %h bo: %h). DRAM: %h side: %h",addr,t0c_line_num,addr[T_BO_W-1:0],t0c_data,side);
 		@(posedge clk);
 		while(t0c_us_stall)
 			@(posedge clk);
@@ -408,7 +410,7 @@ module cache_tb2;
 			t1c_data[i] = dram.mem_array[t1c_translated_addr+i];
 		t1c_data_blocks = t1c_data; // grab the block
 		t1c_issue_table[side] = {t1c_data_blocks[addr[T_BO_W-1:0]], side};
-		$display("lc addr: %h (t+i: %h bo: %h). DRAM: %h side: %h",addr,t1c_line_num,addr[T_BO_W-1:0],t1c_data,side);
+		$display("t1c addr: %h (t+i: %h bo: %h). DRAM: %h side: %h",addr,t1c_line_num,addr[T_BO_W-1:0],t1c_data,side);
 		@(posedge clk);
 		while(t1c_us_stall)
 			@(posedge clk);
@@ -436,7 +438,7 @@ module cache_tb2;
 
 	// to prevent running forever if something goes wrong
 	initial begin
-		repeat(200000) @(posedge clk);
+		repeat(2000000) @(posedge clk);
 		$finish;
 	end
 

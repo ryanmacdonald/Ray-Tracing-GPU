@@ -31,15 +31,16 @@ module miss_handler
 	/**************** address translator ****************/
 
 	// TODO: just concatenate the upper bits of BASE_ADDR with the address
+	// NOTE: before I was subtracting 4 instead of 1 when shifting left by 3. I think this was wrong.
 	logic [24:0] translated_addr;
 	generate
 		case(NUM_REQ)
 			8: begin : addr_translator
-				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-4:0],3'b000}; end
+				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-1:0],3'b000}; end
 			9: begin : addr_translator
-				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-4:0],3'b000} + to_mh_addr; end
+				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-1:0],3'b000} + to_mh_addr; end
 			12: begin : addr_translator
-				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-4:0],3'b000} + {to_mh_addr[TAG_W+INDEX_W-3:0],2'b00}; end
+				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-1:0],3'b000} + {to_mh_addr[TAG_W+INDEX_W-1:0],2'b00}; end
 //			default: begin $fatal("need NUM_REQ to be one of the options in addr_translator case statement"); end
 		endcase
 	endgenerate

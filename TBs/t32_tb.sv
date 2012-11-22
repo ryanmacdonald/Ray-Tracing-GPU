@@ -87,6 +87,7 @@ module t32_tb;
 	integer file;
 
 	logic [7:0] upper_byte, lower_byte;
+	int color_byte_cnt;
 
     initial begin
 
@@ -105,7 +106,7 @@ module t32_tb;
 
         repeat (100) @(posedge clk);
 
-		for(j=0; j<128; j++) begin
+/*		for(j=0; j<128; j++) begin
 			if(j%4 == 0)
 	            message[j] = j[7:0]/4;
 			if(j%4 == 1)
@@ -114,9 +115,9 @@ module t32_tb;
 				message[j] = j[23:16]/4;
 			if(j%4 == 3)
 	            message[j] = j[31:24]/4;
-		end
-/*        for(j=0; j<128; j++)
-            message[j] = $random % 8'hFF; */
+		end */
+        for(j=0; j<128; j++)
+            message[j] = $random % 8'hFF;
 
 //		message[0:15] =  'h1000_1a1a_1100_1b1b_1600_1f1f_1a00_2323;
 
@@ -131,23 +132,28 @@ module t32_tb;
         	@(posedge clk); */
 
 		repeat(`VGA_CYC25_PER_SCREEN*2) @(posedge clk);
+		repeat(`VGA_CYC25_PER_SCREEN*2) @(posedge clk);
+		repeat(`VGA_CYC25_PER_SCREEN*2) @(posedge clk);
 
+		color_byte_cnt = 0;
 		file = $fopen("screen.txt","w");
-		$fwrite(file, "640 480 3\n");
-		for(row=0; row<480; row++) begin
-			for(col=0; col < (640*3/2); col++) begin
-				upper_byte = sr.memory[row*640*3/2+col][15:8];
-				lower_byte = sr.memory[row*640*3/2+col][7:0];
+		$fwrite(file, "480 640 3\n");
+		for(row=0; row < 480; row++) begin
+			for(col=0; col < 640*3/2; col++) begin
+				upper_byte = sr.memory[color_byte_cnt][15:8];
+				color_byte_cnt++;
+				lower_byte = sr.memory[color_byte_cnt][7:0];
+				color_byte_cnt++;
 				if(upper_byte === 8'bx)
 					upper_byte = 'b0;
 				if(lower_byte === 8'bx)
 					lower_byte = 'b0;
+
 				$fwrite(file, "%d %d ", upper_byte, lower_byte);
-	//			if(j % 4 == 3)
-	//				$fwrite(file, "\n");
 			end
-//			$fwrite(file,"\n");
 		end
+
+		$fclose(file);
 
 		repeat(100) @(posedge clk);
 
