@@ -8,7 +8,7 @@ module negedge_detector(
 
 endmodule
 
-module shifter #(parameter W=8, RV=0) (
+module shifter #(parameter W=8, RV={W{1'b0}}) (
     output logic [W-1:0] q,
     input logic d, en, clr,
     input logic clk, rst);
@@ -16,12 +16,11 @@ module shifter #(parameter W=8, RV=0) (
     logic [W-1:0] shifted_bits, d_bits;
     assign shifted_bits[W-1] = d;
     assign shifted_bits[W-2:0] = q[W-1:1];
-    
 
-	  logic en_ff;
+	logic en_ff;
     assign en_ff = en | clr;
     assign d_bits = (clr) ? RV : shifted_bits;
-    ff_ar_en #(W,RV[W-1:0]) r(.q, .d(d_bits), .en(en_ff), .clk, .rst);
+    ff_ar_en #(W,RV) r(.q, .d(d_bits), .en(en_ff), .clk, .rst);
 
 endmodule
 
