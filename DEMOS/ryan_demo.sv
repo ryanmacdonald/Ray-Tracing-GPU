@@ -132,16 +132,29 @@ module ryan_demo(
 			     .sint_to_shader_valid(ssh_ds_valid));
 
 
+	logic pb_we, pb_empty;
+	pixel_buffer_entry_t ssf_pb_entry, ssh_pb_entry;
+	assign ssf_pb_entry.color = 24'h00_00_00;
+	assign ssh_pb_entry.color = 24'hFF_FF_FF;
+	assign ssf_pb_entry.pixelID = ssf_ray_out.rayID;
+	assign ssh_pb_entry.pixelID = ssh_ray_out.rayID;
+	arbitor #(2,$bits(pixel_buffer_entry_t)) a(.clk,.rst,
+		.valid_us({ssf_ds_valid,ssh_ds_valid}),
+		.stall_us({ssf_ds_stall,ssh_ds_stall}),
+		.data_us({ssf_pb_entry,ssh_pb_entry}),
+		.valid_ds(pb_we),
+		.stall_ds(pb_full),
+		.data_ds(pb_data_in));
 
+	/*
 	temp_sint_fifo_arb tsfa(.clk,.rst,.tf_ds_valid,.ssf_ds_valid,.ssh_ds_valid,
 				.ssf_ray_out,.ssh_ray_out,.tf_ray_out,
 				.tf_ds_stall,.ssf_ds_stall,.ssh_ds_stall,
 				.pb_data(pb_data_in),
 				.pb_full,
-				.pb_we);
+				.pb_we);*/
 
 
-	logic pb_we, pb_empty;
 	fifo #(.WIDTH($bits(pixel_buffer_entry_t)),.DEPTH(200)) 
 			  pb(.clk,.rst,.data_in(pb_data_in),
 			     .we(pb_we),.re(pb_re),.full(pb_full),
