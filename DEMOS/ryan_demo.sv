@@ -54,7 +54,7 @@ module ryan_demo(
 	assign rendcnt_n = pb_re ? ( rendering_done ? 19'b1 : rendcnt + 19'b1) : rendcnt;
 	ff_ar #(19,0) pb_cnt(.q(rendcnt),.d(rendcnt_n),.clk,.rst);
 
-	assign rendering_done = (rendcnt == 19'd307200);
+	assign rendering_done = (rendcnt == `num_rays);
 
 
 	vector_t E, U, V, W;
@@ -93,22 +93,22 @@ module ryan_demo(
 	logic prg_ready, us_stall;
 	prg_ray_t prg_data;
 	prg		  prg(.clk,.rst,.v0,.v1,.v2,.start(start),
-			      .E,.U,.V,.W,.pw,.prg_to_int_stall(us_stall),
-			      .prg_to_int_valid(prg_ready),.done(),.prg_data);	  
+			      .E,.U,.V,.W,.pw,.prg_to_shader_stall(us_stall),
+			      .prg_to_shader_valid(prg_ready),.prg_to_shader_data(prg_data));	  
 
 	shader_to_sint_t ray_in;
 	assign ray_in.rayID = prg_data.pixelID;
 	assign ray_in.is_shadow = 0;
 	assign ray_in.ray_vec.origin = prg_data.origin;
 	assign ray_in.ray_vec.dir = prg_data.dir;
-	logic[31:0] xmin, xmax, ymin, ymax, zmin, zmax;
+	AABB_t sb;	
 
-	assign xmin = `FP_0;
-	assign xmax = `FP_1;
-	assign ymin = `FP_0;
-	assign ymax = `FP_1;
-	assign zmin = `FP_0;
-	assign zmax = `FP_1;
+	assign sb.xmin = `FP_0;
+	assign sb.xmax = `FP_1;
+	assign sb.ymin = `FP_0;
+	assign sb.ymax = `FP_1;
+	assign sb.zmin = `FP_0;
+	assign sb.zmax = `FP_1;
 
 	logic pb_full;
 
@@ -117,11 +117,19 @@ module ryan_demo(
 	sint_to_shader_t ssh_ray_out;
 	logic tf_ds_stall, ssf_ds_stall, ssh_ds_stall;
 	logic tf_ds_valid, ssf_ds_valid, ssh_ds_valid;
-	scene_int	  si(.ray_in(ray_in),.v0(v1),.v1(v2),.v2(v0),
-			     .xmin,.xmax,.ymin,.ymax,.zmin,.zmax,
-			     .tf_ds_stall,.ssf_ds_stall,.ssh_ds_stall,
-			     .us_valid(prg_ready),.clk,.rst,.tf_ray_out,.ssf_ray_out,
-			     .ssh_ray_out,.us_stall,.tf_ds_valid,.ssf_ds_valid,.ssh_ds_valid);
+	scene_int	  si(.shader_to_sint_data(ray_in),.v0,.v1,.v2,
+			     .sceneAABB(sb),
+			     .sint_to_tarb_stall(tf_ds_stall),
+			     .sint_to_ss_stall(ssf_ds_stall),
+			     .sint_to_shader_stall(ssh_ds_stall),
+			     .shader_to_sint_valid(prg_ready),.clk,.rst,
+			     .sint_to_tarb_data(tf_ray_out),
+			     .sint_to_ss_data(ssf_ray_out),
+			     .sint_to_shader_data(ssh_ray_out),
+			     .shader_to_sint_stall(us_stall),
+			     .sint_to_tarb_valid(tf_ds_valid),
+			     .sint_to_ss_valid(ssf_ds_valid),
+			     .sint_to_shader_valid(ssh_ds_valid));
 
 
 

@@ -105,9 +105,8 @@ shader:
 pipedemo: 
 	$(CC) $(FLAGS) -top pipedemo COMMON/*v COMMON/altfp*/*.v COMMON/bram/*.v COMMON/altb*/*v RAYTRACER/*/*v PRG/*sv RAYTRACER/raypipe.sv DEMOS/pipedemo.sv
 
-
 ryan:
-	$(CC) $(FLAGS) -top tb_ryan_demo COMMON/*v COMMON/altfp*/*.v PS2/* COMMON/altbram_fifo/altbramfifo_w211_d16/*v RAYTRACER/scene_int/* PRG/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv CAMERA/*v TBs/tb_ryan_demo.sv DEMOS/ryan_demo.sv 
+	$(CC) $(FLAGS) -top tb_ryan_demo COMMON/*v COMMON/altfp*/*.v PS2/* COMMON/altbram_fifo/*v RAYTRACER/scene_int/* PRG/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv CAMERA/*v TBs/tb_ryan_demo.sv DEMOS/ryan_demo.sv 
 
 
 clean:
