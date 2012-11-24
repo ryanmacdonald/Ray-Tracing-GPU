@@ -23,13 +23,13 @@
 //  a new primary ray is available 
 module prg_pl(input logic clk, rst,
 	   input logic v0, v1, v2,
-	   input logic start,
+	//   input logic start,
 	   input logic[$clog2(`screen_width)-1:0] x,
 	   input logic[$clog2(`screen_height)-1:0] y,
 	   input vector_t E, U, V, W,
 	   input float_t pw,
-	   output logic idle, rayReady, done,
-	   output prg_ray_t prg_data);
+	   output logic rayReady,
+	   output ray_vec_t prg_data);
 
 `ifndef SYNTH
 	shortreal px,py,pz;
@@ -40,7 +40,7 @@ module prg_pl(input logic clk, rst,
 	logic start_prg;
 
 
-	sync_to_v #(2) sv(.synced_signal(start_prg),.clk,.rst,.v0,.v1,.v2,.signal_to_sync(start));	
+	//sync_to_v #(2) sv(.synced_signal(start_prg),.clk,.rst,.v0,.v1,.v2,.signal_to_sync(start));	
 
 	// counter to determine when to begin outputting rayReady
 	logic[5:0] cnt,nextCnt;
@@ -50,10 +50,6 @@ module prg_pl(input logic clk, rst,
 	// the primary ray's direction
 	vector_t prayD,wD;
 
-	// RayID
-	logic[$clog2(`num_rays)-1:0] rayID,nextrayID;
-
-	assign prg_data.pixelID  = rayID;
 	assign prg_data.origin = E;
 	assign prg_data.dir    = prayD;
 
@@ -155,9 +151,12 @@ module prg_pl(input logic clk, rst,
 	////// NEXTSTATE AND OUTPUT LOGIC //////
 
 
-	enum logic {IDLE,ACTIVE} state, nextState;	
+//	enum logic {IDLE,ACTIVE} state, nextState;
 
-	always_comb begin
+	assign next_u_dist = v0 ? add_1_result : u_dist;
+	assign next_v_dist = v1 ? add_1_result : v_dist;
+
+	/*always_comb begin
 		nextrayID = rayID;
 		nextCnt = cnt; rayReady = 0;
 		next_u_dist = u_dist; next_v_dist = v_dist;
@@ -173,45 +172,32 @@ module prg_pl(input logic clk, rst,
 			ACTIVE:begin
 				idle = 0;
 				nextCnt = cnt + 1'b1;
+				if(cnt == `num_r
 				if(rayID == `num_rays) begin
 					done = 1;
 					nextState = IDLE;
 				end
 				else if(v0) begin
-					/*if(cnt >= 6'd39 || rayID > 0) begin
-						nextCnt = 0;
-						if(rayValid[0]) rayReady = 1;
-						nextrayID = rayID + 1'b1;
-					end*/
 					next_u_dist = add_1_result;
 					nextState = ACTIVE;
 				end
 				else if(v1) begin
 					if(cnt >= 6'd39 || rayID > 0) begin
 						nextCnt = 0;
-//						if(rayValid[0]) begin 
-//							rayReady = 1;
 							nextrayID = rayID + 1'b1;
-//						end
 					end
 					next_v_dist = add_1_result;
 					nextState = ACTIVE;
 				end
 				else if(v2) begin
-					/*if(cnt >= 6'd38 || rayID > 0) begin
-						nextCnt = 0;
-						if(rayValid[0]) rayReady = 1;
-						nextrayID = rayID + 1'b1;
-					end*/
 					nextState = ACTIVE;
 				end
 				else nextState = ACTIVE;
 			end
 			default: nextState = IDLE;
 		endcase
-	end
+	end*/
 
-	ff_ar #(19,0) rd(.q(rayID),.d(nextrayID),.clk,.rst);
 	ff_ar #(32,0) ud(.q(u_dist),.d(next_u_dist),.clk,.rst);
 	ff_ar #(32,0) vd(.q(v_dist),.d(next_v_dist),.clk,.rst);
 	ff_ar #( 6,0) ct(.q(cnt),.d(nextCnt),.clk,.rst);
@@ -219,7 +205,7 @@ module prg_pl(input logic clk, rst,
 
 	always_ff @(posedge clk, posedge rst) begin
 		if(rst) begin
-			state <= IDLE;
+			//state <= IDLE;
 		end
 		else begin	
 
@@ -236,8 +222,8 @@ module prg_pl(input logic clk, rst,
 				wD.x    <= mult_4_result;
 			end
 
-			state <= nextState;
-			end
+			//state <= nextState;
+		end
 	end
 
 endmodule: prg_pl
