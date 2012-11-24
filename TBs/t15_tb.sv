@@ -2,7 +2,7 @@
 
 `define CLOCK_PERIOD 20
 
-`define MAX_PIXEL_IDS        150
+`define MAX_PIXEL_IDS        `num_rays
 `define MAX_SCENE_FILE_BYTES 20000
 
 module t15_tb;
@@ -158,7 +158,7 @@ module t15_tb;
 		@(posedge clk);
 		t15.render_frame <= 1'b0;
 
-		repeat(2000) @(posedge clk);
+		repeat(200000) @(posedge clk);
 
 		// perform screen dump
 
@@ -182,6 +182,10 @@ module t15_tb;
 		$fclose(file);
 
 		$finish;
+	end
+
+	initial begin
+		$monitor("%t rendering_done: %b",$stime,t15.rendering_done);
 	end
 
     logic rst;
