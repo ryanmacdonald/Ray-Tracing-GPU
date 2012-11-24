@@ -160,7 +160,7 @@
 `else
 	`define half_screen_width  32'hC080_0000 // -4
 	`define half_screen_height 32'hC040_0000 // -3
-	// D = 6 for now
+	// D = 4 for now
 	`define SCREEN_DIST 32'h4080_0000 // 4
 `endif
 ////////////////////// End of Defines for PRG //////////////////////

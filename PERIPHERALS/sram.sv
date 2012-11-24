@@ -23,7 +23,7 @@ module sram(
         if(rst) begin
             integer i;
             for(i=0; i < 'h100000; i++)
-                memory[i] <= 16'b0;
+                memory[i] <= 16'h00_00;
 //                memory[i] <= $random() & (16'hFFFF);
 
         end
