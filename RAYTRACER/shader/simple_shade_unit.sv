@@ -68,7 +68,7 @@ module simple_shader_unit(
   logic is_init, is_init_n;  // State bit for initializing 
   rayID_t rayID_cnt, rayID_cnt_n;
   assign rayID_cnt_n = is_init ? rayID_cnt + 1'b1 : 'h0 ;
-  assign is_init_n = is_init ? (rayID_cnt == 9'd511 ? 1'b0 : 1'b1) : 1'b0 ;
+  assign is_init_n = is_init ? (rayID_cnt == 9'd511 ? 1'b0 : 1'b1) : 1'b0 ; // TODO: replace magic number with parameterized expression
   ff_ar #($bits(rayID_t),'h0) rayID_cnt_buf(.d(rayID_cnt_n), .q(rayID_cnt), .clk, .rst);
   ff_ar #(1,1'b1) is_init_buf(.d(is_init_n), .q(is_init), .clk, .rst);
   
