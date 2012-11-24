@@ -218,9 +218,12 @@ assign or_valids = t15.rp.prg_to_shader_valid |
 		while(~t15.rendering_done)
 			@(posedge clk);
     $display("FUCK YEAH RENDER DONE");
+    $finish;
     end
+
+
     initial begin
-		  #(3* 1us);
+		  #(4* 1us);
       $display("AWWWWWW YOU SUCK IT TIMED OUT");
       $finish;
     end
