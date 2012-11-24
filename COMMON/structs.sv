@@ -155,10 +155,10 @@
 
 ////////////////////// Defines for shader /////////////////////////
 `define MISS_COLOR 24'hff_ff_ff
-`define TRI_0_COLOR 24'hff_00_ff
-`define TRI_2_COLOR 24'h00_FF_00
-`define TRI_1_COLOR 24'hFF_00_00
-`define TRI_3_COLOR 24'h00_00_FF
+`define TRI_0_COLOR 24'haa_aa_aa
+`define TRI_2_COLOR 24'h08_cc_08
+`define TRI_1_COLOR 24'h0b_0b_dd
+`define TRI_3_COLOR 24'hff_01_01
 
 
 typedef struct packed {

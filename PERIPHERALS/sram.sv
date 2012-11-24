@@ -23,8 +23,10 @@ module sram(
         if(rst) begin
             integer i;
             for(i=0; i < 'h100000; i++)
+
                 memory[i] <= 16'hFFFF;
         //        memory[i] <= $random() & (16'hFFFF);
+
         end
         else begin
             if(~sram_we_b) begin
