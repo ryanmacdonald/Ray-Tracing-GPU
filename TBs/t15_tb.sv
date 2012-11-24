@@ -116,7 +116,7 @@ module t15_tb;
     int row, col;
 	integer file;
 	logic [7:0] upper_byte, lower_byte;
-	int color_byte_cnt;
+	int color_word_cnt;
 
 	initial begin
 		switches <= 'b0;
@@ -132,7 +132,7 @@ module t15_tb;
         repeat(100) @(posedge clk);
         btns[0] <= 1'b1;
 
-        kdfp = $fopen("SCENES/kdtree.bin", "rb");
+        kdfp = $fopen("SCENES/just2.bin", "rb");
         r = $fread(file_contents,kdfp);
 		$fclose(kdfp);
 
@@ -141,9 +141,10 @@ module t15_tb;
             message[j] = file_contents[j];
 		send_block(message, 1, 0);
 
+		/*
         for(j=0; j<128; j++)
             message[j] = file_contents[j+128];
-		send_block(message, 2, 0);
+		send_block(message, 2, 0); */
 /*
         for(j=0; j<128; j++)
             message[j] = file_contents[j+128];
@@ -157,19 +158,18 @@ module t15_tb;
 		@(posedge clk);
 		t15.render_frame <= 1'b0;
 
-		repeat(1000) @(posedge clk);
+		repeat(2000) @(posedge clk);
 
 		// perform screen dump
 
-		color_byte_cnt = 0;
+		color_word_cnt = 0;
 		file = $fopen("screen.txt","w");
 		$fwrite(file, "%d %d 3\n",`VGA_NUM_ROWS, `VGA_NUM_COLS);
 		for(row=0; row < `VGA_NUM_ROWS; row++) begin
-			for(col=0; col < (`VGA_NUM_COLS*3)/2; col++) begin // NOTE: 3/2 ratio will change if we ever go to 16 bit color
-				upper_byte = sr.memory[color_byte_cnt][15:8];
-				color_byte_cnt++;
-				lower_byte = sr.memory[color_byte_cnt][7:0];
-				color_byte_cnt++;
+			for(col=0; col < `VGA_NUM_COLS*3/2; col++) begin // NOTE: 3/2 ratio will change if we ever go to 16 bit color
+				upper_byte = sr.memory[color_word_cnt][15:8];
+				lower_byte = sr.memory[color_word_cnt][7:0];
+				color_word_cnt++;
 				if(upper_byte === 8'bx)
 					upper_byte = 'b0;
 				if(lower_byte === 8'bx)
