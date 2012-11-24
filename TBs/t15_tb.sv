@@ -1,4 +1,3 @@
-
 `default_nettype none
 
 `define CLOCK_PERIOD 20
@@ -32,7 +31,6 @@ module t15_tb;
     logic sram_ce_b;
     logic sram_ub_b;
     logic sram_lb_b;
-
 
     // SDRAM
     logic [12:0] zs_addr;
@@ -118,7 +116,7 @@ module t15_tb;
     int row, col;
 	integer file;
 	logic [7:0] upper_byte, lower_byte;
-	int color_byte_cnt;
+	int color_word_cnt;
 
 	initial begin
 		switches <= 'b0;
@@ -160,19 +158,18 @@ module t15_tb;
 		@(posedge clk);
 		t15.render_frame <= 1'b0;
 
-		repeat(1000) @(posedge clk);
+		repeat(2000) @(posedge clk);
 
 		// perform screen dump
 
-		color_byte_cnt = 0;
+		color_word_cnt = 0;
 		file = $fopen("screen.txt","w");
 		$fwrite(file, "%d %d 3\n",`VGA_NUM_ROWS, `VGA_NUM_COLS);
 		for(row=0; row < `VGA_NUM_ROWS; row++) begin
 			for(col=0; col < `VGA_NUM_COLS*3/2; col++) begin // NOTE: 3/2 ratio will change if we ever go to 16 bit color
-				upper_byte = sr.memory[color_byte_cnt][15:8];
-				color_byte_cnt++;
-				lower_byte = sr.memory[color_byte_cnt][7:0];
-				color_byte_cnt++;
+				upper_byte = sr.memory[color_word_cnt][15:8];
+				lower_byte = sr.memory[color_word_cnt][7:0];
+				color_word_cnt++;
 				if(upper_byte === 8'bx)
 					upper_byte = 'b0;
 				if(lower_byte === 8'bx)
