@@ -50,6 +50,38 @@ module t15_tb;
  
     logic clk;
 
+    //////////// BIG ASS ASSERTION ////////////
+
+	logic big_ass_assertion;
+assign big_ass_assertion = (t15.rp.prg_to_shader_valid & ~t15.rp.prg_to_shader_stall) |
+                           (t15.rp.shader_to_sint_valid & ~t15.rp.shader_to_sint_stall) |
+                           (t15.rp.sint_to_shader_valid & ~t15.rp.sint_to_shader_stall) |
+                           (t15.rp.sint_to_ss_valid & ~t15.rp.sint_to_ss_stall) |
+                           (t15.rp.sint_to_tarb_valid & ~t15.rp.sint_to_tarb_stall) |
+                           (t15.rp.tarb_to_tcache0_valid & ~t15.rp.tarb_to_tcache0_stall) |
+                           (t15.rp.tcache_to_trav0_valid & ~t15.rp.tcache_to_trav0_stall) |
+                           (t15.rp.trav0_to_rs_valid & ~t15.rp.trav0_to_rs_stall) |
+                           (t15.rp.rs_to_trav0_valid & ~t15.rp.rs_to_trav0_stall) |
+                           (t15.rp.trav0_to_tarb_valid & ~t15.rp.trav0_to_tarb_stall) |
+                           (t15.rp.trav0_to_ss_valid & ~t15.rp.trav0_to_ss_stall) |
+                           (t15.rp.trav0_to_list_valid & ~t15.rp.trav0_to_list_stall) |
+                           (t15.rp.trav0_to_larb_valid & ~t15.rp.trav0_to_larb_stall) |
+                           (t15.rp.larb_to_lcache_valid & ~t15.rp.larb_to_lcache_stall) |
+                           (t15.rp.lcache_to_icache_valid & ~t15.rp.lcache_to_icache_stall) |
+                           (t15.rp.icache_to_rs_valid & ~t15.rp.icache_to_rs_stall) |
+                           (t15.rp.rs_to_int_valid & ~t15.rp.rs_to_int_stall) |
+                           (t15.rp.int_to_larb_valid & ~t15.rp.int_to_larb_stall) |
+                           (t15.rp.int_to_list_valid & ~t15.rp.int_to_list_stall) |
+                           (t15.rp.list_to_rs_valid & ~t15.rp.list_to_rs_stall) |
+                           (t15.rp.list_to_ss_valid & ~t15.rp.list_to_ss_stall) |
+                           (t15.rp.ss_to_tarb_valid0 & ~t15.rp.ss_to_tarb_stall0) |
+                           (t15.rp.ss_to_tarb_valid1 & ~t15.rp.ss_to_tarb_stall1) |
+                           (t15.rp.ss_to_shader_valid & ~t15.rp.ss_to_shader_stall) |
+                           (t15.rp.rs_to_pcalc_valid & ~t15.rp.rs_to_pcalc_stall) |
+                           (t15.rp.pcalc_to_shader_valid & ~t15.rp.pcalc_to_shader_stall);
+
+    //////////// END OF BIG ASS ASSERTION ////////////
+
     //////////// pixel ID checker code ////////////
 	bit [`MAX_PIXEL_IDS][$bits(pixelID_t)-1:0] pixelIDs_us ;
 	bit [`MAX_PIXEL_IDS][$bits(pixelID_t)-1:0] pixelIDs_ds ;
@@ -59,30 +91,34 @@ module t15_tb;
 	assign pixel_valid_us = t15.rp.prg_to_shader_valid & ~t15.rp.prg_to_shader_stall;
 	assign pixel_valid_ds = t15.pb_we;
 
-	int num_pixels_us = 0;
-	int num_pixels_ds = 0;
+	int num_pixels_us;
+	int num_pixels_ds;
 
 	initial begin
+		num_pixels_us = 0;
 		forever begin
 			@(posedge clk);
 			if(pixel_valid_us) begin
 				pixelIDs_us[t15.rp.prg_to_shader_data.pixelID] += 1;
 			  num_pixels_us++;
-      end
-      if(num_pixels_us >= `MAX_PIXEL_IDS)
+			
+			if(num_pixels_us > `MAX_PIXEL_IDS)
 				$display("warning: num_pixels_us(%d) >= `MAX_PIXEL_IDS",num_pixels_us);
+			end
 		end
 	end
 
 	initial begin
+		num_pixels_ds = 0;
 		forever begin
 			@(posedge clk);
 			if(pixel_valid_ds) begin
 				pixelIDs_ds[t15.pb_data_us.pixelID] += 1 ;
 			  num_pixels_ds++;
-      end
-      if(num_pixels_ds >= `MAX_PIXEL_IDS)
+        if(num_pixels_ds%100 == 0) $display("num_pixels_ds=%-d/%-d",num_pixels_ds,`MAX_PIXEL_IDS);
+      		if(num_pixels_ds > `MAX_PIXEL_IDS)
 				$display("warning: num_pixels_ds(%d) != `MAX_PIXEL_IDS",num_pixels_ds);
+			end
 		end
 	end
 
@@ -112,11 +148,12 @@ module t15_tb;
 
     logic [7:0] file_contents [`MAX_SCENE_FILE_BYTES];
 
-	// used by screen dump
-    int row, col;
-	integer file;
-	logic [7:0] upper_byte, lower_byte;
-	int color_word_cnt;
+
+  initial begin
+		#(3 * 1us);
+    $display("ERROR: TIMED OUT GOD FUCKING DAMNIT");
+    $finish;
+  end
 
 	initial begin
 		switches <= 'b0;
@@ -157,10 +194,22 @@ module t15_tb;
 		t15.render_frame <= 1'b1;
 		@(posedge clk);
 		t15.render_frame <= 1'b0;
+		while(~t15.rendering_done)
+			@(posedge clk);
 
-		repeat(200000) @(posedge clk);
-
+    $display("WOOOOO, YOu just saw rendering done!!!");
 		// perform screen dump
+    $finish;
+	
+   end
+  
+  // used by screen dump
+    int row, col;
+	integer file;
+	logic [7:0] upper_byte, lower_byte;
+	int color_word_cnt;
+
+    final begin
 
 		color_word_cnt = 0;
 		file = $fopen("screen.txt","w");
@@ -181,7 +230,6 @@ module t15_tb;
 
 		$fclose(file);
 
-		$finish;
 	end
 
 	initial begin

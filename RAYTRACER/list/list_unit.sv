@@ -180,12 +180,14 @@ module list_unit(
       3'b011 : addrB_leaf_max = trav1_to_list_data.rayID ;
       3'b001 : addrB_leaf_max = trav1_to_list_data.rayID ;
     endcase
-  end*/
+  end
   assign addrB_leaf_max = (leaf_read_valid & trav0_to_list_valid & (~trav1_to_list_valid | ~rrp) ) ? 
                           trav0_to_list_data.rayID : trav1_to_list_data.rayID ;
-
-  assign wrdataB_leaf_max = leaf_contend & ~rrp ? trav0_to_list_data.t_max_leaf : trav1_to_list_data.t_max_leaf ;
-  assign wrenB_leaf_max = leaf_contend | trav1_to_list_valid ;
+  */
+	// SKETCHY Changed this
+  assign addrB_leaf_max = leaf_read_valid & ~rrp & trav0_to_list_valid ? trav0_to_list_data.rayID : trav1_to_list_data.rayID ;
+  assign wrdataB_leaf_max = leaf_read_valid & trav0_to_list_valid & (~trav1_to_list_valid | ~rrp ) ? trav0_to_list_data.t_max_leaf : trav1_to_list_data.t_max_leaf ;
+  assign wrenB_leaf_max = (trav0_to_list_valid & leaf_read_valid) | trav1_to_list_valid ;
   assign trav0_to_list_stall = leaf_contend & rrp ;
   assign trav1_to_list_stall = leaf_contend & ~rrp;
 
@@ -395,7 +397,7 @@ module list_unit(
   assign int_fifo_we = int_VSpipe_valid_ds;
   assign int_fifo_re = ~int_fifo_empty & ~list_to_rs_stall;
 
-  fifo #(.DEPTH(2), .WIDTH($bits(int_fifo_in)) ) int_fifo_inst(
+  fifo #(.DEPTH(3), .WIDTH($bits(int_fifo_in)) ) int_fifo_inst(
     .clk, .rst,
     .data_in(int_fifo_in),
     .data_out(int_fifo_out),

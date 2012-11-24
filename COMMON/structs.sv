@@ -83,8 +83,19 @@
 `define L_LINE_W              256
 `define L_NUM_BLK             16
 `define L_BLK_W               `L_LINE_W/`L_NUM_BLK
-`define L_BASE_ADDR           25'h1_80_00_00
+`define L_BASE_ADDR           25'h1_00_00_00
 `define L_NUM_LINES           1024
+
+// parameters for icache
+`define S_ADDR_W              16
+`define S_BO_W                1
+`define S_TAG_W               5
+`define S_INDEX_W             10
+`define S_LINE_W              320
+`define S_NUM_BLK             2
+`define S_BLK_W               `S_LINE_W/`S_NUM_BLK
+`define S_BASE_ADDR           25'h1_80_00_00
+`define S_NUM_LINES           1024
 ////////////////////// End of Defines for Caches //////////////////////
 
 ////////////////////// Defines for XMODEM //////////////////////
@@ -116,6 +127,7 @@
 `else // use a very low resolution in simulation
 	`define VGA_NUM_ROWS        10'd10
 	`define VGA_NUM_COLS        10'd10
+
 `endif
 
 // following in terms of 25 MHz clock

@@ -143,7 +143,7 @@ module t_minus_15_days(
 	assign rendcnt_n = pb_re ? ( rendering_done ? 19'b1 : rendcnt + 19'b1) : rendcnt;
 	ff_ar #(19,0) pb_cnt(.q(rendcnt),.d(rendcnt_n),.clk,.rst);
 
-	assign rendering_done = (rendcnt == 19'd307200);
+	assign rendering_done = (rendcnt == `num_rays);
 
 	assign sceneAABB.xmin = 'h0;
 	assign sceneAABB.ymin = 'h0;
