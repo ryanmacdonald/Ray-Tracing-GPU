@@ -41,7 +41,7 @@ module prg(input logic clk, rst,
 	assign num_left_in_rb = 5'd16 - {rb_full,num_in_rb};
 
 	logic ds_valid, us_stall;
-	pipe_valid_stall #(.WIDTH($bits(pixelID_t)),.DEPTH(40))
+	pipe_valid_stall #(.WIDTH($bits(pixelID_t)),.DEPTH(41))
 			 valid_pipe(.clk,.rst,.us_valid(x_y_valid),.us_data(pixelID),.us_stall,
 			  .ds_valid,
   			  .ds_data(prg_to_shader_in.pixelID),
