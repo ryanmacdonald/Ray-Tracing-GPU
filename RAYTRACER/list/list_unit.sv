@@ -395,7 +395,7 @@ module list_unit(
   assign int_fifo_we = int_VSpipe_valid_ds;
   assign int_fifo_re = ~int_fifo_empty & ~list_to_rs_stall;
 
-  fifo #(.DEPTH(2), .WIDTH($bits(int_fifo_in)) ) int_fifo_inst(
+  fifo #(.DEPTH(3), .WIDTH($bits(int_fifo_in)) ) int_fifo_inst(
     .clk, .rst,
     .data_in(int_fifo_in),
     .data_out(int_fifo_out),
