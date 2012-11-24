@@ -125,8 +125,8 @@
 	`define VGA_NUM_ROWS        10'd480
 	`define VGA_NUM_COLS        10'd640
 `else // use a very low resolution in simulation
-	`define VGA_NUM_ROWS        10'd10
-	`define VGA_NUM_COLS        10'd10
+	`define VGA_NUM_ROWS        10'd50
+	`define VGA_NUM_COLS        10'd50
 
 `endif
 
