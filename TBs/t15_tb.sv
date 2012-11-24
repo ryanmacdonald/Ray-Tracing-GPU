@@ -2,7 +2,7 @@
 
 `define CLOCK_PERIOD 20
 
-`define MAX_PIXEL_IDS        1000
+`define MAX_PIXEL_IDS        150
 `define MAX_SCENE_FILE_BYTES 20000
 
 module t15_tb;
@@ -51,8 +51,8 @@ module t15_tb;
     logic clk;
 
     //////////// pixel ID checker code ////////////
-	pixelID_t pixelIDs_us [`MAX_PIXEL_IDS];
-	pixelID_t pixelIDs_ds [`MAX_PIXEL_IDS];
+	bit [`MAX_PIXEL_IDS][$bits(pixelID_t)-1:0] pixelIDs_us ;
+	bit [`MAX_PIXEL_IDS][$bits(pixelID_t)-1:0] pixelIDs_ds ;
 
 	logic pixel_valid_us, pixel_valid_ds;
 
@@ -65,26 +65,30 @@ module t15_tb;
 	initial begin
 		forever begin
 			@(posedge clk);
-			if(pixel_valid_us)
-				pixelIDs_us[num_pixels_us++] = t15.rp.prg_to_shader_data.pixelID;
-			if(num_pixels_us >= `MAX_PIXEL_IDS)
-				$display("warning: num_pixels_us >= `MAX_PIXEL_IDS");
+			if(pixel_valid_us) begin
+				pixelIDs_us[t15.rp.prg_to_shader_data.pixelID] += 1;
+			  num_pixels_us++;
+      end
+      if(num_pixels_us >= `MAX_PIXEL_IDS)
+				$display("warning: num_pixels_us(%d) >= `MAX_PIXEL_IDS",num_pixels_us);
 		end
 	end
 
 	initial begin
 		forever begin
 			@(posedge clk);
-			if(pixel_valid_ds)
-				pixelIDs_ds[num_pixels_ds++] = t15.pb_data_us.pixelID;
-			if(num_pixels_us >= `MAX_PIXEL_IDS)
-				$display("warning: num_pixels_us != `MAX_PIXEL_IDS");
+			if(pixel_valid_ds) begin
+				pixelIDs_ds[t15.pb_data_us.pixelID] += 1 ;
+			  num_pixels_ds++;
+      end
+      if(num_pixels_ds >= `MAX_PIXEL_IDS)
+				$display("warning: num_pixels_ds(%d) != `MAX_PIXEL_IDS",num_pixels_ds);
 		end
 	end
 
 	final begin
 		if(num_pixels_ds != num_pixels_us) begin
-			$display("WARNING: num_pixel_ds != num_pixels_us");
+			$display("WARNING: num_pixel_ds(%d) != num_pixels_us(%d)",num_pixels_ds,num_pixels_us);
 		end
     else $display ("FUCK YEAH SEAKING!!!!!!!");
 	end
@@ -161,7 +165,7 @@ module t15_tb;
 		file = $fopen("screen.txt","w");
 		$fwrite(file, "%d %d 3\n",`VGA_NUM_ROWS, `VGA_NUM_COLS);
 		for(row=0; row < `VGA_NUM_ROWS; row++) begin
-			for(col=0; col < `VGA_NUM_COLS*3/2; col++) begin // NOTE: 3/2 ratio will change if we ever go to 16 bit color
+			for(col=0; col < (`VGA_NUM_COLS*3)/2; col++) begin // NOTE: 3/2 ratio will change if we ever go to 16 bit color
 				upper_byte = sr.memory[color_byte_cnt][15:8];
 				color_byte_cnt++;
 				lower_byte = sr.memory[color_byte_cnt][7:0];

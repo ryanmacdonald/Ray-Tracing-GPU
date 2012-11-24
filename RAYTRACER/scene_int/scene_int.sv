@@ -46,7 +46,7 @@ module scene_int(
 	`endif
 
 	shader_to_sint_t ray;
-	ff_ar_en #($bits(shader_to_sint_t),0) rr(.q(ray),.d(shader_to_sint_data),.en(shader_to_sint_valid),.clk,.rst);
+	ff_ar_en #($bits(shader_to_sint_t),0) rr(.q(ray),.d(shader_to_sint_data),.en(shader_to_sint_valid & ~shader_to_sint_stall),.clk,.rst);
 
 	
 
@@ -71,7 +71,7 @@ module scene_int(
 
 	assign ds_stall = sint_to_tarb_stall || sint_to_ss_stall || sint_to_shader_stall;
 
-	assign shader_to_sint_stall = us_stall & shader_to_sint_valid;
+	assign shader_to_sint_stall = us_stall & shader_to_sint_valid & ~v2;
 
 	/* TARB FIFO */	
 
