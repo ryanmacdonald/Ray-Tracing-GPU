@@ -22,13 +22,8 @@
 module prg_pl(input logic clk, rst,
 	   input logic v0, v1, v2,
 	//   input logic start,
-<<<<<<< HEAD
-	   input logic[$clog2(`screen_width)-1:0] x,
-	   input logic[$clog2(`screen_height)-1:0] y,
-=======
 	   input logic[$clog2(`VGA_NUM_COLS)-1:0] x,
 	   input logic[$clog2(`VGA_NUM_ROWS)-1:0] y,
->>>>>>> 0b20c8d83728fb67379291296dc59429e27908b3
 	   input vector_t E, U, V, W,
 	   input float_t pw,
 	   output logic rayReady,
