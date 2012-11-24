@@ -13,11 +13,11 @@ module temp_sint_fifo_arb(input logic clk, rst,
 			  output logic pb_we);
 
 		logic[1:0] sr, sr_n;
-		assign pb_data.pixelID = (~sr[1] && ssh_ds_valid) ? ssh_ray_out.rayID :
-					 ( (~sr[0] && ssf_ds_valid) ? ssf_ray_out.rayID : 'h0);
-		assign pb_data.color   = (~sr[1] && ssh_ds_valid) ? 24'h00_00_00 : 
-					 ( (~sr[0] && ssf_ds_valid) ? 24'hFF_FF_FF : 'h0);	
-		assign pb_we = ~pb_full && ((~sr[0] && ssf_ds_valid) || (~sr[1] && ssh_ds_valid));	
+		assign pb_data.pixelID = (~ssh_ds_stall && ssh_ds_valid) ? ssh_ray_out.rayID :
+					 ( (~ssf_ds_stall && ssf_ds_valid) ? ssf_ray_out.rayID : 'h0);
+		assign pb_data.color   = (~ssh_ds_stall && ssh_ds_valid) ? 24'h00_00_00 : 
+					 ( (~ssf_ds_stall && ssf_ds_valid) ? 24'hFF_FF_FF : 'h0);	
+		assign pb_we = (~ssf_ds_stall && ssf_ds_valid) || (~ssh_ds_stall && ssh_ds_valid);	
 
 	
 		assign sr_n = (sr == 2'b10) ? 2'b01 : 2'b10;

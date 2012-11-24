@@ -70,7 +70,7 @@ module scene_int(
 
 	assign ds_stall = sint_to_tarb_stall || sint_to_ss_stall || sint_to_shader_stall;
 
-	assign shader_to_sint_stall = us_stall & shader_to_sint_valid & ~v2;
+	assign shader_to_sint_stall = shader_to_sint_valid & ( ~v2 || us_stall );
 
 	/* TARB FIFO */	
 
@@ -81,14 +81,14 @@ module scene_int(
 	assign tf_re = sint_to_tarb_valid && ~sint_to_tarb_stall;
 	assign sint_to_tarb_valid = ~tf_empty;
 
-	// fifo data_in assigns
+	// tarb fifo data_in assigns
 	assign tf_data_in.rayID = ds_data[9:1];
 	assign tf_data_in.tmin = tmin_scene;
 	assign tf_data_in.tmax = tmax_scene;
 	assign tf_data_in.is_shadow = isShadow;
 	assign tf_data_in.miss = miss;
 	
-	// fifo data_out assigns
+	// tarb fifo data_out assigns
 	assign sint_to_tarb_data.ray_info.ss_wptr = 'h0;
 	assign sint_to_tarb_data.ray_info.ss_num = 'h0;
 	assign sint_to_tarb_data.ray_info.is_shadow = tf_data_out.is_shadow;
