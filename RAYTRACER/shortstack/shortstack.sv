@@ -5,20 +5,17 @@
   Contents of shortstack indexed by rayID
 
   ss_row = [StackElement0, StackElement1, StackELement2, StackELement3 ]
-  StackElement = [nodeID, t_max]; // TODO seems we can infer t_min and this do not need to store
-                                         // t_min = t_max(leaf node it just traversed)
-
+  StackElement = [nodeID, t_max]; 
   
   Operations on the stack
     Push(new_SE): stack[ss_wptr] <= new_SE
     
-    Pop         : TODO
+    Pop         : 
     
   ----------------------------------------------------------------------
 
-  Contents of restartnode indexed by rayID (TODO might just want to seperate t_max_scene into different mem structure)
-  restartnode_row = [restartnode, t_max, t_min, t_max_scene]  // TODO dont think we need to store t_min
-
+  Contents of restartnode indexed by rayID
+  restartnode_row = [restartnode, t_max, t_max_scene] 
   operations on restartnode
     Write(new_restartnode) 
     Write(t_max_scene) 
@@ -45,7 +42,7 @@
             if(t_max_leaf < t_max_scene) { // Need to restart
                 ss_to_tarb <= Read restartnode (t_max <= t_max, t_min <= t_max_leaf)
             }
-            else (t_max >= t_max_scene) { // Was a total miss. TODO t_max == t_max_scene will PROBABLY happen
+            else (t_max >= t_max_scene) { // Was a total miss.  t_max == t_max_scene will PROBABLY happen
                ss_to_shader <= Miss 
             }
         }

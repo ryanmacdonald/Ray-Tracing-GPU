@@ -9,9 +9,9 @@ typedef struct packed {
 } rs_arb_to_trav_pipe_t;
 
 typedef struct packed {
-	lcache_to_rs_t lcache_to_rs_data;
+	icache_to_rs_t icache_to_rs_data;
 	logic data_sel;
-} rs_arb_to_lcache_pipe_t;
+} rs_arb_to_icache_pipe_t;
 
 typedef struct packed {
 	list_to_rs_t list_to_rs_data;
@@ -20,6 +20,8 @@ typedef struct packed {
 
 module raystore(
 
+
+	input logic clk, rst,
 	// upstream interface
 
 	input  trav_to_rs_t    trav0_to_rs_data,
@@ -30,9 +32,9 @@ module raystore(
 	input  logic           trav1_to_rs_valid,
 	output logic           trav1_to_rs_stall,
 
-	input  lcache_to_rs_t  lcache_to_rs_data,
-	input  logic           lcache_to_rs_valid,
-	output logic           lcache_to_rs_stall,
+	input  icache_to_rs_t  icache_to_rs_data,
+	input  logic           icache_to_rs_valid,
+	output logic           icache_to_rs_stall,
 
 	input  list_to_rs_t    list_to_rs_data,
 	input  logic           list_to_rs_valid,
@@ -48,19 +50,18 @@ module raystore(
 	output logic           rs_to_trav1_valid,
 	input  logic           rs_to_trav1_stall,
 
-	output rs_to_icache_t  rs_to_icache_data,
-	output logic           rs_to_icache_valid,
-	input  logic           rs_to_icache_stall,
+	output rs_to_int_t  rs_to_int_data,
+	output logic           rs_to_int_valid,
+	input  logic           rs_to_int_stall,
 
 	output rs_to_pcalc_t   rs_to_pcalc_data,
 	output logic           rs_to_pcalc_valid,
 	input  logic           rs_to_pcalc_stall,
 
 	input logic raystore_we,
-	input logic [8:0] raystore_write_addr,
-	input ray_vec_t raystore_write_data,
+	input rayID_t raystore_write_addr,
+	input ray_vec_t raystore_write_data
 
-	input logic clk, rst
 );
 
 	ray_vec_t rd_data0, rd_data1;
@@ -75,8 +76,8 @@ module raystore(
 	counter #(.W(2), .RV(2'b00)) round_robin_pointer(.cnt(rrp), .clr(1'b0), .inc(rrp_inc), .clk, .rst);
 
 	raystore_arb rsa(
-		.us_valid({list_to_rs_valid, lcache_to_rs_valid, trav1_to_rs_valid, trav0_to_rs_valid}),
-		.us_stall({list_to_rs_stall, lcache_to_rs_stall, trav1_to_rs_stall, trav0_to_rs_stall}),
+		.us_valid({list_to_rs_valid, icache_to_rs_valid, trav1_to_rs_valid, trav0_to_rs_valid}),
+		.us_stall({list_to_rs_stall, icache_to_rs_stall, trav1_to_rs_stall, trav0_to_rs_stall}),
 		.pipe_stall(us_pipe_stalls),
 		.pipe_valid(us_pipe_valids),
 		.data_sel,
@@ -261,14 +262,14 @@ module raystore(
 
 	logic [1:0] nlif2;
 
-	rs_arb_to_lcache_pipe_t pvs2_data_in;
-	assign pvs2_data_in.lcache_to_rs_data = lcache_to_rs_data;
+	rs_arb_to_icache_pipe_t pvs2_data_in;
+	assign pvs2_data_in.icache_to_rs_data = icache_to_rs_data;
 	assign pvs2_data_in.data_sel = data_sel[2];
 
-	rs_arb_to_lcache_pipe_t pvs2_data_out;
+	rs_arb_to_icache_pipe_t pvs2_data_out;
 
 	pipe_valid_stall
-	#(.WIDTH($bits(rs_arb_to_lcache_pipe_t)), .DEPTH(2))
+	#(.WIDTH($bits(rs_arb_to_icache_pipe_t)), .DEPTH(2))
 	pvs2(
 		.clk, .rst,
 
@@ -278,25 +279,27 @@ module raystore(
 
 		.ds_valid(ds_pipe_valids[2]),
 		.ds_data(pvs2_data_out),
-		.ds_stall(rs_to_icache_stall),
+		.ds_stall(rs_to_int_stall),
 
 		.num_left_in_fifo(nlif2)
 	);
 
-	rs_to_icache_t f2_data_in;
+	rs_to_int_t f2_data_in;
 
-	assign f2_data_in.ray_info  = pvs2_data_out.lcache_to_rs_data.ray_info;
-	assign f2_data_in.ln_tri = pvs2_data_out.lcache_to_rs_data.ln_tri;
-	assign f2_data_in.triID  = pvs2_data_out.lcache_to_rs_data.triID;
+	// SKETCHY: when rs_to_int_t changes, lines need to be added here
+	assign f2_data_in.ray_info  = pvs2_data_out.icache_to_rs_data.ray_info;
+	assign f2_data_in.ln_tri = pvs2_data_out.icache_to_rs_data.ln_tri;
+	assign f2_data_in.triID  = pvs2_data_out.icache_to_rs_data.triID;
+	assign f2_data_in.tri_cacheline = pvs2_data_out.icache_to_rs_data.tri_cacheline;
 
 	assign f2_data_in.ray_vec = (pvs2_data_out.data_sel) ? rd_data1 : rd_data0;
 
 	logic f2_empty, f2_re;
-	assign rs_to_icache_valid = ~f2_empty;
-	assign f2_re = ~rs_to_icache_stall & ~f2_empty;
+	assign rs_to_int_valid = ~f2_empty;
+	assign f2_re = ~rs_to_int_stall & ~f2_empty;
 
 	fifo
-	#(.WIDTH($bits(rs_to_icache_t)), .DEPTH(2))
+	#(.WIDTH($bits(rs_to_int_t)), .DEPTH(2))
 	f2(
 		.clk, .rst,
 		.data_in(f2_data_in),
@@ -304,7 +307,7 @@ module raystore(
 		.re(f2_re),
 		.full(), // not used
 		.empty(f2_empty),
-		.data_out(rs_to_icache_data),
+		.data_out(rs_to_int_data),
 		.num_left_in_fifo(nlif2),
 		.exists_in_fifo()
 	);
@@ -340,9 +343,10 @@ module raystore(
 	rs_to_pcalc_t f3_data_in;
 
 	assign f3_data_in.rayID  = pvs3_data_out.list_to_rs_data.rayID;
-	// TODO: other things for list_to_rs_data struct...
-
+	assign f3_data_in.t_int = pvs3_data_out.list_to_rs_data.t_int;
+	assign f3_data_in.triID = pvs3_data_out.list_to_rs_data.triID;
 	assign f3_data_in.ray_vec = (pvs3_data_out.data_sel) ? rd_data1 : rd_data0;
+//  TODO: bari_uv_t uv;
 
 	logic f3_empty, f3_re;
 	assign rs_to_pcalc_valid = ~f3_empty;
@@ -371,7 +375,7 @@ module raystore(
 		case(mux_sel0)
 			2'b00: addr0 = trav0_to_rs_data.ray_info.rayID;
 			2'b01: addr0 = trav1_to_rs_data.ray_info.rayID;
-			2'b10: addr0 = lcache_to_rs_data.ray_info.rayID;
+			2'b10: addr0 = icache_to_rs_data.ray_info.rayID;
 			2'b11: addr0 = list_to_rs_data.rayID;
 		endcase
 	end
@@ -380,7 +384,7 @@ module raystore(
 		case(mux_sel1)
 			2'b00: addr1 = trav0_to_rs_data.ray_info.rayID;
 			2'b01: addr1 = trav1_to_rs_data.ray_info.rayID;
-			2'b10: addr1 = lcache_to_rs_data.ray_info.rayID;
+			2'b10: addr1 = icache_to_rs_data.ray_info.rayID;
 			2'b11: addr1 = list_to_rs_data.rayID;
 		endcase
 	end

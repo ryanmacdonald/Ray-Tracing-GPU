@@ -1,5 +1,5 @@
 module miss_handler
-#(parameter RDATA_W = 64,
+#(parameter LINE_W = 64,
             TAG_W = 3,
 	        INDEX_W=4,
 	        BASE_ADDR = 0
@@ -16,7 +16,7 @@ module miss_handler
 
 	// interface with cache
 	// data from miss handler
-	output logic [RDATA_W-1:0] from_mh_data,
+	output logic [LINE_W-1:0] from_mh_data,
 	output logic               from_mh_valid,
 	input  logic               to_mh_stall,
 
@@ -25,21 +25,27 @@ module miss_handler
 	input  logic                      to_mh_valid,
 	output logic                      from_mh_stall);
 
-	localparam NUM_REQ = RDATA_W/32;
-	assign transSize = NUM_REQ; // NOTE: comment this when testing with only one read at a time
+	localparam NUM_REQ = LINE_W/32;
+	assign transSize = NUM_REQ;
 
 	/**************** address translator ****************/
 
+	// TODO: just concatenate the upper bits of BASE_ADDR with the address
+	// NOTE: before I was subtracting 4 instead of 1 when shifting left by 3. I think this was wrong.
 	logic [24:0] translated_addr;
 	generate
 		case(NUM_REQ)
 			8: begin : addr_translator
-				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-4:0],3'b000}; end
+				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-1:0],3'b000}; end
 			9: begin : addr_translator
-				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-4:0],3'b000} + to_mh_addr; end
+				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-1:0],3'b000} + to_mh_addr; end
 			12: begin : addr_translator
-				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-4:0],3'b000} + {to_mh_addr[TAG_W+INDEX_W-3:0],2'b00}; end
-//			default: begin $fatal("need NUM_REQ to be one of the options in addr_translator case statement"); end
+				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-1:0],3'b000} + {to_mh_addr[TAG_W+INDEX_W-1:0],2'b00}; end
+			default: begin : addr_translator
+				initial begin
+					assert(1) $fatal("need NUM_REQ to be one of the options in addr_translator case statement");
+				end
+			end
 		endcase
 	endgenerate
 
@@ -71,18 +77,16 @@ module miss_handler
 
 	/**************** data register ****************/
 
-	logic [NUM_REQ][31:0] next_from_mh_data;
-	logic [$clog2(RDATA_W)-1:0] data_reg_index_lo, data_reg_index_hi;
+	logic [0:NUM_REQ-1][31:0] next_from_mh_data;
+	logic [$clog2(LINE_W)-1:0] data_reg_index_lo, data_reg_index_hi;
 	always_comb begin
 		next_from_mh_data = from_mh_data;
 		if(ld_data_inc_addr)
 			next_from_mh_data[addr_cnt] = readData;
 	end
-	ff_ar #(.W(RDATA_W)) data_reg(.clk, .rst, .q(from_mh_data), .d(next_from_mh_data));
+	ff_ar #(.W(LINE_W)) data_reg(.clk, .rst, .q(from_mh_data), .d(next_from_mh_data));
 
 	/**************** state machine ****************/
-
-	logic read_done; // TODO: REMOVE LATER
 
 	enum logic [1:0] {A, B, C, D} cs, ns;
 
@@ -90,8 +94,7 @@ module miss_handler
 		unique case(cs)
 			A: ns = to_mh_valid ? B : A;
 			B: ns = C;
-			C: ns = doneRead ? (to_mh_stall ? D : A) : C; // NOTE: comment this when testing with only one read at a time
-//			C: ns = read_done ? (to_mh_stall ? D : A) : C;
+			C: ns = doneRead ? (to_mh_stall ? D : A) : C;
 			D: ns = to_mh_stall ? D : A;
 			default: ns = A;
 		endcase
@@ -106,15 +109,7 @@ module miss_handler
 	assign ld_data_inc_addr = (cs == C) && (readValid_out);
 	assign readReq = (cs == B) || (cs == C);
 	assign clr_addr_cnt = (cs == B);
-	assign from_mh_valid = doneRead || (cs == D); // NOTE: comment this when testing with only one read at a time
-	assign from_mh_stall = to_mh_valid && (cs != A);
-
-	/*
-	// TODO: REMOVE THESE
-	assign transSize = 1; // TODO: REMOVE LATER
-	assign read_done = (addr_cnt == NUM_REQ); // TODO: REMOVE LATER
-	assign from_mh_valid = read_done || (cs == D); // TODO: REMOVE LATER
-	*/
-
+	assign from_mh_valid = doneRead || (cs == D);
+	assign from_mh_stall = ~(from_mh_valid & ~ to_mh_stall);
 
 endmodule

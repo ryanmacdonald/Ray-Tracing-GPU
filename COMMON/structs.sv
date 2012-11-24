@@ -1,6 +1,8 @@
 `default_nettype none
 // uncomment the following line when synthesizing to board
 //`define SYNTH
+`ifndef FUCKING_STRUCTS
+  `define FUCKING_STRUCTS
 
 `ifdef SYNTH
 	`define DC 'h0
@@ -12,14 +14,14 @@
 `define FP_0 32'h0
 
 // Defs for camera initialization
-`ifndef SYNTH
+`ifdef SYNTH
 	`define INIT_CAM_X 32'h40800000
 	`define INIT_CAM_Y 32'h40400000
 	`define INIT_CAM_Z 32'hC1200000
 `else
-	`define INIT_CAM_X 32'h00000000
-	`define INIT_CAM_Y 32'h00000000
-	`define INIT_CAM_Z 32'hC1200000
+	`define INIT_CAM_X $shortrealtobits(1.125)
+	`define INIT_CAM_Y $shortrealtobits(1.125)
+	`define INIT_CAM_Z $shortrealtobits(-1.25)
 `endif
 
 
@@ -30,14 +32,59 @@
 `endif
 
 // Number of caches and max read size for memory interface
-`define numcaches 4
+//`define numcaches 3 // TODO: change back to 4 later
+`define numcaches 4 // TODO: change back to 4 later
 `define maxTrans 64
 
 // Number of primary rays for PRG
-`define num_rays 307200
+
+`ifndef SYNTH
+	`define PW_REAL 0.25 // TODO: make this considerably smaller
+`else
+	`define PW_REAL 1.0
+`endif
+
+// Pixel width
+	`define PW $shortrealtobits(`PW_REAL)
 
 // Epsilon = 10^-20 for now?
 `define EPSILON 32'h1E3C_E508
+
+
+////////////////////// Defines for Caches //////////////////////
+// parameters for icache
+`define I_ADDR_W              16
+`define I_BO_W                0
+`define I_TAG_W               6
+`define I_INDEX_W             10
+`define I_LINE_W              288
+`define I_NUM_BLK             1
+`define I_BLK_W               `I_LINE_W/`I_NUM_BLK
+`define I_BASE_ADDR           25'h0_00_00_00
+`define I_NUM_LINES           1024
+
+// parameters for tcaches
+`define T_ADDR_W              16
+`define T_BO_W                3
+`define T_TAG_W               4
+`define T_INDEX_W             9
+`define T_LINE_W              384
+`define T_NUM_BLK             8
+`define T_BLK_W               `T_LINE_W/`T_NUM_BLK
+`define T_BASE_ADDR           25'h0_80_00_00
+`define T_NUM_LINES           512
+
+// parameters for lcache
+`define L_ADDR_W              16
+`define L_BO_W                4
+`define L_TAG_W               2
+`define L_INDEX_W             10
+`define L_LINE_W              256
+`define L_NUM_BLK             16
+`define L_BLK_W               `L_LINE_W/`L_NUM_BLK
+`define L_BASE_ADDR           25'h1_80_00_00
+`define L_NUM_LINES           1024
+////////////////////// End of Defines for Caches //////////////////////
 
 ////////////////////// Defines for XMODEM //////////////////////
 `define CLK_FREQ        50000000
@@ -45,7 +92,7 @@
 `ifdef SYNTH
     `define XM_CYC_PER_BIT     9'd434 // TODO: define in terms of CLK_FREQ and BAUD
 `else
-    `define XM_CYC_PER_BIT     9'd30 // TODO: define in terms of CLK_FREQ and BAUD
+    `define XM_CYC_PER_BIT     9'd20 // TODO: define in terms of CLK_FREQ and BAUD
 `endif
 
 `define XM_NUM_SAMPLES     4'd10
@@ -66,8 +113,8 @@
 	`define VGA_NUM_ROWS        10'd480
 	`define VGA_NUM_COLS        10'd640
 `else // use a very low resolution in simulation
-	`define VGA_NUM_ROWS        10'd9
-	`define VGA_NUM_COLS        10'd12
+	`define VGA_NUM_ROWS        10'd10
+	`define VGA_NUM_COLS        10'd10
 `endif
 
 // following in terms of 25 MHz clock
@@ -88,6 +135,28 @@
 
 `define VGA_CYC25_PER_SCREEN  1*(`VGA_VS_TS * `VGA_HS_TS) // 1* to cast as 32 bit integer
 ////////////////////// End of Defines for VGA //////////////////////
+
+////////////////////// Defines for PRG //////////////////////
+`define num_rays (`VGA_NUM_ROWS*`VGA_NUM_COLS*1) // 307200
+// defines for -w/2 and -h/2 //half width = -4, half height = -3
+`ifndef SYNTH
+	`define half_screen_width  $shortrealtobits(`PW_REAL*(-(`VGA_NUM_COLS/2.0)))
+	`define half_screen_height $shortrealtobits(`PW_REAL*(-(`VGA_NUM_ROWS/2.0)))
+	// D = 6 for now
+	`define D $shortrealtobits(`PW_REAL*(`VGA_NUM_ROWS/2.0)) // 45 degrees viewing angle
+`else
+	`define half_screen_width  32'hC080_0000 // -4
+	`define half_screen_height 32'hC040_0000 // -3
+	// D = 6 for now
+	`define SCREEN_DIST 32'h4080_0000 // 4
+`endif
+////////////////////// End of Defines for PRG //////////////////////
+
+////////////////////// Defines for shader /////////////////////////
+`define MISS_COLOR 24'hff_ff_ff
+`define TRI_0_COLOR 24'hff_00_ff
+`define TRI_1_COLOR 24'h00_FF_00
+
 
 typedef struct packed {
   logic sign;
@@ -126,9 +195,8 @@ typedef struct packed {
 } triID_t;
 
 
-// TODO: change width back to [8:0]
 typedef struct packed {
-  logic [18:0] ID;
+  logic [8:0] ID;
 } rayID_t;
 
 
@@ -146,6 +214,16 @@ typedef struct packed {
 typedef struct packed{
   logic[18:0] pixelID;
 } pixelID_t;
+
+typedef struct packed {
+  float_t xmin;
+  float_t xmax;
+  float_t ymin;
+  float_t ymax;
+  float_t zmin;
+  float_t zmax;
+} AABB_t;
+
 
 typedef struct packed{
   pixelID_t pixelID;
@@ -223,10 +301,13 @@ typedef struct packed {
   logic released;
 } keys_t;
 
+typedef struct packed {
+  logic [15:0] ID;
+} lindex_t;
 
 // type containting leaf node triangle info
 typedef struct packed {
-  logic [12:0] lindex; // current index
+  lindex_t lindex; // current index
   logic [4:0] lnum_left; // number of triangles left
 } ln_tri_t;
 
@@ -360,45 +441,36 @@ typedef struct packed {
 
 typedef struct packed {
   ray_info_t ray_info;
- // float_t t_max_leaf;
   ln_tri_t ln_tri;
 } leaf_info_t;
 
     
-// lcache_to_rs
+// lcache_to_icache
 typedef struct packed {
   ray_info_t ray_info;
-//  float_t t_max_leaf;
   ln_tri_t ln_tri;
   triID_t triID;
-} lcache_to_rs_t;
+} lcache_to_icache_t;
 
 
-// rs_to_icache_t
+// icache_to_rs_t
 typedef struct packed {
   ray_info_t ray_info;
-//  float_t t_max_leaf;
   ln_tri_t ln_tri;
   triID_t triID;
-  ray_vec_t ray_vec;
+  int_cacheline_t tri_cacheline;
+} icache_to_rs_t ;
 
-} rs_to_icache_t ;
 
-
-// icache_to_int_t
+// rs_to_int_t
 typedef struct packed {
   ray_info_t ray_info;
-//  float_t t_max_leaf;
   ln_tri_t ln_tri;
   triID_t triID;
   ray_vec_t ray_vec;
   int_cacheline_t tri_cacheline;
 
-} icache_to_int_t ;
-
-typedef struct packed {
-    ray_vec_t ray_vec;
-} pcalc_to_rs_t;
+} rs_to_int_t ;
 
 
 // int_to_list_t
@@ -411,6 +483,10 @@ typedef struct packed {
   bari_uv_t uv;
 
 } int_to_list_t ;
+
+typedef struct packed {
+  rayID_t rayID;
+} int_to_shader_t;
 
 
 typedef struct packed {
@@ -434,8 +510,11 @@ typedef struct packed {
 } ss_to_shader_t;
 
 typedef struct packed {
-    rayID_t rayID;
-    ray_vec_t ray_vec;
+  rayID_t rayID;
+  bari_uv_t uv;
+  float_t t_int;
+  triID_t triID;
+  ray_vec_t ray_vec;
 } rs_to_pcalc_t;
 
 /*
@@ -447,4 +526,4 @@ typedef struct packed {
 } int_to_mailbox;
 */
 
-
+`endif

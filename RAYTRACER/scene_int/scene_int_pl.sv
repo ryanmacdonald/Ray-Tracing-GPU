@@ -1,4 +1,4 @@
-
+ 
 
 
 
@@ -44,9 +44,15 @@ module scene_int_pl(input shader_to_sint_t ray,
 		       .underflow(),.zero());
 
 
+
+	float_t dirbuf_in, dirbuf_out;
+	assign dirbuf_in = v0 ? ray.ray_vec.dir.x : (v1 ? ray.ray_vec.dir.y : ray.ray_vec.dir.z);
+	buf_t3 #(7,$bits(float_t)) dirbuf(.data_out(dirbuf_out),.data_in(dirbuf_in),.clk,.rst);
+	
+
 	float_t dataa_div1, datab_div1, result_div1;
 	assign dataa_div1 = result_add1;
-	assign datab_div1 = v1 ? ray.ray_vec.dir.x : (v2 ? ray.ray_vec.dir.y : ray.ray_vec.dir.z);
+	assign datab_div1 = dirbuf_out;
 	altfp_div div1(.aclr(rst),.clock(clk),
 		       .dataa(dataa_div1),.datab(datab_div1),.division_by_zero(),
 		       .nan(),.overflow(),.result(result_div1),.underflow(),.zero());
@@ -54,17 +60,14 @@ module scene_int_pl(input shader_to_sint_t ray,
 
 	float_t dataa_div2, datab_div2, result_div2;
 	assign dataa_div2 = result_add2;
-	assign datab_div2 = v1 ? ray.ray_vec.dir.x : (v2 ? ray.ray_vec.dir.y : ray.ray_vec.dir.z);
+	assign datab_div2 = dirbuf_out;
 	altfp_div div2(.aclr(rst),.clock(clk),
 		       .dataa(dataa_div2),.datab(datab_div2),.division_by_zero(),
 		       .nan(),.overflow(),.result(result_div2),.underflow(),.zero());
 
-
-	logic[6:0] raydir;
-	logic raydir_n, shifter_en;
-	assign raydir_n = v0 ? ray.ray_vec.dir.x.sign : (v1 ? ray.ray_vec.dir.y.sign : ray.ray_vec.dir.z.sign);
-	assign shifter_en = 1'b1; 
-	shifter #(7,0) rd(.q(raydir),.d(raydir_n),.en(shifter_en),.clr(1'b0),.clk(clk),.rst(rst));
+	logic signbuf_in, signbuf_out;
+	assign signbuf_in = dirbuf_out.sign;
+	buf_t3 #(6,1) signbuf(.data_out(signbuf_out),.data_in(signbuf_in),.clk,.rst);
 	
 
 	// Signal declarations for regs and fp comparators //
@@ -101,11 +104,11 @@ module scene_int_pl(input shader_to_sint_t ray,
 	logic agb_cmp10;
 
 
-	assign d_r1 = raydir[0] ? result_div2 : result_div1;
+	assign d_r1 = signbuf_out ? result_div2 : result_div1;
 	ff_ar #($bits(float_t),0) r1(.q(q_r1),.d(d_r1),.clk(clk),.rst(rst));
 
 	
-	assign d_r2 = raydir[0] ? result_div1 : result_div2;
+	assign d_r2 = signbuf_out ? result_div1 : result_div2;
 	ff_ar #($bits(float_t),0) r2(.q(q_r2),.d(d_r2),.clk(clk),.rst(rst));
 
 	

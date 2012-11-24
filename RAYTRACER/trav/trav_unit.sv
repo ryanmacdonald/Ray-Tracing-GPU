@@ -222,7 +222,7 @@ module trav_unit(
     .clk, .rst,
     .origin_in(rs_to_trav_data.origin),
     .dir_in(rs_to_trav_data.dir),
-    .split_in({rs_to_trav_data.node.split,4'b0}), // TODO TEST THIS MOTHER FUCKER
+    .split_in({rs_to_trav_data.node.split,4'b0}), // SKETCHY
     .t_max_in(rs_to_trav_data.t_max),
     .t_min_in(rs_to_trav_data.t_min),
   
@@ -292,11 +292,11 @@ module trav_unit(
  
   
   `ifndef SYNTH
-    always @(*) begin
+    always @(posedge clk) begin
       assert(!(trav_fifo_full & ds_valid_pipe_vs));
-      assert(trav_fifo_empty || (only_low + only_high + trav_lo_then_hi + trav_hi_then_lo == 1));
+      assert(trav_fifo_empty || ($onehot({only_low,only_high,trav_lo_then_hi,trav_hi_then_lo})));
       assert(trav_fifo_empty || (t_max > t_min));
-      assert(!(low_empty & high_empty));
+      assert(trav_fifo_empty || !(low_empty & high_empty));
     end
   `endif
  
@@ -336,7 +336,7 @@ module trav_unit(
       ss_buf_n.push_node_ID = push_node_ID ;
       ss_buf_n.update_restnode_req = update_restnode_valid ;
       ss_buf_n.rest_node_ID = trav_fifo_out.parent_ID ;
-      ss_buf_n.t_max = t_max; // TODO is it always t_max??
+      ss_buf_n.t_max = t_max;
       ss_buf_n.pop_req = pop_valid ;
       ss_buf_n.update_maxscene_req = update_maxscene_valid;
     end
@@ -354,7 +354,7 @@ module trav_unit(
   float_t trav_t_max;
   float_t trav_t_min;
 
-  // DIfficult logic here TODO
+  // SKETCHY
   assign trav_node_ID = only_low | (trav_lo_then_hi & ~low_empty) | (trav_hi_then_lo & high_empty) ?
                         low_node_ID : trav_fifo_out.right_ID ;
   always_comb begin
@@ -391,7 +391,7 @@ module trav_unit(
                                      trav_fifo_out.ray_info.ss_num + 1'b1) :
                                      trav_fifo_out.ray_info.ss_num ;
 
-  // TODO sketchy!! maybe
+  // SKETCHY
   assign tarb_valid_n = (tarb_valid & trav_to_tarb_stall) | (good_to_tarb & trav_fifo_re);
   
   always_comb begin

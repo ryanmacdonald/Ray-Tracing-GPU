@@ -23,9 +23,9 @@ module tb_int_unit();
 
 
 
-   logic icache_to_int_valid;
-   icache_to_int_t icache_to_int_data;
-   logic icache_to_int_stall;
+   logic rs_to_int_valid;
+   rs_to_int_t rs_to_int_data;
+   logic rs_to_int_stall;
 
    logic int_to_list_valid;
    int_to_list_t int_to_list_data;
@@ -41,15 +41,15 @@ module tb_int_unit();
   vectorf_t A0,B0,C0;
   int_cacheline_t tri_cacheline;
   initial begin
-    icache_to_int_data = 'h0;
-    icache_to_int_valid = 0;
+    rs_to_int_data = 'h0;
+    rs_to_int_valid = 0;
     ray_info = 0;
     A0 = create_vecf(0.5, 3, 4);
     B0 = create_vecf(3.5, 6, 4);
     C0 = create_vecf(3, 1.5, 4);
 
     tri_cacheline = create_int_cacheline(A0,B0,C0);
-    icache_to_int_data.ray_info = 0;
+    rs_to_int_data.ray_info = 0;
     @(posedge clk);
     
     for(shortreal r=0; r<10; r +=1 ) begin
@@ -57,24 +57,24 @@ module tb_int_unit();
         ray_vec_t ray_vec;
         ray_vec.dir = create_vec(0,0,1);
         ray_vec.origin = create_vec(c,r,0);
-        icache_to_int_data.ray_info <= ray_info;
-        icache_to_int_data.ray_vec <= ray_vec;
-        icache_to_int_data.ln_tri.lindex <= (r*10 + c);
-        icache_to_int_data.ln_tri.lnum_left <= c+1;
-        icache_to_int_data.triID <= 6;
-        icache_to_int_data.tri_cacheline <= tri_cacheline;
-        icache_to_int_valid <= 1;
+        rs_to_int_data.ray_info <= ray_info;
+        rs_to_int_data.ray_vec <= ray_vec;
+        rs_to_int_data.ln_tri.lindex <= (r*10 + c);
+        rs_to_int_data.ln_tri.lnum_left <= c+1;
+        rs_to_int_data.triID <= 6;
+        rs_to_int_data.tri_cacheline <= tri_cacheline;
+        rs_to_int_valid <= 1;
         @(posedge clk);
-        while(icache_to_int_stall) @(posedge clk);
+        while(rs_to_int_stall) @(posedge clk);
         if({$random}%4 == 0) begin
-          icache_to_int_data <= 'hX;
-          icache_to_int_valid <= 0;
+          rs_to_int_data <= 'hX;
+          rs_to_int_valid <= 0;
           @(posedge clk);
         end
         ray_info.rayID += 1;
       end
     end
-    icache_to_int_valid <= 0;
+    rs_to_int_valid <= 0;
     forever @(posedge clk);
   end
  

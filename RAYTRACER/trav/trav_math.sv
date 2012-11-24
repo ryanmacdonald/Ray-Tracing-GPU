@@ -69,7 +69,7 @@ module trav_math(
   logic nan_add, overflow_add, underflow_add, zero_add;
 
   assign inA_add = split_in;
-  assign inB_add = {1'b1,origin_in[30:0]};
+  assign inB_add = {~origin_in[31],origin_in[30:0]};
   altfp_add add(
   .aclr(rst ),
   .clock(clk ),
@@ -88,7 +88,7 @@ module trav_math(
   } trav_pipe2_in, trav_pipe2_out;
   
   always_comb begin
-    trav_pipe2_in.origin_g_split = out_add.sign; // TODO should be correct
+    trav_pipe2_in.origin_g_split = out_add.sign; // SKETCHY
     trav_pipe2_in.dir_g_0 = ~trav_pipe1_out.dir.sign;
   end
   buf_t3 #(.LAT(7), .WIDTH($bits(trav_pipe2_in))) 

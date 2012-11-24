@@ -21,8 +21,10 @@ module prg(input logic clk, rst,
 	logic rayReady;
 	logic x_y_valid;
 	logic rb_we,rb_re,rb_full,rb_empty;
-	logic[9:0] x, nextX;
-	logic[8:0] y, nextY;
+
+	logic[$clog2(`VGA_NUM_COLS)-1:0] x, nextX;
+	logic[$clog2(`VGA_NUM_ROWS)-1:0] y, nextY;
+
 	pixelID_t pixelID, pixelID_n;
 
 	enum logic {IDLE, ACTIVE} state, nextState;
@@ -38,7 +40,6 @@ module prg(input logic clk, rst,
 
 	assign num_left_in_rb = 5'd16 - {rb_full,num_in_rb};
 
-	// TODO: depth param correct?
 	logic ds_valid, us_stall;
 	pipe_valid_stall #(.WIDTH($bits(pixelID_t)),.DEPTH(40))
 			 valid_pipe(.clk,.rst,.us_valid(x_y_valid),.us_data(pixelID),.us_stall,
@@ -46,18 +47,22 @@ module prg(input logic clk, rst,
   			  .ds_data(prg_to_shader_in.pixelID),
 			  .ds_stall(prg_to_shader_stall),
 			  .num_left_in_fifo({2'b0,num_left_in_rb}));
-	    
-	ff_ar_en #(10,0)   xr(.q(x),.d(nextX),.en(x_y_valid),.clk,.rst);
-	ff_ar_en #(9,479)  yr(.q(y),.d(nextY),.en(x_y_valid),.clk,.rst);
+
+	ff_ar_en #($clog2(`VGA_NUM_COLS),0)   xr(.q(x),.d(nextX),.en(x_y_valid),.clk,.rst);
+	ff_ar_en #($clog2(`VGA_NUM_ROWS),`VGA_NUM_ROWS-1)  yr(.q(y),.d(nextY),.en(x_y_valid),.clk,.rst);
+
+	ff_ar_en #($bits(pixelID_t),0) rr(.q(pixelID),.d(pixelID_n),.en(x_y_valid),.clk,.rst);
 
 	ff_ar_en #($bits(pixelID_t),0) rr(.q(pixelID),.d(pixelID_n),.en(x_y_valid),.clk,.rst);
 
 	prg_pl poop(.prg_data(prg_out),.*);
 
-	assign pixelID_n = (pixelID == 307199) ? 'h0 : pixelID + 1;
 
-	assign nextX = (x == 'd639) ? 0 : x + 1;
-	assign nextY = (x == 'd639) ? y - 1 : y;
+	assign pixelID_n = (pixelID == `num_rays-1) ? 'h0 : pixelID + 1;
+
+	assign nextX = (x == `VGA_NUM_COLS-1) ? 0 : x + 1;
+	assign nextY = (x == `VGA_NUM_COLS-1) ? y - 1 : y;
+
 
 	assign rb_we = ds_valid;
 	assign rb_re = ~rb_empty && ~prg_to_shader_stall && v0;
@@ -74,7 +79,7 @@ module prg(input logic clk, rst,
 				else nextState = IDLE;
 			end
 			ACTIVE:begin
-				if(pixelID == 307199) nextState = IDLE;
+				if(pixelID == `num_rays-1) nextState = IDLE;
 				else nextState = ACTIVE;
 			end
 		endcase

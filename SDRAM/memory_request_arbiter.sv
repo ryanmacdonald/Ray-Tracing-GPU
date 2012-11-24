@@ -1,5 +1,4 @@
 
-`define numcaches 4
 `define maxTrans 64
 
 // Caches send requests to sdram, which handles these
@@ -55,7 +54,7 @@ module memory_request_arbiter(
 	sdram_a2 sdram_ctrl(.*,.clk_clk(clk),.reset_reset_n(~rst),.altpll_0_c0_clk(sdram_clk));
 
 	// Pointer to current cache
-	assign nextC = currC + 1'b1;
+	assign nextC = (currC == `numcaches-1) ? 'd0 : currC + 1'b1;
 	ff_ar_en #($clog2(`numcaches),0) cp(.q(currC),.d(nextC),.en(~busy),.clk,.rst);
 	
 	// Transaction counter

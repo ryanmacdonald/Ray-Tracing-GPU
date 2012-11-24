@@ -8,19 +8,12 @@
 
 */
 
-// TODO TODO TODO
-/*
-  Update to have 2 seperate fifos for the outports. Then port the higher of the two fifo counts
-  to the pipe_num_in_fifo port.  Also inc/dec the ln_tri stuff before you put in the vs_pipe
-
-*/
-
 module int_unit(
   input logic clk, rst,
   
-  input logic icache_to_int_valid,
-  input icache_to_int_t icache_to_int_data,
-  output logic icache_to_int_stall,
+  input logic rs_to_int_valid,
+  input rs_to_int_t rs_to_int_data,
+  output logic rs_to_int_stall,
 
   output logic int_to_list_valid,
   output int_to_list_t int_to_list_data,
@@ -46,8 +39,8 @@ module int_unit(
 
 
   // int_math instantiation
-  assign int_cacheline = icache_to_int_data.tri_cacheline;
-  assign ray_vec = icache_to_int_data.ray_vec;
+  assign int_cacheline = rs_to_int_data.tri_cacheline;
+  assign ray_vec = rs_to_int_data.ray_vec;
   int_math fat_ass_unit(.*);
 
    
@@ -62,24 +55,30 @@ module int_unit(
   logic pipe_ds_stall;
   logic [5:0] num_in_fifo;
 
+	logic	  list_full;
+	logic	  larb_full;
+  
+  logic [7:0] list_num_in_fifo, larb_num_in_fifo;
+  logic [8:0] list_num_fifo, larb_num_fifo ;
+  assign list_num_fifo = {list_full,list_num_in_fifo};
+  assign larb_num_fifo = {larb_full,larb_num_in_fifo};
 
-  logic [5:0] list_num_fifo, larb_num_fifo ;
 
 
   always_comb begin
-    int_pipe_in.ray_info = icache_to_int_data.ray_info ;
-    int_pipe_in.triID = icache_to_int_data.triID ;
-    int_pipe_in.ln_tri.lnum_left = icache_to_int_data.ln_tri.lnum_left - 1'b1;
-    int_pipe_in.ln_tri.lindex = icache_to_int_data.ln_tri.lindex + 1'b1;
+    int_pipe_in.ray_info = rs_to_int_data.ray_info ;
+    int_pipe_in.triID = rs_to_int_data.triID ;
+    int_pipe_in.ln_tri.lnum_left = rs_to_int_data.ln_tri.lnum_left - 1'b1;
+    int_pipe_in.ln_tri.lindex = rs_to_int_data.ln_tri.lindex + 1'b1;
   end
   
   logic int_us_stall;
-  logic [5:0] min_num_left_in_fifo;
-  assign min_num_left_in_fifo = 6'd45 - (list_num_fifo>larb_num_fifo ? list_num_fifo : larb_num_fifo) ;
+  logic [8:0] min_num_left_in_fifo;
+  assign min_num_left_in_fifo = 9'd256 - (list_num_fifo>larb_num_fifo ? list_num_fifo : larb_num_fifo) ;
   // The math pipleile is 45 latency
-  pipe_valid_stall #(.WIDTH($bits(int_pipe_in)), .DEPTH(45)) pipe_inst(
+  pipe_valid_stall #(.WIDTH($bits(int_pipe_in)), .DEPTH(45), .NUM_W(9)) pipe_inst(
     .clk, .rst,
-    .us_valid(icache_to_int_valid),
+    .us_valid(rs_to_int_valid),
     .us_data(int_pipe_in),
     .us_stall(int_us_stall),
     .ds_valid(pipe_ds_valid),
@@ -88,19 +87,17 @@ module int_unit(
     .num_left_in_fifo(min_num_left_in_fifo) );
  
   assign pipe_ds_stall = int_to_larb_stall | int_to_list_stall ;
-  assign icache_to_int_stall = int_us_stall & icache_to_int_valid ;
+  assign rs_to_int_stall = int_us_stall & rs_to_int_valid ;
 
   logic	  list_rdreq;
 	logic	  list_wrreq;
 	logic	  list_empty;
-	logic	  list_full;
 
   int_to_list_t list_fifo_in, list_fifo_out;
 
 	logic	  larb_rdreq;
 	logic	  larb_wrreq;
 	logic	  larb_empty;
-	logic	  larb_full;
   
   leaf_info_t larb_fifo_in, larb_fifo_out;
   
@@ -131,27 +128,28 @@ module int_unit(
   assign list_wrreq = pipe_ds_valid & (hit | is_last);
   assign larb_wrreq = pipe_ds_valid & (~is_last);
 
-  // Should be 129
-  altbramfifo_w144_d45 list_fifo(
-	.clock (clk),
+  altbramfifo_w129_d256 list_fifo(
+	.aclr(rst),
+  .clock (clk),
 	.data ( list_fifo_in),
 	.rdreq(list_rdreq),
 	.wrreq(list_wrreq),
 	.empty(list_empty),
 	.full(list_full),
 	.q(list_fifo_out ),
-  .usedw(list_num_fifo));
+  .usedw(list_num_in_fifo));
 
-  // Should be 33
-  altbramfifo_w144_d45 larb_fifo(
-	.clock (clk),
+  // Should be 36
+  altbramfifo_w36_d256 larb_fifo(
+	.aclr(rst),
+  .clock (clk),
 	.data ( larb_fifo_in),
 	.rdreq(larb_rdreq),
 	.wrreq(larb_wrreq),
 	.empty(larb_empty),
 	.full(larb_full),
 	.q(larb_fifo_out ),
-  .usedw(larb_num_fifo));
+  .usedw(larb_num_in_fifo));
 
   assign int_to_list_data = list_fifo_out;
   assign int_to_list_valid = ~list_empty;

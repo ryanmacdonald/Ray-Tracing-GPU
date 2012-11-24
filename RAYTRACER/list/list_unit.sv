@@ -4,7 +4,7 @@
 
   This is another Memory structure that is surounded by different ports with perform different operations
   the list structure is indexed by rayID.
-  list_row = [hit, triID, bary_uv, t_int_cur, t_max_leaf] // TODO maybe seperate out these into different brams
+  list_row = [hit, triID, bary_uv, t_int_cur, t_max_leaf]
 
 
   Incoming ports
