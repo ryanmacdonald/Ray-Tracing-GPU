@@ -258,7 +258,7 @@ module simple_shader_unit(
   assign wren_ray_data = prg_to_shader_valid & ~prg_to_shader_stall ;
 
 
-  assign raystore_we = shader_to_sint_valid;
+  assign raystore_we = shader_to_sint_valid & ~shader_to_sint_stall;
   assign raystore_write_addr = rayID_fifo_out;
   assign raystore_write_data = prg_ray_vec ;
 
