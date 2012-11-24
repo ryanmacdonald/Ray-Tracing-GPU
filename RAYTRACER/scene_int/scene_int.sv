@@ -64,7 +64,8 @@ module scene_int(
 	assign us_data = {shader_to_sint_data.rayID,shader_to_sint_data.is_shadow};
 	assign isShadow = ds_data[0];
 	pipe_valid_stall #(.WIDTH($bits(rayID_t)+1),.DEPTH(18)) pvs
-			     (.clk,.rst,.us_valid(shader_to_sint_valid),.us_data(us_data),.us_stall(us_stall),
+			     (.clk,.rst,.us_valid(shader_to_sint_valid&&~shader_to_sint_stall),
+			      .us_data(us_data),.us_stall(us_stall),
 			      .ds_valid(ds_valid),.ds_data(ds_data),.ds_stall(ds_stall),
 			      .num_left_in_fifo(num_left_in_fifo));
 
@@ -97,6 +98,7 @@ module scene_int(
 	assign sint_to_tarb_data.restnode_search = 1'b1;
 	assign sint_to_tarb_data.t_max = tf_data_out.tmax;
 	assign sint_to_tarb_data.t_min = tf_data_out.tmin;
+
 	fifo #(.WIDTH($bits(sint_entry_t)),.DEPTH(18))
 	     tf(.clk,.rst,.data_in(tf_data_in),.we(tf_we),.re(tf_re),
 		.full(tf_full),.exists_in_fifo(),.empty(tf_empty),.data_out(tf_data_out),

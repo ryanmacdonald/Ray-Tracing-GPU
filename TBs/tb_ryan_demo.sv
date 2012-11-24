@@ -32,11 +32,8 @@ module tb_ryan_demo;
 
 
 	initial begin
-		// used by screen dump
-   		int row, col;
-		integer file;
-		logic [7:0] upper_byte, lower_byte;
-		int color_word_cnt;
+
+
 
 		clk <= 1; start <= 0;
 		btns[3] <= 1;
@@ -54,7 +51,18 @@ module tb_ryan_demo;
 
 		repeat(1000) @(posedge clk);
 
-		// perform screen dump
+		$finish;
+
+	end
+
+
+	final begin
+
+		// used by screen dump
+  	 	int row, col;
+		integer file;
+		logic [7:0] upper_byte, lower_byte;
+		int color_word_cnt;
 
 		color_word_cnt = 0;
 		file = $fopen("screen.txt","w");
@@ -62,8 +70,8 @@ module tb_ryan_demo;
 		for(row=0; row < `VGA_NUM_ROWS; row++) begin
 			for(col=0; col < `VGA_NUM_COLS*3/2; col++) begin // NOTE: 3/2 ratio will change if we ever go to 16 bit color
 				upper_byte = sr.memory[color_word_cnt][15:8];
+				lower_byte = sr.memory[color_word_cnt][7:0];
 				color_word_cnt++;
-				lower_byte = sr.memory[color_word_cnt][7:0];	
 				if(upper_byte === 8'bx)
 					upper_byte = 'b0;
 				if(lower_byte === 8'bx)
@@ -75,7 +83,7 @@ module tb_ryan_demo;
 
 		$fclose(file);
 
-		$finish;
+
 
 	end
 
