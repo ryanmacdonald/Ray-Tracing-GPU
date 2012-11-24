@@ -59,30 +59,33 @@ module t15_tb;
 	assign pixel_valid_us = t15.rp.prg_to_shader_valid & ~t15.rp.prg_to_shader_stall;
 	assign pixel_valid_ds = t15.pb_we;
 
-	int num_pixels_us = 0;
-	int num_pixels_ds = 0;
+	int num_pixels_us;
+	int num_pixels_ds;
 
 	initial begin
+		num_pixels_us = 0;
 		forever begin
 			@(posedge clk);
 			if(pixel_valid_us) begin
 				pixelIDs_us[t15.rp.prg_to_shader_data.pixelID] += 1;
 			  num_pixels_us++;
-      end
-      if(num_pixels_us >= `MAX_PIXEL_IDS)
+			
+			if(num_pixels_us > `MAX_PIXEL_IDS)
 				$display("warning: num_pixels_us(%d) >= `MAX_PIXEL_IDS",num_pixels_us);
+			end
 		end
 	end
 
 	initial begin
+		num_pixels_ds = 0;
 		forever begin
 			@(posedge clk);
 			if(pixel_valid_ds) begin
 				pixelIDs_ds[t15.pb_data_us.pixelID] += 1 ;
 			  num_pixels_ds++;
-      end
-      if(num_pixels_ds >= `MAX_PIXEL_IDS)
+      		if(num_pixels_ds > `MAX_PIXEL_IDS)
 				$display("warning: num_pixels_ds(%d) != `MAX_PIXEL_IDS",num_pixels_ds);
+			end
 		end
 	end
 
@@ -157,8 +160,12 @@ module t15_tb;
 		t15.render_frame <= 1'b1;
 		@(posedge clk);
 		t15.render_frame <= 1'b0;
-
-		repeat(200000) @(posedge clk);
+/*
+		while(~t15.rendering_done)
+			@(posedge clk);
+*/
+		#(1700* 1ns);
+//		repeat(200000) @(posedge clk);
 
 		// perform screen dump
 

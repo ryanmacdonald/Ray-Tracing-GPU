@@ -63,7 +63,7 @@ module prg(input logic clk, rst,
 
 
 	assign rb_we = ds_valid;
-	assign rb_re = ~rb_empty && ~prg_to_shader_stall && v0;
+	assign rb_re = ~rb_empty && ~prg_to_shader_stall;
 
 	assign prg_to_shader_valid = ~rb_empty;
 
