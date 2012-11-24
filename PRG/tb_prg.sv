@@ -3,12 +3,12 @@
 
 module tb_prg;
 
-	logic clk, rst,v0,v1,v2, done,start, ready, idle, rayReady;
+	logic clk, rst,v0,v1,v2, done,start, prg_to_shader_valid, idle, rayReady;
 	logic[1:0] cntV,cnt_nV;
-	logic int_to_prg_stall;
+	logic prg_to_shader_stall;
 	vector_t E, U, V, W;
 	float_t D, pw;
-	prg_ray_t prg_data;
+	prg_ray_t prg_to_shader_data;
 
 
 	assign cnt_nV =  ((cntV == 2'b10) ? 2'b0 : cntV + 1'b1);
@@ -24,7 +24,7 @@ module tb_prg;
 
 	initial begin
 
-			$monitor($time," \nray_t(%b) rayID = %d\ndata.dir.x = %f\ndata.dir.y = %f\ndata.dir.z = %f", rayReady,prg_data.pixelID,prg_data.dir.x,prg_data.dir.y,prg_data.dir.z);
+			//$monitor($time," \nray_t(%b) rayID = %d\ndata.dir.x = %f\ndata.dir.y = %f\ndata.dir.z = %f", rayReady,prg_data.pixelID,prg_data.dir.x,prg_data.dir.y,prg_data.dir.z);
 
 		rst <= 0; clk <= 0;
 		E.x <= `FP_0; E.y <= `FP_0; E.z <= `FP_0;
@@ -52,8 +52,8 @@ module tb_prg;
 
 //		int_to_prg_stall <= 0;
 
-		while(~done)
-			@(posedge clk);
+		
+		repeat(1000000) @(posedge clk);
 
 		$finish;
 
@@ -67,7 +67,7 @@ module tb_prg;
 	end
 
 	always_comb begin
-		int_to_prg_stall = (ready && i) ? 1'b1 : 1'b0;
+		prg_to_shader_stall = (prg_to_shader_valid && i) ? 1'b1 : 1'b0;
 	end
 
 	always #5 clk = ~clk;
