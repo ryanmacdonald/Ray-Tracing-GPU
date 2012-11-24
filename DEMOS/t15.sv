@@ -88,6 +88,7 @@ module t_minus_15_days(
     logic xmodem_saw_valid_block;
     logic xmodem_saw_invalid_block;
     logic xmodem_saw_valid_msg_byte;
+    logic xmodem_receiving_repeat_block;
     logic [7:0] xmodem_data_byte;
     logic [7:0] sl_block_num;
 

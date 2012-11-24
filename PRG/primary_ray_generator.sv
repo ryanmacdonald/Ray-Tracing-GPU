@@ -53,8 +53,6 @@ module prg(input logic clk, rst,
 
 	ff_ar_en #($bits(pixelID_t),0) rr(.q(pixelID),.d(pixelID_n),.en(x_y_valid),.clk,.rst);
 
-	ff_ar_en #($bits(pixelID_t),0) rr(.q(pixelID),.d(pixelID_n),.en(x_y_valid),.clk,.rst);
-
 	prg_pl poop(.prg_data(prg_out),.*);
 
 

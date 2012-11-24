@@ -107,6 +107,12 @@ module t15_tb;
 
     logic [7:0] file_contents [`MAX_SCENE_FILE_BYTES];
 
+	// used by screen dump
+    int row, col;
+	integer file;
+	logic [7:0] upper_byte, lower_byte;
+	int color_byte_cnt;
+
 	initial begin
 		switches <= 'b0;
 		btns[2:0] <= 3'b111;
@@ -147,6 +153,29 @@ module t15_tb;
 		t15.render_frame <= 1'b0;
 
 		repeat(1000) @(posedge clk);
+
+		// perform screen dump
+
+		color_byte_cnt = 0;
+		file = $fopen("screen.txt","w");
+		$fwrite(file, "%d %d 3\n",`VGA_NUM_ROWS, `VGA_NUM_COLS);
+		for(row=0; row < `VGA_NUM_ROWS; row++) begin
+			for(col=0; col < `VGA_NUM_COLS*3/2; col++) begin // NOTE: 3/2 ratio will change if we ever go to 16 bit color
+				upper_byte = sr.memory[color_byte_cnt][15:8];
+				color_byte_cnt++;
+				lower_byte = sr.memory[color_byte_cnt][7:0];
+				color_byte_cnt++;
+				if(upper_byte === 8'bx)
+					upper_byte = 'b0;
+				if(lower_byte === 8'bx)
+					lower_byte = 'b0;
+
+				$fwrite(file, "%d %d ", upper_byte, lower_byte);
+			end
+		end
+
+		$fclose(file);
+
 		$finish;
 	end
 
