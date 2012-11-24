@@ -66,14 +66,14 @@ module stripes(
     logic black, blue, green, cyan, red, purple, yellow, white;
 
     // TODO: define stripe widths in terms of defines. Not a priority.
-    range_check #(10) black_rc(black,vga_col,10'd0,10'd79);
-    range_check #(10) blue_rc(blue,vga_col,10'd80,10'd159);
-    range_check #(10) green_rc(green,vga_col,10'd160,10'd239);
-    range_check #(10) cyan_rc(cyan,vga_col,10'd240,10'd319);
-    range_check #(10) red_rc(red,vga_col,10'd320,10'd479);
-    range_check #(10) purple_rc(purple,vga_col,10'd400,10'd479);
-    range_check #(10) yellow_rc(yellow,vga_col,10'd480,10'd559);
-    range_check #(10) white_rc(white,vga_col,10'd560,10'd639);
+    range_check #(10) black_rc    (black, vga_col,10'd0,                      (`VGA_NUM_COLS*10'd1/10'd8)-10'd1);
+    range_check #(10) blue_rc     (blue,  vga_col,(`VGA_NUM_COLS*10'd1/10'd8),(`VGA_NUM_COLS*10'd2/10'd8)-10'd1);
+    range_check #(10) green_rc    (green, vga_col,(`VGA_NUM_COLS*10'd2/10'd8),(`VGA_NUM_COLS*10'd3/10'd8)-10'd1);
+    range_check #(10) cyan_rc     (cyan,  vga_col,(`VGA_NUM_COLS*10'd3/10'd8),(`VGA_NUM_COLS*10'd4/10'd8)-10'd1);
+    range_check #(10) red_rc      (red,   vga_col,(`VGA_NUM_COLS*10'd4/10'd8),(`VGA_NUM_COLS*10'd5/10'd8)-10'd1);
+    range_check #(10) purple_rc   (purple,vga_col,(`VGA_NUM_COLS*10'd5/10'd8),(`VGA_NUM_COLS*10'd6/10'd8)-10'd1);
+    range_check #(10) yellow_rc   (yellow,vga_col,(`VGA_NUM_COLS*10'd6/10'd8),(`VGA_NUM_COLS*10'd7/10'd8)-10'd1);
+    range_check #(10) white_rc    (white, vga_col,(`VGA_NUM_COLS*10'd7/10'd8), `VGA_NUM_COLS-10'd1);
 
     assign vga_color[2] = red | purple | yellow | white;
     assign vga_color[1] = green | cyan | yellow | white;

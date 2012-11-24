@@ -184,13 +184,13 @@ module simple_shader_unit(
     pcalc_data_in.triID = pcalc_to_shader_data.triID ;
     pcalc_data_in.is_hit = 1'b1;
     int_data_in.rayID = int_to_shader_data.rayID;
-    int_data_in.triID = `DC ;
+    int_data_in.triID = 'd0; // `DC ;
     int_data_in.is_hit = 1'b1;
     sint_data_in.rayID = sint_to_shader_data.rayID ;
-    sint_data_in.triID = `DC ;
+    sint_data_in.triID = 'd0; // `DC ;
     sint_data_in.is_hit = 1'b0;
     ss_data_in.rayID = ss_to_shader_data.rayID ;
-    ss_data_in.triID = `DC ;
+    ss_data_in.triID = 'd0; // `DC ;
     ss_data_in.is_hit = 1'b0;
   end
 

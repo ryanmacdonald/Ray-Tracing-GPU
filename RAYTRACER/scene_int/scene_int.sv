@@ -2,7 +2,6 @@
 // TODO Found some potential bugs here...
 /*
   -shader_to_sint stall should depend on v0 and if it is valid
-  -there is an unnecessary buffer before the pipe
 */
 
 
@@ -35,10 +34,22 @@ module scene_int(
 
 	float_t tmin_scene, tmax_scene;
 	
+	`ifndef SYNTH
+		shortreal ox,oy,oz,dx,dy,dz;
+		assign ox = $bitstoshortreal(shader_to_sint_data.ray_vec.origin.x);
+		assign oy = $bitstoshortreal(shader_to_sint_data.ray_vec.origin.y);
+		assign oz = $bitstoshortreal(shader_to_sint_data.ray_vec.origin.z);
+		assign dx = $bitstoshortreal(shader_to_sint_data.ray_vec.dir.x);
+		assign dy = $bitstoshortreal(shader_to_sint_data.ray_vec.dir.y);
+		assign dz = $bitstoshortreal(shader_to_sint_data.ray_vec.dir.z);
+
+	`endif
+
 	shader_to_sint_t ray;
 	ff_ar_en #($bits(shader_to_sint_t),0) rr(.q(ray),.d(shader_to_sint_data),.en(shader_to_sint_valid),.clk,.rst);
 
 	
+
 	logic isShadow, miss;
 	scene_int_pl pl(.ray(ray),.v0(v0),.v1(v1),.v2(v2),
 			.xmin(sceneAABB.xmin),.xmax(sceneAABB.xmax),
@@ -48,17 +59,19 @@ module scene_int(
 			.tmin_scene(tmin_scene),.tmax_scene(tmax_scene),
 			.miss(miss));
 
-	logic ds_valid, ds_stall;
+	logic ds_valid, ds_stall, us_stall;
 	logic[$bits(rayID_t):0] us_data, ds_data;
 	logic[4:0] num_left_in_fifo;
 	assign us_data = {shader_to_sint_data.rayID,shader_to_sint_data.is_shadow};
 	assign isShadow = ds_data[0];
-	pipe_valid_stall #(.WIDTH($bits(rayID_t)+1),.DEPTH(17)) pvs
-			     (.clk,.rst,.us_valid(shader_to_sint_valid),.us_data(us_data),.us_stall(shader_to_sint_stall),
+	pipe_valid_stall #(.WIDTH($bits(rayID_t)+1),.DEPTH(18)) pvs
+			     (.clk,.rst,.us_valid(shader_to_sint_valid),.us_data(us_data),.us_stall(us_stall),
 			      .ds_valid(ds_valid),.ds_data(ds_data),.ds_stall(ds_stall),
 			      .num_left_in_fifo(num_left_in_fifo));
 
 	assign ds_stall = sint_to_tarb_stall || sint_to_ss_stall || sint_to_shader_stall;
+
+	assign shader_to_sint_stall = us_stall & shader_to_sint_valid;
 
 	/* TARB FIFO */	
 

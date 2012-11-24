@@ -300,7 +300,11 @@ module qsys_sdram_a2_sdram_0 (
   always @(posedge clk or negedge reset_n)
     begin
       if (reset_n == 0)
+      	`ifndef SYNTH
+          refresh_counter <= 50;
+        `else
           refresh_counter <= 5000;
+        `endif
       else if (refresh_counter == 0)
           refresh_counter <= 399;
       else 

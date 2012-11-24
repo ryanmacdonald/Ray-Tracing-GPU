@@ -8,13 +8,6 @@
 
 */
 
-// TODO TODO TODO
-/*
-  Update to have 2 seperate fifos for the outports. Then port the higher of the two fifo counts
-  to the pipe_num_in_fifo port.  Also inc/dec the ln_tri stuff before you put in the vs_pipe
-
-*/
-
 module int_unit(
   input logic clk, rst,
   

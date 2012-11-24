@@ -77,12 +77,11 @@ module fbh_writer(
     assign PID_addr0 = pb_PID + (pb_PID >> 1'b1);
     assign PID_addr1 = PID_addr0+1'b1;
 
-    // TODO: make sure these are not swapped incorrectly
     assign writer_ub = ~pb_PID[0] | second_write;
     assign writer_lb = pb_PID[0] | first_write;
 
     always_comb begin
-        case({first_write,pb_PID[0]}) // TODO: get bit 0 of pixelID specifically
+        case({first_write,pb_PID[0]})
 			// chronological order
             2'b10: writer_data = {pb_pixel.red, pb_pixel.green};
             2'b00: writer_data = {pb_pixel.blue,  8'b0};

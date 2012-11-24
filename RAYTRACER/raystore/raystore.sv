@@ -18,7 +18,6 @@ typedef struct packed {
 	logic data_sel;
 } rs_arb_to_list_pipe_t;
 
-// TODO: verify that this still works given that structs have changed
 module raystore(
 
 
@@ -287,9 +286,11 @@ module raystore(
 
 	rs_to_int_t f2_data_in;
 
+	// SKETCHY: when rs_to_int_t changes, lines need to be added here
 	assign f2_data_in.ray_info  = pvs2_data_out.icache_to_rs_data.ray_info;
 	assign f2_data_in.ln_tri = pvs2_data_out.icache_to_rs_data.ln_tri;
 	assign f2_data_in.triID  = pvs2_data_out.icache_to_rs_data.triID;
+	assign f2_data_in.tri_cacheline = pvs2_data_out.icache_to_rs_data.tri_cacheline;
 
 	assign f2_data_in.ray_vec = (pvs2_data_out.data_sel) ? rd_data1 : rd_data0;
 
@@ -342,9 +343,10 @@ module raystore(
 	rs_to_pcalc_t f3_data_in;
 
 	assign f3_data_in.rayID  = pvs3_data_out.list_to_rs_data.rayID;
-	// TODO: other things for list_to_rs_data struct...
-
+	assign f3_data_in.t_int = pvs3_data_out.list_to_rs_data.t_int;
+	assign f3_data_in.triID = pvs3_data_out.list_to_rs_data.triID;
 	assign f3_data_in.ray_vec = (pvs3_data_out.data_sel) ? rd_data1 : rd_data0;
+//  TODO: bari_uv_t uv;
 
 	logic f3_empty, f3_re;
 	assign rs_to_pcalc_valid = ~f3_empty;

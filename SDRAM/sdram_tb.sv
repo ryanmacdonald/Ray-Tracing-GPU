@@ -1,7 +1,3 @@
-`define numcaches 4
-`define maxTrans 64
-
-
 `timescale 1ns / 1ps
 
 module top();

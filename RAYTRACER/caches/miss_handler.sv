@@ -26,7 +26,7 @@ module miss_handler
 	output logic                      from_mh_stall);
 
 	localparam NUM_REQ = LINE_W/32;
-	assign transSize = NUM_REQ; // NOTE: comment this when testing with only one read at a time
+	assign transSize = NUM_REQ;
 
 	/**************** address translator ****************/
 
@@ -88,16 +88,13 @@ module miss_handler
 
 	/**************** state machine ****************/
 
-	logic read_done; // TODO: REMOVE LATER
-
 	enum logic [1:0] {A, B, C, D} cs, ns;
 
 	always_comb begin
 		unique case(cs)
 			A: ns = to_mh_valid ? B : A;
 			B: ns = C;
-			C: ns = doneRead ? (to_mh_stall ? D : A) : C; // NOTE: comment this when testing with only one read at a time
-//			C: ns = read_done ? (to_mh_stall ? D : A) : C;
+			C: ns = doneRead ? (to_mh_stall ? D : A) : C;
 			D: ns = to_mh_stall ? D : A;
 			default: ns = A;
 		endcase
@@ -112,15 +109,7 @@ module miss_handler
 	assign ld_data_inc_addr = (cs == C) && (readValid_out);
 	assign readReq = (cs == B) || (cs == C);
 	assign clr_addr_cnt = (cs == B);
-	assign from_mh_valid = doneRead || (cs == D); // NOTE: comment this when testing with only one read at a time
-	assign from_mh_stall = to_mh_valid && (cs != A);
-
-	/*
-	// TODO: REMOVE THESE
-	assign transSize = 1; // TODO: REMOVE LATER
-	assign read_done = (addr_cnt == NUM_REQ); // TODO: REMOVE LATER
-	assign from_mh_valid = read_done || (cs == D); // TODO: REMOVE LATER
-	*/
-
+	assign from_mh_valid = doneRead || (cs == D);
+	assign from_mh_stall = ~(from_mh_valid & ~ to_mh_stall);
 
 endmodule

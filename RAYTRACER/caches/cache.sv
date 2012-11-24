@@ -347,10 +347,10 @@ module cache_storage
 	ff_ar way1_we_ff0(.q(way1_we1), .d(way1_we), .clk, .rst);
 	ff_ar way1_we_ff1(.q(way1_we2), .d(way1_we1), .clk, .rst);
 
-	assign valid0 = ts_data_out[15] & way0_we2; // needs to be consistent with ts_data_in
-	assign valid1 = ts_data_out[7] & way1_we2; // needs to be consistent with ts_data_in
-	assign hit0 = valid0 && (ts_data_out[TAG_W+7:8] == pipe_tag);
-	assign hit1 = valid1 && (ts_data_out[TAG_W-1:0] == pipe_tag);
+	assign valid0 = ts_data_out[15] ; // needs to be consistent with ts_data_in
+	assign valid1 = ts_data_out[7] ; // needs to be consistent with ts_data_in
+	assign hit0 = (~way1_we2 & valid0 & (ts_data_out[TAG_W+7:8] == pipe_tag)) | way0_we2;
+	assign hit1 = (~way0_we2 & valid1 & (ts_data_out[TAG_W-1:0] == pipe_tag)) | way1_we2 ;
 
 	assign rdata_line = hit0 ? way0_data_out : way1_data_out;
 	assign rdata = rdata_line[pipe_bo];

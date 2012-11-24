@@ -110,6 +110,7 @@ module t15_tb;
 	initial begin
 		switches <= 'b0;
 		btns[2:0] <= 3'b111;
+		rx_pin <= 1'b1;
 
 		@(posedge clk);
 		t15.render_frame <= 1'b0;
@@ -120,15 +121,19 @@ module t15_tb;
         repeat(100) @(posedge clk);
         btns[0] <= 1'b1;
 
-        kdfp = $fopen("kdtree.bin", "rb");
+        kdfp = $fopen("SCENES/kdtree.bin", "rb");
         r = $fread(file_contents,kdfp);
 		$fclose(kdfp);
 
 		// TODO: right now the sample scene is just one block. make this based on r later.
         for(j=0; j<128; j++)
             message[j] = file_contents[j];
-
 		send_block(message, 1, 0);
+
+        for(j=0; j<128; j++)
+            message[j] = file_contents[j+128];
+		send_block(message, 1, 0);
+
 		send_EOT();
 
 		@(posedge clk);
@@ -177,18 +182,19 @@ module t15_tb;
 
     endtask: send_block
 
-    task send_byte(input [7:0] data);
+    task send_byte(input bit [7:0] data);
 
-        repeat(`XM_CYC_PER_BIT) @(posedge clk);
+		// SKETCHY
+        repeat(`XM_CYC_PER_BIT+2) @(posedge clk);
 
         rx_pin <= 1'b0; // indicates start
 
         for(j=0; j<8; j++) begin
-            repeat(`XM_CYC_PER_BIT) @(posedge clk);
+            repeat(`XM_CYC_PER_BIT+2) @(posedge clk);
             rx_pin <= data[j]; // first data bit
         end
 
-        repeat(`XM_CYC_PER_BIT) @(posedge clk);
+        repeat(`XM_CYC_PER_BIT+2) @(posedge clk);
         rx_pin <= 1'b1; // end of byte
 
     endtask: send_byte

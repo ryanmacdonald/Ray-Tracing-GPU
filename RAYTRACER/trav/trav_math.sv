@@ -88,7 +88,7 @@ module trav_math(
   } trav_pipe2_in, trav_pipe2_out;
   
   always_comb begin
-    trav_pipe2_in.origin_g_split = out_add.sign; // TODO should be correct
+    trav_pipe2_in.origin_g_split = out_add.sign; // SKETCHY
     trav_pipe2_in.dir_g_0 = ~trav_pipe1_out.dir.sign;
   end
   buf_t3 #(.LAT(7), .WIDTH($bits(trav_pipe2_in))) 

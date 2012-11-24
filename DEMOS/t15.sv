@@ -62,6 +62,20 @@ module t_minus_15_days(
 	logic render_frame;
 	vector_t  E, U, V, W;
 
+	// NOTE: should come from camera controller
+	assign E.x = `INIT_CAM_X;
+	assign E.y = `INIT_CAM_Y;
+	assign E.z = `INIT_CAM_Z;
+	assign U.x = `FP_1;
+	assign U.y = `FP_0;
+	assign U.z = `FP_0;
+	assign V.x = `FP_0;
+	assign V.y = `FP_1;
+	assign V.z = `FP_0;
+	assign W.x = `FP_0;
+	assign W.y = `FP_0;
+	assign W.z = `FP_1;
+
 	// Ray pipe outputs
 	pixel_buffer_entry_t pb_data_us;
 	logic[`numcaches-1:0][24:0] addr_cache_to_sdram;
@@ -111,11 +125,33 @@ module t_minus_15_days(
 	assign rst = ~btns[3];
 	assign start_btn = btns[0];
 
-		// TODO: From...?
+		// TODO: make AABB from scene file instead of constant
 		logic  v0, v1, v2;
 		logic  rendering_done;
 		AABB_t sceneAABB;
-	
+		
+	logic[1:0] cnt, cnt_n;
+	assign cnt_n = (cnt == 2'b10) ? 2'b00 : cnt + 2'b1;
+	ff_ar #(2,0) v(.q(cnt),.d(cnt_n),.clk,.rst);
+
+	assign v0 = (cnt == 2'b00);
+	assign v1 = (cnt == 2'b01);
+	assign v2 = (cnt == 2'b10);
+
+	logic[18:0] rendcnt, rendcnt_n;
+	assign rendcnt_n = pb_re ? ( rendering_done ? 19'b1 : rendcnt + 19'b1) : rendcnt;
+	ff_ar #(19,0) pb_cnt(.q(rendcnt),.d(rendcnt_n),.clk,.rst);
+
+	assign rendering_done = (rendcnt == 19'd307200);
+
+	assign sceneAABB.xmin = 'h0;
+	assign sceneAABB.ymin = 'h0;
+	assign sceneAABB.zmin = 'h0;
+	assign sceneAABB.xmax = $shortrealtobits(2);
+	assign sceneAABB.ymax = $shortrealtobits(2);
+	assign sceneAABB.zmax = $shortrealtobits(2);
+
+
 	// Module instantiations
 
 	// TODO: instantiate PS/2 controller

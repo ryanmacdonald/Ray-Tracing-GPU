@@ -6,10 +6,6 @@
 `define READ  2'b01
 `define WRITE 2'b10
 
-`define maxTrans 64
-`define numcaches 4
-
-
 `timescale 1 ps / 1 ps
 module sdram_a2 (
 		// Interface from controller to SDRAM Chip
@@ -46,7 +42,6 @@ module sdram_a2 (
 		
 
 
-
 	wire		btn0, btn1;
 	wire		btn0_n, btn1_n;
 	assign btn0_n = ~btn0;
@@ -61,6 +56,7 @@ module sdram_a2 (
 	wire za_valid;
 	wire za_waitrequest;
 
+//	always @(posedge clk_clk) assert(!(write & za_waitrequest));
 	assign readValid = za_valid;
 	
 	wire [7:0] reg_data, reg_data_next;

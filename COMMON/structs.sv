@@ -14,13 +14,13 @@
 `define FP_0 32'h0
 
 // Defs for camera initialization
-`ifndef SYNTH
+`ifdef SYNTH
 	`define INIT_CAM_X 32'h40800000
 	`define INIT_CAM_Y 32'h40400000
 	`define INIT_CAM_Z 32'hC1200000
 `else
-	`define INIT_CAM_X $shortrealtobits(1.0)
-	`define INIT_CAM_Y $shortrealtobits(1.0)
+	`define INIT_CAM_X $shortrealtobits(1.125)
+	`define INIT_CAM_Y $shortrealtobits(1.125)
 	`define INIT_CAM_Z $shortrealtobits(-1.25)
 `endif
 
@@ -32,38 +32,24 @@
 `endif
 
 // Number of caches and max read size for memory interface
-`define numcaches 4
+//`define numcaches 3 // TODO: change back to 4 later
+`define numcaches 4 // TODO: change back to 4 later
 `define maxTrans 64
 
 // Number of primary rays for PRG
-`define num_rays 307200
-// Pixel width
-`ifdef SYNTH
-	`define PW `FP_1 // TODO: make this considerably smaller
+
+`ifndef SYNTH
+	`define PW_REAL 0.25 // TODO: make this considerably smaller
 `else
-	`define PW $shortrealtobits(0.25)
+	`define PW_REAL 1.0
 `endif
 
+// Pixel width
+	`define PW $shortrealtobits(`PW_REAL)
 
 // Epsilon = 10^-20 for now?
 `define EPSILON 32'h1E3C_E508
 
-
-////////////////////// Defines for PRG //////////////////////
-`define num_rays (`VGA_NUM_ROWS*`VGA_NUM_COLS*1) // 307200
-// defines for -w/2 and -h/2 //half width = -4, half height = -3
-`ifndef SYNTH
-	`define half_screen_width  $shortrealtobits(-`VGA_NUM_COLS/2.0)
-	`define half_screen_height $shortrealtobits(-`VGA_NUM_ROWS/2.0)
-	// D = 6 for now
-	`define D $shortrealtobits(`PW*`VGA_NUM_ROWS/2.0) // 45 degrees viewing angle
-`else
-	`define half_screen_width  32'hC080_0000 // -4
-	`define half_screen_height 32'hC040_0000 // -3
-	// D = 6 for now
-	`define D 32'h4080_0000 // 4
-`endif
-////////////////////// End of Defines for PRG //////////////////////
 
 ////////////////////// Defines for Caches //////////////////////
 // parameters for icache
@@ -106,7 +92,7 @@
 `ifdef SYNTH
     `define XM_CYC_PER_BIT     9'd434 // TODO: define in terms of CLK_FREQ and BAUD
 `else
-    `define XM_CYC_PER_BIT     9'd30 // TODO: define in terms of CLK_FREQ and BAUD
+    `define XM_CYC_PER_BIT     9'd20 // TODO: define in terms of CLK_FREQ and BAUD
 `endif
 
 `define XM_NUM_SAMPLES     4'd10
@@ -150,6 +136,21 @@
 `define VGA_CYC25_PER_SCREEN  1*(`VGA_VS_TS * `VGA_HS_TS) // 1* to cast as 32 bit integer
 ////////////////////// End of Defines for VGA //////////////////////
 
+////////////////////// Defines for PRG //////////////////////
+`define num_rays (`VGA_NUM_ROWS*`VGA_NUM_COLS*1) // 307200
+// defines for -w/2 and -h/2 //half width = -4, half height = -3
+`ifndef SYNTH
+	`define half_screen_width  $shortrealtobits(`PW_REAL*(-(`VGA_NUM_COLS/2.0)))
+	`define half_screen_height $shortrealtobits(`PW_REAL*(-(`VGA_NUM_ROWS/2.0)))
+	// D = 6 for now
+	`define D $shortrealtobits(`PW_REAL*(`VGA_NUM_ROWS/2.0)) // 45 degrees viewing angle
+`else
+	`define half_screen_width  32'hC080_0000 // -4
+	`define half_screen_height 32'hC040_0000 // -3
+	// D = 6 for now
+	`define SCREEN_DIST 32'h4080_0000 // 4
+`endif
+////////////////////// End of Defines for PRG //////////////////////
 
 ////////////////////// Defines for shader /////////////////////////
 `define MISS_COLOR 24'hff_ff_ff
@@ -194,7 +195,6 @@ typedef struct packed {
 } triID_t;
 
 
-// TODO: change width back to [8:0]
 typedef struct packed {
   logic [8:0] ID;
 } rayID_t;

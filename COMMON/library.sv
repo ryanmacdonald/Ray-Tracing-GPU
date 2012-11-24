@@ -530,5 +530,6 @@ module arbitor #(parameter NUM_IN=4, WIDTH = 10) (
     .data_ds,
     .stall_ds );
 
+  assign stall_us = valid_us & ~choice;
 
 endmodule
