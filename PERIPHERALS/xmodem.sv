@@ -7,9 +7,10 @@ module xmodem(
     output logic xmodem_done,
     output logic xmodem_saw_valid_block,      // to scene loader
     output logic xmodem_saw_invalid_block,      // to scene loader
+    output logic xmodem_receiving_repeat_block,      // to scene loader
     output logic xmodem_saw_valid_msg_byte,       // to scene loader
     output logic [7:0] xmodem_data_byte,  // to scene loader
-    output logic [7:0] sl_block_num, // to scene loader
+    output logic [7:0] sl_block_num, // TODO: delete
     output logic tx,
     output logic rts,
     input logic start_btn,
@@ -19,12 +20,14 @@ module xmodem(
 
 	logic saw_valid_msg_byte;
 	logic saw_valid_block, saw_invalid_block;
+	logic repeat_block;
 	logic [7:0] data_byte;
 
 	assign xmodem_saw_valid_msg_byte = saw_valid_msg_byte;
 	assign xmodem_saw_valid_block = saw_valid_block;
 	assign xmodem_saw_invalid_block = saw_invalid_block;
 	assign xmodem_data_byte = data_byte;
+	assign xmodem_receiving_repeat_block = repeat_block;
 
     logic start;
     logic rx_ff, rx;
@@ -179,7 +182,8 @@ module xmodem_blocklevel_fsmd(
     output logic valid_block,
     output logic saw_EOT_block,
     output logic saw_msg_byte,
-    output logic [7:0] sl_block_num,
+    output logic repeat_block,
+    output logic [7:0] sl_block_num, // TODO: delete. no longer needed
     input logic [7:0] data_byte,
     input logic saw_valid_byte,
     input logic clk, rst
@@ -266,7 +270,8 @@ module xmodem_blocklevel_datapath(
     output logic saw_SOH_byte, saw_EOT_byte,
                  saw_128_bytes,
                  valid_block,
-    output logic [7:0] sl_block_num,
+	output logic repeat_block,
+    output logic [7:0] sl_block_num, // TODO: delete. no longer needed
     input logic saw_block,
     input logic clr_byte_cnt_and_chksum,
                 ld_block_num,
@@ -285,13 +290,15 @@ module xmodem_blocklevel_datapath(
     logic [7:0] chksum;
     logic [7:0] next_chksum;
 
-    assign sl_block_num = prev_block_num;
+    assign sl_block_num = prev_block_num; // TODO: delete
 
     logic valid_block_num_bits, valid_block_num, block_num_err_comb;
 
     assign saw_SOH_byte = (data_byte == `SOH) ? 1'b1 : 1'b0;
     assign saw_EOT_byte = (data_byte == `EOT) ? 1'b1 : 1'b0;
     assign saw_128_bytes = (byte_cnt == 7'd127) ? 1'b1 : 1'b0;
+
+    assign repeat_block = (block_num == prev_block_num) & en_block_num_err_ff;
 
     assign valid_block_num_bits = (block_num == ~data_byte) ? 1'b1 : 1'b0;
     assign valid_block_num = ((block_num == prev_block_num) || (block_num == prev_block_num+1'b1)) ? 1'b1 : 1'b0;
