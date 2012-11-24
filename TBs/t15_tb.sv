@@ -128,7 +128,7 @@ module t15_tb;
         repeat(100) @(posedge clk);
         btns[0] <= 1'b1;
 
-        kdfp = $fopen("SCENES/kdtree.bin", "rb");
+        kdfp = $fopen("SCENES/just2.bin", "rb");
         r = $fread(file_contents,kdfp);
 		$fclose(kdfp);
 
@@ -137,9 +137,10 @@ module t15_tb;
             message[j] = file_contents[j];
 		send_block(message, 1, 0);
 
+		/*
         for(j=0; j<128; j++)
             message[j] = file_contents[j+128];
-		send_block(message, 2, 0);
+		send_block(message, 2, 0); */
 /*
         for(j=0; j<128; j++)
             message[j] = file_contents[j+128];
