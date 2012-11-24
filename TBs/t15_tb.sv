@@ -1,3 +1,39 @@
+
+`default_nettype none
+
+`define CLOCK_PERIOD 20
+
+`define MAX_PIXEL_IDS        150
+`define MAX_SCENE_FILE_BYTES 20000
+
+module t15_tb;
+
+    // general IO
+    logic [17:0] LEDR;
+    logic [8:0] LEDG;
+    logic [17:0] switches;
+    logic [3:0] btns;
+
+    // RS-232/UART
+    logic tx, rts;
+    logic rx_pin;
+
+    // VGA
+    logic HS, VS;
+    logic [23:0] VGA_RGB;
+    logic VGA_clk;
+    logic VGA_blank;
+
+    // SRAM
+    logic [19:0] sram_addr;
+    wire [15:0] sram_io;
+    logic sram_we_b;
+    logic sram_oe_b;
+    logic sram_ce_b;
+    logic sram_ub_b;
+    logic sram_lb_b;
+
+
     // SDRAM
     logic [12:0] zs_addr;
     wire [31:0] zs_dq;
@@ -17,8 +53,8 @@
     logic clk;
 
     //////////// pixel ID checker code ////////////
-	pixelID_t pixelIDs_us [`MAX_PIXEL_IDS];
-	pixelID_t pixelIDs_ds [`MAX_PIXEL_IDS];
+	bit [`MAX_PIXEL_IDS][$bits(pixelID_t)-1:0] pixelIDs_us ;
+	bit [`MAX_PIXEL_IDS][$bits(pixelID_t)-1:0] pixelIDs_ds ;
 
 	logic pixel_valid_us, pixel_valid_ds;
 
@@ -31,26 +67,30 @@
 	initial begin
 		forever begin
 			@(posedge clk);
-			if(pixel_valid_us)
-				pixelIDs_us[num_pixels_us++] = t15.rp.prg_to_shader_data.pixelID;
-			if(num_pixels_us >= `MAX_PIXEL_IDS)
-				$display("warning: num_pixels_us >= `MAX_PIXEL_IDS");
+			if(pixel_valid_us) begin
+				pixelIDs_us[t15.rp.prg_to_shader_data.pixelID] += 1;
+			  num_pixels_us++;
+      end
+      if(num_pixels_us >= `MAX_PIXEL_IDS)
+				$display("warning: num_pixels_us(%d) >= `MAX_PIXEL_IDS",num_pixels_us);
 		end
 	end
 
 	initial begin
 		forever begin
 			@(posedge clk);
-			if(pixel_valid_ds)
-				pixelIDs_ds[num_pixels_ds++] = t15.pb_data_us.pixelID;
-			if(num_pixels_us >= `MAX_PIXEL_IDS)
-				$display("warning: num_pixels_us != `MAX_PIXEL_IDS");
+			if(pixel_valid_ds) begin
+				pixelIDs_ds[t15.pb_data_us.pixelID] += 1 ;
+			  num_pixels_ds++;
+      end
+      if(num_pixels_ds >= `MAX_PIXEL_IDS)
+				$display("warning: num_pixels_ds(%d) != `MAX_PIXEL_IDS",num_pixels_ds);
 		end
 	end
 
 	final begin
 		if(num_pixels_ds != num_pixels_us) begin
-			$display("WARNING: num_pixel_ds != num_pixels_us");
+			$display("WARNING: num_pixel_ds(%d) != num_pixels_us(%d)",num_pixels_ds,num_pixels_us);
 		end
     else $display ("FUCK YEAH SEAKING!!!!!!!");
 	end
@@ -94,7 +134,7 @@
         repeat(100) @(posedge clk);
         btns[0] <= 1'b1;
 
-        kdfp = $fopen("SCENES/kdtree.bin", "rb");
+        kdfp = $fopen("SCENES/just2.bin", "rb");
         r = $fread(file_contents,kdfp);
 		$fclose(kdfp);
 
@@ -103,9 +143,10 @@
             message[j] = file_contents[j];
 		send_block(message, 1, 0);
 
+		/*
         for(j=0; j<128; j++)
             message[j] = file_contents[j+128];
-		send_block(message, 2, 0);
+		send_block(message, 2, 0); */
 /*
         for(j=0; j<128; j++)
             message[j] = file_contents[j+128];

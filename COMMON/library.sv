@@ -310,18 +310,16 @@ module VS_buf #(parameter WIDTH = 8) (
   logic [WIDTH-1:0] tmp_data, tmp_data_n;
 
   
+    assign valid_ds = (tmp_valid | valid_us); 
+    assign stall_us = stall & valid_us;
 
 
   `ifdef SYNTH
     assign data_ds = tmp_valid ? tmp_data : data_us ;
-    assign valid_ds = tmp_valid | valid_us ;
-    assign stall_us = stall & valid_us;
     assign tmp_data_n = stall ? tmp_data : data_us ;
     assign tmp_valid_n = stall_ds ? (stall ? tmp_valid : valid_us ) : 1'b0;
   `else
     assign data_ds = tmp_valid ? tmp_data : (valid_us ? data_us : 'hX) ;
-    assign valid_ds = tmp_valid | valid_us ;
-    assign stall_us = stall & valid_us;
 
     always_comb begin // stall_ds assumes that valid_ds is asserted
       case({stall_ds, stall})

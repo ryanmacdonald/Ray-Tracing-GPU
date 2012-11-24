@@ -56,7 +56,7 @@ module sdram_a2 (
 	wire za_valid;
 	wire za_waitrequest;
 
-//	always @(posedge clk_clk) assert(!(write & za_waitrequest));
+//	always @(posedge clk_clk) assert(!(write & za_waitrequest)); // TODO: uncomment this later
 	assign readValid = za_valid;
 	
 	wire [7:0] reg_data, reg_data_next;

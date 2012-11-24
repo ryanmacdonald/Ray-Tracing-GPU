@@ -60,6 +60,10 @@ module trav_unit(
   tcache_to_trav_t tcache_data;
   logic tcache_stall;
 
+  assign tcache_valid = tcache_to_trav_valid;
+  assign tcache_data = tcache_to_trav_data;
+  assign tcache_to_trav_stall = tcache_stall ;
+/*
 // Stall buffer
   VS_buf #($bits(tcache_to_trav_t)) stall_buf(.clk, .rst,
     .data_ds(tcache_data), 
@@ -68,7 +72,7 @@ module trav_unit(
     .data_us(tcache_to_trav_data),
     .valid_us(tcache_to_trav_valid),
     .stall_us(tcache_to_trav_stall) );
-
+*/
 
 ////////////////// Leaf node route /////////////////////////////
   struct packed {

@@ -136,7 +136,7 @@ typedef struct packed {
 
 /************** continuous assigns **************/
 
-	assign us_stall = rif_re | rif_full | pvs_us_stall;
+	assign us_stall = us_valid & (rif_re | rif_full | pvs_us_stall);
 	assign to_mh_stall = from_mh_valid & (~rif_re | ~rif_wait_flag);
 	assign to_mh_addr = mrf_data_out;
 	assign to_mh_valid = ~mrf_empty;

@@ -46,8 +46,9 @@ module scene_int(
 	`endif
 
 	shader_to_sint_t ray;
-	ff_ar_en #($bits(shader_to_sint_t),0) rr(.q(ray),.d(shader_to_sint_data),.en(shader_to_sint_valid&&~shader_to_sint_stall),.clk,.rst);
+	ff_ar_en #($bits(shader_to_sint_t),0) rr(.q(ray),.d(shader_to_sint_data),.en(shader_to_sint_valid & ~shader_to_sint_stall),.clk,.rst);
 
+	
 	logic isShadow, miss;
 	scene_int_pl pl(.ray(ray),.v0(v0),.v1(v1),.v2(v2),
 			.xmin(sceneAABB.xmin),.xmax(sceneAABB.xmax),
