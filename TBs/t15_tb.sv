@@ -86,6 +86,7 @@ module t15_tb;
 		if(num_pixels_ds != num_pixels_us) begin
 			$display("WARNING: num_pixel_ds != num_pixels_us");
 		end
+    else $display ("FUCK YEAH SEAKING!!!!!!!");
 	end
 
 	//////////// end of pixel ID checker code ////////////

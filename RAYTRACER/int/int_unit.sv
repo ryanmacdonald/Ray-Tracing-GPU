@@ -99,7 +99,11 @@ module int_unit(
 	logic	  larb_wrreq;
 	logic	  larb_empty;
   
-  leaf_info_t larb_fifo_in, larb_fifo_out;
+  struct packed {
+    ray_info_t ray_info;
+    logic [14:0] lindex;
+    logic [5:0] lnum_left;
+  } larb_fifo_in, larb_fifo_out;
   
   logic is_last;
   assign is_last = (int_pipe_out.ln_tri.lnum_left == 0) ;
@@ -115,10 +119,11 @@ module int_unit(
 
   always_comb begin
     larb_fifo_in.ray_info = int_pipe_out.ray_info;
-    larb_fifo_in.ln_tri.lindex = int_pipe_out.ln_tri.lindex;
-    larb_fifo_in.ln_tri.lnum_left =  int_pipe_out.ln_tri.lnum_left;
+    larb_fifo_in.lindex = int_pipe_out.ln_tri.lindex[14:0];
+    larb_fifo_in.lnum_left =  int_pipe_out.ln_tri.lnum_left;
   end
   
+   
   
   `ifndef SYNTH
     always @(*) assert(!((list_full|larb_full) & pipe_ds_valid));
@@ -155,7 +160,11 @@ module int_unit(
   assign int_to_list_valid = ~list_empty;
   assign list_rdreq = int_to_list_valid & ~int_to_list_stall;
 
-  assign int_to_larb_data = larb_fifo_out;
+  always_comb begin
+    int_to_larb_data.ray_info = larb_fifo_out.ray_info;
+    int_to_larb_data.ln_tri.lindex = larb_fifo_out.lindex;
+    int_to_larb_data.ln_tri.lnum_left = larb_fifo_out.lnum_left;
+  end
   assign int_to_larb_valid = ~larb_empty;
   assign larb_rdreq = int_to_larb_valid & ~int_to_larb_stall;
 
