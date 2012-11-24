@@ -21,8 +21,10 @@ module prg(input logic clk, rst,
 	logic rayReady;
 	logic x_y_valid;
 	logic rb_we,rb_re,rb_full,rb_empty;
+
 	logic[$clog2(`VGA_NUM_COLS)-1:0] x, nextX;
 	logic[$clog2(`VGA_NUM_ROWS)-1:0] y, nextY;
+
 	pixelID_t pixelID, pixelID_n;
 
 	enum logic {IDLE, ACTIVE} state, nextState;
@@ -51,12 +53,16 @@ module prg(input logic clk, rst,
 
 	ff_ar_en #($bits(pixelID_t),0) rr(.q(pixelID),.d(pixelID_n),.en(x_y_valid),.clk,.rst);
 
+	ff_ar_en #($bits(pixelID_t),0) rr(.q(pixelID),.d(pixelID_n),.en(x_y_valid),.clk,.rst);
+
 	prg_pl poop(.prg_data(prg_out),.*);
+
 
 	assign pixelID_n = (pixelID == `num_rays-1) ? 'h0 : pixelID + 1;
 
 	assign nextX = (x == `VGA_NUM_COLS-1) ? 0 : x + 1;
 	assign nextY = (x == `VGA_NUM_COLS-1) ? y - 1 : y;
+
 
 	assign rb_we = ds_valid;
 	assign rb_re = ~rb_empty && ~prg_to_shader_stall && v0;

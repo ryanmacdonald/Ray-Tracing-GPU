@@ -19,6 +19,7 @@ module scene_loader(
     input logic xmodem_saw_valid_msg_byte,
     input logic xmodem_saw_valid_block,
     input logic xmodem_saw_invalid_block,
+    input logic xmodem_receiving_repeat_block,
     input logic xmodem_done,
     input logic clk, rst
 );
@@ -122,8 +123,17 @@ module scene_loader(
 
 	// what to do when a valid or invalid block is received
 
-	assign ns = (need_to_init) ? is : (xmodem_saw_invalid_block) ? checkpoint : good_ns;
-	assign next_checkpoint = (need_to_init) ? is : (xmodem_saw_valid_block) ? cs : checkpoint;
+	logic repeated_block_flag;
+	logic repeated_block_flag_next;
+	assign repeated_block_flag_next = (xmodem_saw_valid_block) ? 1'b0 : (xmodem_receiving_repeat_block) ? 1'b1 : repeated_block_flag;
+	ff_ar #(1,1'b0) rbf(.q(repeated_block_flag), .d(repeated_block_flag_next), .clk, .rst);
+
+	logic restore, save;
+	assign restore = xmodem_saw_invalid_block | (repeated_block_flag & xmodem_saw_valid_block);
+	assign save = xmodem_saw_valid_block & ~repeated_block_flag;
+
+	assign ns =              (need_to_init) ? is : (restore) ? checkpoint : good_ns;
+	assign next_checkpoint = (need_to_init) ? is : (save)    ? cs         : checkpoint;
 
 	ff_ar #(.W($bits(sl_state))) current_state_reg(.q(cs), .d(ns), .clk, .rst);
 	ff_ar #(.W($bits(sl_state))) checkpoint_reg(.q(checkpoint), .d(next_checkpoint), .clk, .rst);

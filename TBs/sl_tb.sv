@@ -12,6 +12,7 @@ module sl_tb;
     logic xmodem_saw_valid_msg_byte;
     logic xmodem_saw_valid_block;
     logic xmodem_saw_invalid_block;
+    logic xmodem_receiving_repeat_block;
     logic xmodem_done;
     logic clk, rst;
 
@@ -63,6 +64,7 @@ module sl_tb;
 		send_block(message, 2, 1);
 		send_block(message, 2, 0);
 		send_block(message, 3, 0);
+		send_block(message, 3, 0);
 		send_block(message, 4, 0);
 		send_EOT();
 
@@ -100,16 +102,16 @@ module sl_tb;
 
     task send_byte(input [7:0] data);
 
-        repeat(`XM_CYC_PER_BIT) @(posedge clk);
+        repeat(`XM_CYC_PER_BIT+2) @(posedge clk);
 
         rx_pin <= 1'b0; // indicates start
 
         for(j=0; j<8; j++) begin
-            repeat(`XM_CYC_PER_BIT) @(posedge clk);
+            repeat(`XM_CYC_PER_BIT+2) @(posedge clk);
             rx_pin <= data[j]; // first data bit
         end
 
-        repeat(`XM_CYC_PER_BIT) @(posedge clk);
+        repeat(`XM_CYC_PER_BIT+2) @(posedge clk);
         rx_pin <= 1'b1; // end of byte
 
     endtask: send_byte

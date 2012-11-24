@@ -22,8 +22,13 @@
 module prg_pl(input logic clk, rst,
 	   input logic v0, v1, v2,
 	//   input logic start,
+<<<<<<< HEAD
+	   input logic[$clog2(`screen_width)-1:0] x,
+	   input logic[$clog2(`screen_height)-1:0] y,
+=======
 	   input logic[$clog2(`VGA_NUM_COLS)-1:0] x,
 	   input logic[$clog2(`VGA_NUM_ROWS)-1:0] y,
+>>>>>>> 0b20c8d83728fb67379291296dc59429e27908b3
 	   input vector_t E, U, V, W,
 	   input float_t pw,
 	   output logic rayReady,
@@ -149,52 +154,10 @@ module prg_pl(input logic clk, rst,
 	////// NEXTSTATE AND OUTPUT LOGIC //////
 
 
-//	enum logic {IDLE,ACTIVE} state, nextState;
-
 	assign next_u_dist = v0 ? add_1_result : u_dist;
 	assign next_v_dist = v1 ? add_1_result : v_dist;
 
-	/*always_comb begin
-		nextrayID = rayID;
-		nextCnt = cnt; rayReady = 0;
-		next_u_dist = u_dist; next_v_dist = v_dist;
-		done = 0; idle = 1;
-		case(state)
-			// In IDLE state, just wait for start
-			IDLE:begin
-				if(~start_prg) nextState = IDLE;
-				else nextState = ACTIVE;
-			end
-			// In ACTIVE state, increment x, y, and rayID
-			// every 3 cycles until rayID = 307200
-			ACTIVE:begin
-				idle = 0;
-				nextCnt = cnt + 1'b1;
-				if(cnt == `num_r
-				if(rayID == `num_rays) begin
-					done = 1;
-					nextState = IDLE;
-				end
-				else if(v0) begin
-					next_u_dist = add_1_result;
-					nextState = ACTIVE;
-				end
-				else if(v1) begin
-					if(cnt >= 6'd39 || rayID > 0) begin
-						nextCnt = 0;
-							nextrayID = rayID + 1'b1;
-					end
-					next_v_dist = add_1_result;
-					nextState = ACTIVE;
-				end
-				else if(v2) begin
-					nextState = ACTIVE;
-				end
-				else nextState = ACTIVE;
-			end
-			default: nextState = IDLE;
-		endcase
-	end*/
+
 
 	ff_ar #(32,0) ud(.q(u_dist),.d(next_u_dist),.clk,.rst);
 	ff_ar #(32,0) vd(.q(v_dist),.d(next_v_dist),.clk,.rst);
@@ -202,11 +165,6 @@ module prg_pl(input logic clk, rst,
 
 
 	always_ff @(posedge clk, posedge rst) begin
-		if(rst) begin
-			//state <= IDLE;
-		end
-		else begin	
-
 			if(v0) begin
 				prayD.y <= add_3_result;
 				wD.y    <= mult_4_result;
@@ -219,9 +177,6 @@ module prg_pl(input logic clk, rst,
 				prayD.x <= add_3_result;
 				wD.x    <= mult_4_result;
 			end
-
-			//state <= nextState;
-		end
 	end
 
 endmodule: prg_pl
