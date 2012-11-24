@@ -10,6 +10,7 @@
 	`define DC 'hx
 `endif
 
+`define FP_2 32'h4000_0000
 `define FP_1 32'h3F80_0000
 `define FP_0 32'h0
 

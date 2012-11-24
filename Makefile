@@ -95,6 +95,10 @@ dp:
 pcalc:
 	$(CC) $(FLAGS) -top tb_pcalc COMMON/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shade_unit/pcalc.sv TBs/tb_pcalc.sv
 
+reflector:
+	$(CC) $(FLAGS) -top tb_refl COMMON/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shade_unit/*v TBs/tb_refl.sv
+
+
 shader: 
 	$(CC) $(FLAGS) -top tb_shade COMMON/*v COMMON/altfp*/*.v COMMON/bram/*.v COMMON/altb*/*v RAYTRACER/shader/*.sv
 
