@@ -114,7 +114,7 @@ module scene_loader(
 		good_ns.seg_offset_cnt = cs.seg_offset_cnt;
 		if(segment_done)
 			good_ns.seg_offset_cnt = 'b0;
-		else if(received_four_bytes)
+		else if(received_four_bytes & ~cs.getting_size)
 			good_ns.seg_offset_cnt = cs.seg_offset_cnt + 1'b1;
 	end
 

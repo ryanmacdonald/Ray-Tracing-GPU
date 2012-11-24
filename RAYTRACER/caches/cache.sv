@@ -17,7 +17,7 @@ module cache
 	BO_W=1,
 
 	RIF_DEPTH=(`DEPTH+3),
-	MRF_DEPTH=(RIF_DEPTH+`DEPTH)
+	MRF_DEPTH=(RIF_DEPTH+`DEPTH+1)
 )
 (
 	input logic clk, rst,
@@ -405,7 +405,7 @@ module cache_storage
 			bram_single_rw_512x16 tagstore_bram(
 				.aclr(rst),
 				.address(cache_addr),
-				.byteena(),
+				.byteena(ts_be),
 				.clock(clk),
 				.data(ts_data_in),
 				.wren(way0_we | way1_we),

@@ -269,7 +269,9 @@ module simple_shader_unit(
     else begin
       unique case(triID)
         16'h0 : return `TRI_0_COLOR;
-        16'h4 : return `TRI_1_COLOR;
+        16'h1 : return `TRI_1_COLOR;
+        16'h2 : return `TRI_2_COLOR;
+        16'h3 : return `TRI_3_COLOR;
       endcase
     end
 

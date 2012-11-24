@@ -132,7 +132,12 @@ module t15_tb;
 
         for(j=0; j<128; j++)
             message[j] = file_contents[j+128];
-		send_block(message, 1, 0);
+		send_block(message, 2, 0);
+/*
+        for(j=0; j<128; j++)
+            message[j] = file_contents[j+128];
+  		send_block(message, 2, 0);
+*/
 
 		send_EOT();
 
@@ -158,7 +163,7 @@ module t15_tb;
         send_byte(8'h04);
     endtask
 
-    task send_block(input [7:0] message [128], input [7:0] block_num, input have_error);
+    task send_block(input bit [7:0] message [128], input [7:0] block_num, input have_error);
 
         integer i;
         logic [7:0] x;

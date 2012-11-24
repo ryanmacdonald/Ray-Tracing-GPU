@@ -155,7 +155,9 @@
 ////////////////////// Defines for shader /////////////////////////
 `define MISS_COLOR 24'hff_ff_ff
 `define TRI_0_COLOR 24'hff_00_ff
-`define TRI_1_COLOR 24'h00_FF_00
+`define TRI_2_COLOR 24'h00_FF_00
+`define TRI_1_COLOR 24'hFF_00_00
+`define TRI_3_COLOR 24'h00_00_FF
 
 
 typedef struct packed {
@@ -308,14 +310,14 @@ typedef struct packed {
 // type containting leaf node triangle info
 typedef struct packed {
   lindex_t lindex; // current index
-  logic [4:0] lnum_left; // number of triangles left
+  logic [5:0] lnum_left; // number of triangles left
 } ln_tri_t;
 
 
 typedef struct packed {
   logic [1:0] node_type;
   ln_tri_t ln_tri;
-  logic [27:0] reserve0;
+  logic [23:0] reserve0;
   
 } leaf_node_t;
 
