@@ -83,6 +83,7 @@ module t15_tb;
 			if(pixel_valid_ds) begin
 				pixelIDs_ds[t15.pb_data_us.pixelID] += 1 ;
 			  num_pixels_ds++;
+        if(num_pixels_ds%100 == 0) $display("num_pixels_ds=%-d/%-d",num_pixels_ds,`MAX_PIXEL_IDS);
       		if(num_pixels_ds > `MAX_PIXEL_IDS)
 				$display("warning: num_pixels_ds(%d) != `MAX_PIXEL_IDS",num_pixels_ds);
 			end
@@ -115,11 +116,12 @@ module t15_tb;
 
     logic [7:0] file_contents [`MAX_SCENE_FILE_BYTES];
 
-	// used by screen dump
-    int row, col;
-	integer file;
-	logic [7:0] upper_byte, lower_byte;
-	int color_word_cnt;
+
+  initial begin
+		#(3 * 1us);
+    $display("ERROR: TIMED OUT GOD FUCKING DAMNIT");
+    $finish;
+  end
 
 	initial begin
 		switches <= 'b0;
@@ -160,14 +162,22 @@ module t15_tb;
 		t15.render_frame <= 1'b1;
 		@(posedge clk);
 		t15.render_frame <= 1'b0;
-/*
 		while(~t15.rendering_done)
 			@(posedge clk);
-*/
-		#(1700* 1ns);
-//		repeat(200000) @(posedge clk);
 
+    $display("WOOOOO, YOu just saw rendering done!!!");
 		// perform screen dump
+    $finish;
+	
+   end
+  
+  // used by screen dump
+    int row, col;
+	integer file;
+	logic [7:0] upper_byte, lower_byte;
+	int color_word_cnt;
+
+    final begin
 
 		color_word_cnt = 0;
 		file = $fopen("screen.txt","w");
@@ -188,7 +198,6 @@ module t15_tb;
 
 		$fclose(file);
 
-		$finish;
 	end
 
 	initial begin

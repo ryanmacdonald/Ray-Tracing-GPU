@@ -158,7 +158,7 @@ module raystore(
 	assign f0_re = ~rs_to_trav0_stall & ~f0_empty;
 
 	fifo
-	#(.WIDTH($bits(rs_to_trav_t)), .DEPTH(2))
+	#(.WIDTH($bits(rs_to_trav_t)), .DEPTH(3))
 	f0(
 		.clk, .rst,
 		.data_in(f0_data_in),
@@ -243,7 +243,7 @@ module raystore(
 	assign f1_re = ~rs_to_trav1_stall & ~f1_empty;
 
 	fifo
-	#(.WIDTH($bits(rs_to_trav_t)), .DEPTH(2))
+	#(.WIDTH($bits(rs_to_trav_t)), .DEPTH(3))
 	f1(
 		.clk, .rst,
 		.data_in(f1_data_in),
@@ -299,7 +299,7 @@ module raystore(
 	assign f2_re = ~rs_to_int_stall & ~f2_empty;
 
 	fifo
-	#(.WIDTH($bits(rs_to_int_t)), .DEPTH(2))
+	#(.WIDTH($bits(rs_to_int_t)), .DEPTH(3))
 	f2(
 		.clk, .rst,
 		.data_in(f2_data_in),
@@ -353,7 +353,7 @@ module raystore(
 	assign f3_re = ~rs_to_pcalc_stall & ~f3_empty;
 
 	fifo
-	#(.WIDTH($bits(rs_to_pcalc_t)), .DEPTH(2))
+	#(.WIDTH($bits(rs_to_pcalc_t)), .DEPTH(3))
 	f3(
 		.clk, .rst,
 		.data_in(f3_data_in),
