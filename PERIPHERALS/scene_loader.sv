@@ -1,6 +1,6 @@
 `default_nettype none
 
-typedef enum logic [1:0] {KDTREE, LISTS, UTTM} SegType;
+typedef enum logic [1:0] {KDTREE, LISTS, UTTM, COLORS_NORMS} SegType;
 
 typedef struct packed {
 	logic getting_size;
@@ -101,7 +101,9 @@ module scene_loader(
 			case(cs.current_seg)
 				KDTREE: good_ns.current_seg = (segment_done) ? LISTS : KDTREE;
 				LISTS: good_ns.current_seg = (segment_done) ? UTTM : LISTS;
-				UTTM: good_ns.current_seg = (segment_done) ? KDTREE : UTTM;
+//				UTTM: good_ns.current_seg = (segment_done) ? COLORS_NORMS : UTTM; // uncomment this when ready for shader cache
+				UTTM: good_ns.current_seg = (segment_done) ? KDTREE : UTTM; // comment when ready for shader cache
+				COLORS_NORMS: good_ns.current_seg = (segment_done) ? KDTREE : COLORS_NORMS;
 				default: good_ns.current_seg = KDTREE;
 			endcase
 		end
@@ -143,6 +145,7 @@ module scene_loader(
 			KDTREE: base_addr = `T_BASE_ADDR;
 			LISTS: base_addr = `L_BASE_ADDR;
 			UTTM: base_addr = `I_BASE_ADDR;
+			COLORS_NORMS: base_addr = `S_BASE_ADDR;
 			default: base_addr = 'b0;
 		endcase
 	end
