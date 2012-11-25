@@ -151,14 +151,14 @@ module ryan_demo(
 		.stall_ds(pb_full),
 		.data_ds(pb_data_in));
 
-	/*
+	
+	/* Ryan temp arbiter failmode
 	temp_sint_fifo_arb tsfa(.clk,.rst,.tf_ds_valid,.ssf_ds_valid,.ssh_ds_valid,
 				.ssf_ray_out,.ssh_ray_out,.tf_ray_out,
 				.tf_ds_stall,.ssf_ds_stall,.ssh_ds_stall,
 				.pb_data(pb_data_in),
 				.pb_full,
 				.pb_we);*/
-
 
 	fifo #(.WIDTH($bits(pixel_buffer_entry_t)),.DEPTH(200)) 
 			  pb(.clk,.rst,.data_in(pb_data_in),
