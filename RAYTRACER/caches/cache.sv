@@ -385,7 +385,7 @@ module cache_storage
 				.wren(way0_we | way1_we),
 				.q(ts_data_out));
 		end
-		if(NUM_LINES == 512 && LINE_W == 384) begin : tcache_generate
+		else if(NUM_LINES == 512 && LINE_W == 384) begin : tcache_generate
 			bram_single_rw_512x384 way0_bram(
 				.aclr(rst),
 				.address(cache_addr),
@@ -411,7 +411,7 @@ module cache_storage
 				.wren(way0_we | way1_we),
 				.q(ts_data_out));
 		end
-		if(NUM_LINES == 1024 && LINE_W == 256) begin : lcache_generate
+		else if(NUM_LINES == 1024 && LINE_W == 256) begin : lcache_generate
 			bram_single_rw_1024x256 way0_bram(
 				.aclr(rst),
 				.address(cache_addr),
@@ -438,6 +438,16 @@ module cache_storage
 				.wren(way0_we | way1_we),
 				.q(ts_data_out));
 
+		end
+		else if(NUM_LINES == 1024 && LINE_W == 320) begin : scache_generate
+			initial begin
+				assert(1) $fatal("scache_generate block has not been written yet in cache.sv");
+			end
+		end
+		else begin : no_cache_generate
+			initial begin
+				assert(1) $fatal("no cache parameters matched in cache.sv -- no cache is being generated");
+			end
 		end
 	endgenerate
 

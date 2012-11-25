@@ -110,7 +110,7 @@ module ryan_demo(
 	assign sb.ymin = `FP_0;
 	assign sb.ymax = `FP_1;
 	assign sb.zmin = `FP_0;
-	assign sb.zmax = `FP_1;
+	assign sb.zmax = $shortrealtobits(1.0);
 
 	logic pb_full;
 
