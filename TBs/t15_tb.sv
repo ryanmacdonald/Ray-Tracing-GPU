@@ -185,6 +185,8 @@ assign or_valids = t15.rp.prg_to_shader_valid |
 	logic [7:0] upper_byte, lower_byte;
 	int color_word_cnt;
 
+
+  string sf;
 	initial begin
 		switches <= 'b0;
 		btns[2:0] <= 3'b111;
@@ -198,8 +200,8 @@ assign or_valids = t15.rp.prg_to_shader_valid |
         btns[0] <= 1'b0;
         repeat(100) @(posedge clk);
         btns[0] <= 1'b1;
-
-        kdfp = $fopen("SCENES/just2.bin", "rb");
+        $value$plusargs("SCENE=%s",sf);
+        kdfp = $fopen(sf, "rb");
         r = $fread(file_contents,kdfp);
 		$fclose(kdfp);
 

@@ -33,8 +33,8 @@
 `endif
 
 // Number of caches and max read size for memory interface
-//`define numcaches 3 // TODO: change back to 4 later
-`define numcaches 4 // TODO: change back to 4 later
+//`define numcaches 3 // T3DO: change back to 4 later
+`define numcaches 3 // TODO: change back to 4 later
 `define maxTrans 64
 
 // Number of primary rays for PRG
@@ -125,8 +125,8 @@
 	`define VGA_NUM_ROWS        10'd480
 	`define VGA_NUM_COLS        10'd640
 `else // use a very low resolution in simulation
-	`define VGA_NUM_ROWS        10'd50
-	`define VGA_NUM_COLS        10'd50
+	`define VGA_NUM_ROWS        10'd10
+	`define VGA_NUM_COLS        10'd10
 
 `endif
 
@@ -156,7 +156,7 @@
 	`define half_screen_width  $shortrealtobits(`PW_REAL*(-(`VGA_NUM_COLS/2.0)))
 	`define half_screen_height $shortrealtobits(`PW_REAL*(-(`VGA_NUM_ROWS/2.0)))
 	// D = 6 for now
-	`define D $shortrealtobits(`PW_REAL*(`VGA_NUM_ROWS/2.0)) // 45 degrees viewing angle
+	`define SCREEN_DIST $shortrealtobits(`PW_REAL*(`VGA_NUM_ROWS/2.0)) // 45 degrees viewing angle
 `else
 	`define half_screen_width  32'hC080_0000 // -4
 	`define half_screen_height 32'hC040_0000 // -3
