@@ -20,15 +20,11 @@
 	`define INIT_CAM_Y 32'h40400000
 	`define INIT_CAM_Z 32'hC1200000
 `else
-<<<<<<< HEAD
-	`define INIT_CAM_X $shortrealtobits(-5.0)
-	`define INIT_CAM_Y $shortrealtobits(-5.0)
-	`define INIT_CAM_Z $shortrealtobits(-10.0)
-=======
+
 	`define INIT_CAM_X $shortrealtobits(0.25)
 	`define INIT_CAM_Y $shortrealtobits(0)
 	`define INIT_CAM_Z $shortrealtobits(1.0)
->>>>>>> 3f433c80362bda252d27e711f42e6e364c25a481
+
 `endif
 
 
