@@ -39,6 +39,8 @@ module miss_handler
 				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-1:0],3'b000}; end
 			9: begin : addr_translator
 				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-1:0],3'b000} + to_mh_addr; end
+			10: begin : addr_translator
+				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-1:0],3'b000} + {to_mh_addr[TAG_W+INDEX_W-1:0],1'b0}; end
 			12: begin : addr_translator
 				assign translated_addr = BASE_ADDR + {to_mh_addr[TAG_W+INDEX_W-1:0],3'b000} + {to_mh_addr[TAG_W+INDEX_W-1:0],2'b00}; end
 			default: begin : addr_translator
