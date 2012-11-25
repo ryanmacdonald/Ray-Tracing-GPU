@@ -85,15 +85,15 @@ module ryan_demo(
 
 	logic[31:0] pw;
 	`ifdef SYNTH
-	assign pw = 32'h3C4CCCCD;
+		assign pw = 32'h3C4CCCCD;
 	`else
-	assign pw = `FP_1;
+		assign pw = `FP_1;
 	`endif
 
 	logic prg_ready, us_stall;
 	prg_ray_t prg_data;
 	prg		  prg(.clk,.rst,.v0,.v1,.v2,.start(start),
-			      .E,.U,.V,.W,.pw,
+			      .E,.U,.V,.W,.pw(`PW),
 			      .prg_to_shader_stall(us_stall),
 			      .prg_to_shader_valid(prg_ready),
 			      .prg_to_shader_data(prg_data));	  
