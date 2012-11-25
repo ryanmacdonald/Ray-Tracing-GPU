@@ -20,9 +20,9 @@
 	`define INIT_CAM_Y 32'h40400000
 	`define INIT_CAM_Z 32'hC1200000
 `else
-	`define INIT_CAM_X $shortrealtobits(1.125)
-	`define INIT_CAM_Y $shortrealtobits(1.125)
-	`define INIT_CAM_Z $shortrealtobits(-1.25)
+	`define INIT_CAM_X $shortrealtobits(0.25)
+	`define INIT_CAM_Y $shortrealtobits(0)
+	`define INIT_CAM_Z $shortrealtobits(1.0)
 `endif
 
 
@@ -121,14 +121,18 @@
 
 
 ////////////////////// Defines for VGA //////////////////////
-`ifdef SYNTH
-	`define VGA_NUM_ROWS        10'd480
-	`define VGA_NUM_COLS        10'd640
-`else // use a very low resolution in simulation
-	`define VGA_NUM_ROWS        10'd30
-	`define VGA_NUM_COLS        10'd30
 
+`ifndef SYNTH // use a very low resolution in simulation
+  `define NUM_ROWS 50
+  `define NUM_COLS 50
+`else 
+	`define NUM_ROWS  480
+	`define NUM_COLS  640
 `endif
+
+`define VGA_NUM_ROWS        10'd`NUM_ROWS
+`define VGA_NUM_COLS        10'd`NUM_COLS
+
 
 // following in terms of 25 MHz clock
 `define VGA_HS_TDISP        `VGA_NUM_COLS
@@ -150,7 +154,7 @@
 ////////////////////// End of Defines for VGA //////////////////////
 
 ////////////////////// Defines for PRG //////////////////////
-`define num_rays (`VGA_NUM_ROWS*`VGA_NUM_COLS*1) // 307200
+`define num_rays (`NUM_ROWS*`NUM_COLS*1) // 307200
 // defines for -w/2 and -h/2 //half width = -4, half height = -3
 `ifndef SYNTH
 	`define half_screen_width  $shortrealtobits(`PW_REAL*(-(`VGA_NUM_COLS/2.0)))
