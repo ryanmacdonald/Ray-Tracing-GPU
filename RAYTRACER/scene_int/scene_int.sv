@@ -10,27 +10,26 @@ module scene_int(
 		 input AABB_t sceneAABB,
 		 input clk, rst, 
 		 
- 			// shader_to_sint
-			input logic shader_to_sint_valid,
-			input shader_to_sint_t shader_to_sint_data,
-			output logic shader_to_sint_stall,
+ 		 // shader_to_sint
+		 input logic shader_to_sint_valid,
+		 input shader_to_sint_t shader_to_sint_data,
+		 output logic shader_to_sint_stall,
 			
-    			// sint_to_shader
-			output logic sint_to_shader_valid,
-			output sint_to_shader_t sint_to_shader_data,
-			input logic sint_to_shader_stall,
+    		 // sint_to_shader
+		 output logic sint_to_shader_valid,
+		 output sint_to_shader_t sint_to_shader_data,
+		 input logic sint_to_shader_stall,
     
-			// sint_to_ss
-			output logic sint_to_ss_valid,
-			output sint_to_ss_t sint_to_ss_data,
-			input logic sint_to_ss_stall,
+		 // sint_to_ss
+		 output logic sint_to_ss_valid,
+		 output sint_to_ss_t sint_to_ss_data,
+		 input logic sint_to_ss_stall,
     
-			// sint_to_tarb
-			output logic sint_to_tarb_valid,
-			output tarb_t sint_to_tarb_data,
-			input logic sint_to_tarb_stall 
-
-      );    
+	 	 // sint_to_tarb
+		 output logic sint_to_tarb_valid,
+		 output tarb_t sint_to_tarb_data,
+		 input logic sint_to_tarb_stall
+	);    
 
 	float_t tmin_scene, tmax_scene;
 	
