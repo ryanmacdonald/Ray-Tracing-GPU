@@ -93,8 +93,10 @@ module ryan_demo(
 	logic prg_ready, us_stall;
 	prg_ray_t prg_data;
 	prg		  prg(.clk,.rst,.v0,.v1,.v2,.start(start),
-			      .E,.U,.V,.W,.pw,.prg_to_shader_stall(us_stall),
-			      .prg_to_shader_valid(prg_ready),.prg_to_shader_data(prg_data));	  
+			      .E,.U,.V,.W,.pw,
+			      .prg_to_shader_stall(us_stall),
+			      .prg_to_shader_valid(prg_ready),
+			      .prg_to_shader_data(prg_data));	  
 
 	shader_to_sint_t ray_in;
 	assign ray_in.rayID = prg_data.pixelID;
@@ -117,6 +119,9 @@ module ryan_demo(
 	sint_to_shader_t ssh_ray_out;
 	logic tf_ds_stall, ssf_ds_stall, ssh_ds_stall;
 	logic tf_ds_valid, ssf_ds_valid, ssh_ds_valid;
+	// Don't care about tarb fifo
+	assign tf_ds_stall = 1'b0;
+
 	scene_int	  si(.shader_to_sint_data(ray_in),.v0,.v1,.v2,
 			     .sceneAABB(sb),
 			     .sint_to_tarb_stall(tf_ds_stall),
