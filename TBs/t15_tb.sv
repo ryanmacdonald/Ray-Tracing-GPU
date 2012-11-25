@@ -200,8 +200,9 @@ assign or_valids = t15.rp.prg_to_shader_valid |
         btns[0] <= 1'b0;
         repeat(100) @(posedge clk);
         btns[0] <= 1'b1;
-        $value$plusargs("SCENE=%s",sf);
-        kdfp = $fopen(sf, "rb");
+        //$value$plusargs("SCENE=%s",sf);
+        //kdfp = $fopen(sf, "rb");
+        kdfp = $fopen("SCENES/t2s1.bin","rb");
         r = $fread(file_contents,kdfp);
 		$fclose(kdfp);
 
