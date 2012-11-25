@@ -245,17 +245,20 @@ module shortstack_unit(
       3'b100: begin
         stack_cur_rptr = stack_read_fifo_out[2].ray_info.ss_wptr;
         stack_cur_raddr = stack_read_fifo_out[2].ray_info.rayID;
+        stack_read_valid[stack_cur_rptr] = 1'b1 ;
       end
       3'b010: begin
         stack_cur_rptr = stack_read_fifo_out[1].ray_info.ss_wptr;
         stack_cur_raddr = stack_read_fifo_out[1].ray_info.rayID;
+        stack_read_valid[stack_cur_rptr] = 1'b1 ;
       end
       3'b001: begin
         stack_cur_rptr = stack_read_fifo_out[0].ray_info.ss_wptr;
         stack_cur_raddr = stack_read_fifo_out[0].ray_info.rayID;
+        stack_read_valid[stack_cur_rptr] = 1'b1 ; // SKETCHY (BUG FIX) Was always asserting stack_read_valid 
       end
+      default : stack_cur_raddr = `DC ;
     endcase
-    stack_read_valid[stack_cur_rptr] = 1'b1 ;
   end
   logic stack_is_reading;
   assign stack_is_reading = |stack_rfifo_valid;
@@ -324,7 +327,7 @@ module shortstack_unit(
   ss_elem_t rddataB_stack[4];
  
   always_comb begin
-    for(int i=0; i<3; i++) begin
+    for(int i=0; i<4; i++) begin
       wrenA_stack[i] = (stack_wfifo_choice[1] & stack_wptr[1] == i & ~stack_w1_port) | (stack_wfifo_choice[0] & stack_wptr[0] == i & ~stack_w0_port) ;
       wrenB_stack[i] = (stack_wfifo_choice[1] & stack_wptr[1] == i & stack_w1_port) | (stack_wfifo_choice[0] & stack_wptr[0] == i & stack_w0_port) ;
       if(stack_w_rrptr) begin
@@ -664,6 +667,7 @@ endgenerate
   assign rest_wfifo_valid = ~rest_write_fifo_empty;
   
   always_comb begin
+    rest_wfifo_choice = 'h0;
     rest_wfifo_choice[rest_w_rrptr] = rest_wfifo_valid[rest_w_rrptr];
     rest_wfifo_choice[rest_w_rrptr1] = rest_wfifo_valid[rest_w_rrptr1] & ~(rest_wfifo_valid[rest_w_rrptr] & rest_is_reading);
     rest_wfifo_choice[rest_w_rrptr2] = rest_wfifo_valid[rest_w_rrptr2] & ( rest_wfifo_valid[rest_w_rrptr] + rest_wfifo_valid[rest_w_rrptr1] + rest_is_reading <= 1);

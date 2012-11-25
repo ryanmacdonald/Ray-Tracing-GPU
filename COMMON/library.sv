@@ -478,16 +478,20 @@ module arbitor #(parameter NUM_IN=4, WIDTH = 10) (
 
   );
 
-  logic stall_s1; // This is asserted independent of valid
-  logic valid_s1, valid_s1_n;
-  logic [WIDTH-1:0] data_s1, data_s1_n;
+  logic [WIDTH-1:0] arb_fifo_in, arb_fifo_out;
+  logic arb_fifo_full;
+  logic arb_fifo_empty;
+  logic arb_fifo_re;
+  logic arb_fifo_we;
+  logic [9:0] num_left_in_arb_fifo;
 
   logic [NUM_IN-1:0][$clog2(NUM_IN)-1:0] rrptr_arr, rrptr_arr_n;
   
+
   genvar j;
   generate
     for(j=0; j<NUM_IN; j++) begin : hurrdurr_rptr
-      assign rrptr_arr_n[j] = ~stall_s1 & (|valid_us) ? (rrptr_arr[j] == (NUM_IN-1) ? 'h0 : rrptr_arr[j] + 1'b1) : rrptr_arr[j] ;
+      assign rrptr_arr_n[j] = ~arb_fifo_full & (|valid_us) ? (rrptr_arr[j] == (NUM_IN-1) ? 'h0 : rrptr_arr[j] + 1'b1) : rrptr_arr[j] ;
       ff_ar #($clog2(NUM_IN),j) rrptr_arr_buf(.d(rrptr_arr_n[j]), .q(rrptr_arr[j]), .clk, .rst);
     end :hurrdurr_rptr
   endgenerate
@@ -498,36 +502,36 @@ module arbitor #(parameter NUM_IN=4, WIDTH = 10) (
   always_comb begin
     choice = 'h0;
     chosen_data = `DC;
-    choice[rrptr_arr[0]] = ~stall_s1 & valid_us[rrptr_arr[0]];
-    chosen = ~stall_s1 & valid_us[rrptr_arr[0]];
+    choice[rrptr_arr[0]] = ~arb_fifo_full & valid_us[rrptr_arr[0]];
+    chosen = ~arb_fifo_full & valid_us[rrptr_arr[0]];
     if(chosen) chosen_data = data_us[rrptr_arr[0]];
     for(int i=1; i<NUM_IN; i++) begin
-      choice[rrptr_arr[i]] = chosen ? 1'b0 : ~stall_s1 & valid_us[rrptr_arr[i]] ;
-      if(~chosen & ~stall_s1 & valid_us[rrptr_arr[i]]) chosen_data = data_us[rrptr_arr[i]];
-      chosen = chosen | (~stall_s1 & valid_us[rrptr_arr[i]]) ;
+      choice[rrptr_arr[i]] = chosen ? 1'b0 : ~arb_fifo_full & valid_us[rrptr_arr[i]] ;
+      if(~chosen & ~arb_fifo_full & valid_us[rrptr_arr[i]]) chosen_data = data_us[rrptr_arr[i]];
+      chosen = chosen | (~arb_fifo_full & valid_us[rrptr_arr[i]]) ;
 
     end
   end
-
-  logic VS_buf_stall;
-  assign data_s1_n = valid_s1 & VS_buf_stall ? data_s1 : (~stall_s1 & (|valid_us) ? chosen_data : `DC);
-  assign valid_s1_n = valid_s1 & VS_buf_stall ? 1'b1 : (~stall_s1 &(|valid_us) ? 1'b1 : 1'b0) ;
-  assign stall_s1 = valid_s1 & VS_buf_stall ;
-
-  ff_ar #(1,'h0) valid_s1_buf(.d(valid_s1_n), .q(valid_s1), .clk, .rst);
-  ff_ar #(WIDTH,'h0) data_s1_buf(.d(data_s1_n), .q(data_s1), .clk, .rst);
-
-
-  VS_buf #(WIDTH) buffer_that_stall(
-    .clk,
-    .rst,
-    .valid_us(valid_s1),
-    .data_us(data_s1),
-    .stall_us(VS_buf_stall),
-    .valid_ds,
-    .data_ds,
-    .stall_ds );
-
+  
   assign stall_us = valid_us & ~choice;
+  
+  assign arb_fifo_in = chosen_data;
+  assign arb_fifo_we = chosen;
+
+  fifo #(.DEPTH(512), .WIDTH(WIDTH) ) arb_fifo_inst(
+    .clk, .rst,
+    .data_in(arb_fifo_in),
+    .data_out(arb_fifo_out),
+    .full(arb_fifo_full),
+    .empty(arb_fifo_empty),
+    .re(arb_fifo_re),
+    .we(arb_fifo_we),
+    .num_left_in_fifo(num_left_in_arb_fifo),
+    .exists_in_fifo());    
+  
+  assign valid_ds = ~arb_fifo_empty;
+  assign arb_fifo_re = valid_ds & ~stall_ds ;
+  assign data_ds = arb_fifo_out;
+
 
 endmodule

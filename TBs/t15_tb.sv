@@ -185,6 +185,7 @@ assign or_valids = t15.rp.prg_to_shader_valid |
 	logic [7:0] upper_byte, lower_byte;
 	int color_word_cnt;
 
+  time t, good, bad;
 
   string sf;
 	initial begin
@@ -215,19 +216,24 @@ assign or_valids = t15.rp.prg_to_shader_valid |
 
 		@(posedge clk);
 		t15.render_frame <= 1'b1;
-		@(posedge clk);
+		t = $time;
+    @(posedge clk);
 		t15.render_frame <= 1'b0;
 
 		while(~t15.rendering_done)
 			@(posedge clk);
     $display("FUCK YEAH RENDER DONE");
+    good = $time - t;
+    $display("length of render = %t, num cycles = %d",good,good/20);
     $finish;
     end
 
 
     initial begin
-		  #(4* 1us);
+		  #(100 * 1ms);
+      bad = $time - t;
       $display("AWWWWWW YOU SUCK IT TIMED OUT");
+      $display("length of render = %t, num cycles = %d",bad,bad/20);
       $finish;
     end
 
