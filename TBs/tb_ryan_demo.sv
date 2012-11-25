@@ -49,20 +49,19 @@ module tb_ryan_demo;
 
 		start <= 0;
 
-		repeat(1000) @(posedge clk);
+		repeat(100000) @(posedge clk);
 
 		$finish;
 
 	end
 
+	// used by screen dump
+ 	int row, col;
+	integer file;
+	logic [7:0] upper_byte, lower_byte;
+	int color_word_cnt;
 
 	final begin
-
-		// used by screen dump
-  	 	int row, col;
-		integer file;
-		logic [7:0] upper_byte, lower_byte;
-		int color_word_cnt;
 
 		color_word_cnt = 0;
 		file = $fopen("screen.txt","w");
@@ -82,8 +81,6 @@ module tb_ryan_demo;
 		end
 
 		$fclose(file);
-
-
 
 	end
 

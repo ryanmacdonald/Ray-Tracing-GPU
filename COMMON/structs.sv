@@ -20,9 +20,9 @@
 	`define INIT_CAM_Y 32'h40400000
 	`define INIT_CAM_Z 32'hC1200000
 `else
-	`define INIT_CAM_X $shortrealtobits(-4.0)
-	`define INIT_CAM_Y $shortrealtobits(0.0)
-	`define INIT_CAM_Z $shortrealtobits(0.0)
+	`define INIT_CAM_X $shortrealtobits(-5.0)
+	`define INIT_CAM_Y $shortrealtobits(-5.0)
+	`define INIT_CAM_Z $shortrealtobits(-10.0)
 `endif
 
 
@@ -125,8 +125,8 @@
 	`define VGA_NUM_ROWS        10'd480
 	`define VGA_NUM_COLS        10'd640
 `else // use a very low resolution in simulation
-	`define VGA_NUM_ROWS        10'd10
-	`define VGA_NUM_COLS        10'd10
+	`define VGA_NUM_ROWS        10'd20
+	`define VGA_NUM_COLS        10'd20
 
 `endif
 

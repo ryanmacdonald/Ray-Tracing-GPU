@@ -199,7 +199,7 @@ module scene_int_pl(input shader_to_sint_t ray,
 
 	assign tmin_scene = agb_cmp9 ? q_r8 : `EPSILON;
 
-	assign tmax_scene = agb_cmp10&&isShadow ?  q_r10 : `FP_1;
+	assign tmax_scene = agb_cmp10&&~isShadow ?  q_r10 : `FP_1;
 
 
 endmodule: scene_int_pl
