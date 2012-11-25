@@ -226,7 +226,7 @@ assign or_valids = t15.rp.prg_to_shader_valid |
 
 
     initial begin
-		  #(4* 1us);
+		  #(3 * 1us);
       $display("AWWWWWW YOU SUCK IT TIMED OUT");
       $finish;
     end

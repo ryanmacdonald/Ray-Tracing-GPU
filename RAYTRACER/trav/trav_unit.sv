@@ -362,21 +362,26 @@ module trav_unit(
   assign trav_node_ID = only_low | (trav_lo_then_hi & ~low_empty) | (trav_hi_then_lo & high_empty) ?
                         low_node_ID : trav_fifo_out.right_ID ;
   always_comb begin
-    unique case({only_low|only_high,(trav_lo_then_hi & ~low_empty)|(trav_hi_then_lo & ~high_empty),(trav_hi_then_lo & high_empty)|(trav_lo_then_hi & low_empty)})
-     3'b100 : begin
-        trav_t_max = t_max;
-        trav_t_min = t_min;
-      end
-     3'b010 : begin
-        trav_t_max = t_mid;
-        trav_t_min = t_min;
-      end
-     3'b001 : begin
-        trav_t_max = t_max;
-        trav_t_min = t_mid;
-      end
-    endcase
-
+    if(trav_fifo_empty) begin
+      trav_t_max = `DC;
+      trav_t_min = `DC;
+    end
+    else begin
+      unique case({only_low|only_high,(trav_lo_then_hi & ~low_empty)|(trav_hi_then_lo & ~high_empty),(trav_hi_then_lo & high_empty)|(trav_lo_then_hi & low_empty)})
+       3'b100 : begin
+          trav_t_max = t_max;
+          trav_t_min = t_min;
+        end
+       3'b010 : begin
+          trav_t_max = t_mid;
+          trav_t_min = t_min;
+        end
+       3'b001 : begin
+          trav_t_max = t_max;
+          trav_t_min = t_mid;
+        end
+      endcase
+    end
   end
 
   // trav_to_tarb buffer and interface
