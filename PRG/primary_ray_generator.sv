@@ -77,7 +77,7 @@ module prg(input logic clk, rst,
 				else nextState = IDLE;
 			end
 			ACTIVE:begin
-				nextState = ((pixelID == `num_rays-1) & v0) ? IDLE : ACTIVE;
+				nextState = ((pixelID == `num_rays-1) & x_y_valid) ? IDLE : ACTIVE;
 			end
 		endcase
 	end

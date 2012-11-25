@@ -53,8 +53,12 @@ module prg_pl(input logic clk, rst,
 
 	////// FP INSTATIATIONS AND INTERCONNECT //////	 
 
+  logic[$clog2(`VGA_NUM_ROWS)-1:0] y_buf;
+	ff_ar #($clog2(`VGA_NUM_ROWS),0) y_buf_flop(.q(y_buf),.d(y),.clk,.rst);
+
 	logic[31:0] conv_dataa, conv_result;
-	assign conv_dataa = v0 ? {22'b0,x} : {21'b0,y};
+	assign conv_dataa = v0 ? { {(32-$clog2(`VGA_NUM_COLS)){1'b0}},x} : 
+                           { {(32-$clog2(`VGA_NUM_ROWS)){1'b0}},y_buf} ;
 	altfp_convert conv(.aclr(rst),.clock(clk),
 			   .dataa(conv_dataa),.result(conv_result));
 
@@ -113,7 +117,7 @@ module prg_pl(input logic clk, rst,
 	logic mult_4_overflow, mult_4_underflow;
 	logic[31:0] mult_4_result;
 	assign mult_4_dataa = v0 ? W.x : (v1 ? W.y : W.z);
-	assign mult_4_datab = `D;
+	assign mult_4_datab = `SCREEN_DIST;
 	altfp_mult mult_4(.aclr(rst),.clock(clk),
 			  .dataa(mult_4_dataa),.datab(mult_4_datab),
 			  .nan(mult_4_nan),.overflow(mult_4_overflow),

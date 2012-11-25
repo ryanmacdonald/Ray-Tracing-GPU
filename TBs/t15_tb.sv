@@ -143,9 +143,13 @@ assign or_valids = t15.rp.prg_to_shader_valid |
 			if(pixel_valid_ds) begin
 				pixelIDs_ds[t15.pb_data_us.pixelID] += 1 ;
 			  num_pixels_ds++;
+        if(num_pixels_ds%100 == 0) begin
+          $display("num_pixels_ds = %-d/%-d",num_pixels_ds,`MAX_PIXEL_IDS);
+        end
       		if(num_pixels_ds > `MAX_PIXEL_IDS)
 				$display("warning: num_pixels_ds(%d) != `MAX_PIXEL_IDS",num_pixels_ds);
-			end
+			 
+      end
 		end
 	end
 
@@ -181,6 +185,8 @@ assign or_valids = t15.rp.prg_to_shader_valid |
 	logic [7:0] upper_byte, lower_byte;
 	int color_word_cnt;
 
+
+  string sf;
 	initial begin
 		switches <= 'b0;
 		btns[2:0] <= 3'b111;
@@ -194,8 +200,9 @@ assign or_valids = t15.rp.prg_to_shader_valid |
         btns[0] <= 1'b0;
         repeat(100) @(posedge clk);
         btns[0] <= 1'b1;
-
-        kdfp = $fopen("SCENES/just2.bin", "rb");
+        //$value$plusargs("SCENE=%s",sf);
+        //kdfp = $fopen(sf, "rb");
+        kdfp = $fopen("SCENES/t2s1.bin","rb");
         r = $fread(file_contents,kdfp);
 		$fclose(kdfp);
 
@@ -204,29 +211,29 @@ assign or_valids = t15.rp.prg_to_shader_valid |
             message[j] = file_contents[j];
 		send_block(message, 1, 0);
 
-		/*
-        for(j=0; j<128; j++)
-            message[j] = file_contents[j+128];
-		send_block(message, 2, 0); */
-/*
-        for(j=0; j<128; j++)
-            message[j] = file_contents[j+128];
-  		send_block(message, 2, 0);
-*/
-
 		send_EOT();
 
 		@(posedge clk);
 		t15.render_frame <= 1'b1;
 		@(posedge clk);
 		t15.render_frame <= 1'b0;
-/*
+
 		while(~t15.rendering_done)
 			@(posedge clk);
-*/
-		#(1700* 1ns);
-//		repeat(200000) @(posedge clk);
+    $display("FUCK YEAH RENDER DONE");
+    $finish;
+    end
 
+
+    initial begin
+		  #(4* 1us);
+      $display("AWWWWWW YOU SUCK IT TIMED OUT");
+      $finish;
+    end
+
+
+
+  final begin
 		// perform screen dump
 
 		color_word_cnt = 0;
@@ -251,9 +258,7 @@ assign or_valids = t15.rp.prg_to_shader_valid |
 		$finish;
 	end
 
-	initial begin
-		$monitor("%t rendering_done: %b",$stime,t15.rendering_done);
-	end
+
 
     logic rst;
     assign rst = ~btns[3]; // for SRAM model

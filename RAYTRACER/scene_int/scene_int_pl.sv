@@ -127,8 +127,8 @@ module scene_int_pl(input shader_to_sint_t ray,
 	assign d_r6 = agb_cmp2 || agb_cmp3;
 	ff_ar #(1,0) r6(.q(q_r6),.d(d_r6),.clk(clk),.rst(rst));
 
-
-	assign d_r7 = agb_cmp4 ? q_r2 : d_r2;
+  // CHanged from r2
+	assign d_r7 = agb_cmp4 ? q_r4 : d_r4;
 	ff_ar #($bits(float_t),0) r7(.q(q_r7),.d(d_r7),.clk(clk),.rst(rst));
 
 
@@ -144,10 +144,10 @@ module scene_int_pl(input shader_to_sint_t ray,
 	ff_ar #($bits(float_t),0) r10(.q(q_r10),.d(d_r10),.clk(clk),.rst(rst));
 
 
-	assign dataa_cmp1 = q_r1;
-	assign datab_cmp1 = d_r1;
+	assign dataa_cmp1 = q_r1; //tmin
+	assign datab_cmp1 = d_r1; // tymin
 	altfp_compare cmp1(.aclr(rst),.clock(clk),.dataa(dataa_cmp1),.datab(datab_cmp1),.agb(agb_cmp1),.aeb());
-
+  // tmin > tymin
 
 	assign dataa_cmp2 = q_r1;
 	assign datab_cmp2 = d_r2;
@@ -158,39 +158,39 @@ module scene_int_pl(input shader_to_sint_t ray,
 	assign datab_cmp3 = q_r2;
 	altfp_compare cmp3(.aclr(rst),.clock(clk),.dataa(dataa_cmp3),.datab(datab_cmp3),.agb(agb_cmp3),.aeb());
 	
-
-	assign dataa_cmp4 = d_r2;
-	assign datab_cmp4 = q_r2;
+  // SKETCHY  could be wrong
+	assign dataa_cmp4 = d_r2; // tymax
+	assign datab_cmp4 = q_r2; // tmax
 	altfp_compare cmp4(.aclr(rst),.clock(clk),.dataa(dataa_cmp4),.datab(datab_cmp4),.agb(agb_cmp4),.aeb());
+  // tymax > tmax
 
-
-	assign dataa_cmp5 = d_r5; 
-	assign datab_cmp5 = d_r1;
+	assign dataa_cmp5 = d_r5; // tmin
+	assign datab_cmp5 = d_r1; // tzmin
 	altfp_compare cmp5(.aclr(rst),.clock(clk),.dataa(dataa_cmp5),.datab(datab_cmp5),.agb(agb_cmp5),.aeb());
+  // tmin > tzmin
 
-
-	assign dataa_cmp6 = d_r5;
-	assign datab_cmp6 = d_r2;
+	assign dataa_cmp6 = d_r5; //tmin
+	assign datab_cmp6 = d_r2; // tzmax
 	altfp_compare cmp6(.aclr(rst),.clock(clk),.dataa(dataa_cmp6),.datab(datab_cmp6),.agb(agb_cmp6),.aeb());
+  // tmin > tzmax
 
-
-	assign dataa_cmp7 = d_r1;
-	assign datab_cmp7 = d_r7;
+	assign dataa_cmp7 = d_r1; // Tzmin 
+	assign datab_cmp7 = d_r7; // tmax
 	altfp_compare cmp7(.aclr(rst),.clock(clk),.dataa(dataa_cmp7),.datab(datab_cmp7),.agb(agb_cmp7),.aeb());
+  // tzmin > tmax
 
-
-	assign dataa_cmp8 = d_r2;
-	assign datab_cmp8 = d_r7;
+	assign dataa_cmp8 = d_r2; // tzmax
+	assign datab_cmp8 = d_r7; // tmax
 	altfp_compare cmp8(.aclr(rst),.clock(clk),.dataa(dataa_cmp8),.datab(datab_cmp8),.agb(agb_cmp8),.aeb());
-	
+	// tzmax > tmax
 
 	assign dataa_cmp9 = d_r8;
 	assign datab_cmp9 = `EPSILON;
 	altfp_compare cmp9(.aclr(rst),.clock(clk),.dataa(dataa_cmp9),.datab(datab_cmp9),.agb(agb_cmp9),.aeb());
 
 
-	assign dataa_cmp10 = `FP_1;
-	assign datab_cmp10 = d_r10;
+	assign dataa_cmp10 = d_r10;
+	assign datab_cmp10 = `FP_1 ; 
 	altfp_compare cmp10(.aclr(rst),.clock(clk),.dataa(dataa_cmp10),.datab(datab_cmp10),.agb(agb_cmp10),.aeb());
 
 
@@ -199,7 +199,7 @@ module scene_int_pl(input shader_to_sint_t ray,
 
 	assign tmin_scene = agb_cmp9 ? q_r8 : `EPSILON;
 
-	assign tmax_scene = ~agb_cmp10&&isShadow ? `FP_1 : q_r10;
+	assign tmax_scene = agb_cmp10&&isShadow ?  q_r10 : `FP_1;
 
 
 endmodule: scene_int_pl
