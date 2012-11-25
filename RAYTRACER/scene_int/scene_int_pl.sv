@@ -192,14 +192,14 @@ module scene_int_pl(input shader_to_sint_t ray,
 	assign dataa_cmp10 = d_r10;
 	assign datab_cmp10 = `FP_1 ; 
 	altfp_compare cmp10(.aclr(rst),.clock(clk),.dataa(dataa_cmp10),.datab(datab_cmp10),.agb(agb_cmp10),.aeb());
-
+  // tmax > 1.0
 
 
 	assign miss = q_r9;
 
 	assign tmin_scene = agb_cmp9 ? q_r8 : `EPSILON;
 
-	assign tmax_scene = agb_cmp10&&isShadow ?  q_r10 : `FP_1;
+	assign tmax_scene = agb_cmp10&&~isShadow ?  q_r10 : `FP_1;
 
 
 endmodule: scene_int_pl
