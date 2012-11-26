@@ -28,15 +28,19 @@ module ryan_demo(
     inout PS2_DAT,
 
     // test input to start prg automatically (no ps2 input required)
-    input logic start,
+    input keys_t keys,
+    input logic start_prg,
      
     input logic clk);
 
 	logic rst;
 	assign rst = ~btns[3];
 	logic v0, v1, v2;
-	/*logic start;
-	assign start = ~btns[0];*/
+	logic start, start_btn;
+
+	assign start_btn = btns[0];
+
+	negedge_detector nd(.ed(start),.in(start_btn),.clk,.rst);
 
 	logic stripes_sel;
 
@@ -46,12 +50,12 @@ module ryan_demo(
 
 	frame_buffer_handler fbh(.pb_data(pb_data_out),.*);
 
-	keys_t keys;
+	//keys_t keys;
 	logic rendering_done, render_frame;
 
 	
 	logic[18:0] rendcnt, rendcnt_n;
-	assign rendcnt_n = pb_re ? ( rendering_done ? 19'b1 : rendcnt + 19'b1) : rendcnt;
+	assign rendcnt_n = rendering_done? 19'b0 : (pb_re ? rendcnt + 19'b1 : rendcnt);
 	ff_ar #(19,0) pb_cnt(.q(rendcnt),.d(rendcnt_n),.clk,.rst);
 
 	assign rendering_done = (rendcnt == `num_rays);
@@ -79,9 +83,9 @@ module ryan_demo(
 				.ce(clk_en),.de(data_en),.shift_reg(shift_data),
 				.pkt_rec(pkt_rec),.cnt11());
 
-	ps2_parse	  parse(.clk,.rst_b(~rst),
+	/*ps2_parse	  parse(.clk,.rst_b(~rst),
 				.ps2_pkt_DH(shift_data[30:23]),
-				.rec_ps2_pkt(pkt_rec),.keys(keys));
+				.rec_ps2_pkt(pkt_rec),.keys(keys));*/
 
 	logic[31:0] pw;
 	`ifdef SYNTH
@@ -92,7 +96,7 @@ module ryan_demo(
 
 	logic prg_ready, us_stall;
 	prg_ray_t prg_data;
-	prg		  prg(.clk,.rst,.v0,.v1,.v2,.start(start),
+	prg		  prg(.clk,.rst,.v0,.v1,.v2,.start(render_frame),
 			      .E,.U,.V,.W,.pw(`PW),
 			      .prg_to_shader_stall(us_stall),
 			      .prg_to_shader_valid(prg_ready),
@@ -110,7 +114,7 @@ module ryan_demo(
 	assign sb.ymin = `FP_0;
 	assign sb.ymax = `FP_1;
 	assign sb.zmin = `FP_0;
-	assign sb.zmax = $shortrealtobits(1.0);
+	assign sb.zmax = 32'h41A0_0000; //20.0 
 
 	logic pb_full;
 
@@ -139,7 +143,7 @@ module ryan_demo(
 
 	logic pb_we, pb_empty;
 	pixel_buffer_entry_t ssf_pb_entry, ssh_pb_entry;
-	assign ssf_pb_entry.color = 24'h00_00_00;
+	assign ssf_pb_entry.color = 24'h00_00_FF;
 	assign ssh_pb_entry.color = 24'hFF_FF_FF;
 	assign ssf_pb_entry.pixelID = ssf_ray_out.rayID;
 	assign ssh_pb_entry.pixelID = ssh_ray_out.rayID;
@@ -162,7 +166,7 @@ module ryan_demo(
 
 	fifo #(.WIDTH($bits(pixel_buffer_entry_t)),.DEPTH(200)) 
 			  pb(.clk,.rst,.data_in(pb_data_in),
-			     .we(pb_we),.re(pb_re),.full(pb_full),
+			     .we(pb_we&&~pb_full),.re(pb_re),.full(pb_full),
 			     .empty(pb_empty),.data_out(pb_data_out),
 			     .num_left_in_fifo(),.exists_in_fifo());
 

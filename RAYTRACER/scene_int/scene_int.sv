@@ -58,11 +58,12 @@ module scene_int(
 			.miss(miss));
 
 	logic ds_valid, ds_stall, us_stall;
-	logic[$bits(rayID_t):0] us_data, ds_data;
+	sint_pvs_entry_t us_data, ds_data;
 	logic[4:0] num_left_in_fifo;
-	assign us_data = {shader_to_sint_data.rayID,shader_to_sint_data.is_shadow};
+	assign us_data.rayID = shader_to_sint_data.rayID;
+	assign us_data.isShadow = shader_to_sint_data.is_shadow;
 	assign isShadow = ds_data[0];
-	pipe_valid_stall #(.WIDTH($bits(rayID_t)+1),.DEPTH(18)) pvs
+	pipe_valid_stall #(.WIDTH($bits(sint_pvs_entry_t)),.DEPTH(18)) pvs
 			     (.clk,.rst,.us_valid(shader_to_sint_valid&&~shader_to_sint_stall),
 			      .us_data(us_data),.us_stall(us_stall),
 			      .ds_valid(ds_valid),.ds_data(ds_data),.ds_stall(ds_stall),
@@ -82,10 +83,10 @@ module scene_int(
 	assign sint_to_tarb_valid = ~tf_empty;
 
 	// tarb fifo data_in assigns
-	assign tf_data_in.rayID = ds_data[9:1];
+	assign tf_data_in.rayID = ds_data.rayID;
 	assign tf_data_in.tmin = tmin_scene;
 	assign tf_data_in.tmax = tmax_scene;
-	assign tf_data_in.is_shadow = isShadow;
+	assign tf_data_in.is_shadow = ds_data.isShadow;
 	assign tf_data_in.miss = miss;
 	
 	// tarb fifo data_out assigns
@@ -115,7 +116,7 @@ module scene_int(
 	assign sint_to_ss_valid = ~ssf_empty;
 
 	// SS fifo data_in assigns
-	assign ssf_data_in.rayID = ds_data[9:1]; 
+	assign ssf_data_in.rayID = ds_data.rayID;
 	assign ssf_data_in.t_max_scene = tmax_scene;
 
 	// SS fifo data_out assigns
@@ -141,7 +142,7 @@ module scene_int(
 	assign sint_to_shader_valid = ~ssh_empty;
 
 	// Sh fifo data_in assigns
-	assign ssh_data_in.rayID = ds_data[9:1];
+	assign ssh_data_in.rayID = ds_data.rayID;
 
 	// Sh fifo data_out assigns
 	assign sint_to_shader_data.rayID = ssh_data_out.rayID;
