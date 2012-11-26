@@ -21,9 +21,9 @@
 	`define INIT_CAM_Z 32'hC1200000
 `else
 
-	`define INIT_CAM_X $shortrealtobits(0.25)
-	`define INIT_CAM_Y $shortrealtobits(0)
-	`define INIT_CAM_Z $shortrealtobits(1.0)
+	`define INIT_CAM_X $shortrealtobits(1.125)
+	`define INIT_CAM_Y $shortrealtobits(1.125)
+	`define INIT_CAM_Z $shortrealtobits(-1.25)
 
 `endif
 
@@ -125,8 +125,8 @@
 ////////////////////// Defines for VGA //////////////////////
 
 `ifndef SYNTH // use a very low resolution in simulation
-  `define NUM_ROWS 50
-  `define NUM_COLS 50
+  `define NUM_ROWS 20
+  `define NUM_COLS 20
 `else 
 	`define NUM_ROWS  480
 	`define NUM_COLS  640
