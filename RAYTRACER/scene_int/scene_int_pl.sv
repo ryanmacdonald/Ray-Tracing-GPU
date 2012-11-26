@@ -102,6 +102,8 @@ module scene_int_pl(input shader_to_sint_t ray,
 	logic agb_cmp9;
 	float_t dataa_cmp10, datab_cmp10;
 	logic agb_cmp10;
+	float_t dataa_cmp11, datab_cmp11;
+	logic agb_cmp11;
 
 
 	assign d_r1 = signbuf_out ? result_div2 : result_div1;
@@ -194,8 +196,12 @@ module scene_int_pl(input shader_to_sint_t ray,
 	altfp_compare cmp10(.aclr(rst),.clock(clk),.dataa(dataa_cmp10),.datab(datab_cmp10),.agb(agb_cmp10),.aeb());
   // tmax > 1.0
 
+	assign dataa_cmp11 = `EPSILON;
+	assign datab_cmp11 = d_r10;
+	altfp_compare cmp11(.aclr(rst),.clock(clk),.dataa(dataa_cmp11),.datab(datab_cmp11),.agb(agb_cmp11),.aeb());
+	// EPSILON > tmax?
 
-	assign miss = q_r9;
+	assign miss = q_r9 || agb_cmp11;
 
 	assign tmin_scene = agb_cmp9 ? q_r8 : `EPSILON;
 

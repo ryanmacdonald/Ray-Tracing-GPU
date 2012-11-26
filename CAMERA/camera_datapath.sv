@@ -3,23 +3,24 @@
 
 
 
-`define UNEG 3'b001
-`define UPOS 3'b000
+`define UNEG 4'b0001
+`define UPOS 4'b0000
 
-`define VNEG 3'b011
-`define VPOS 3'b010
+`define VNEG 4'b0011
+`define VPOS 4'b0010
 
-`define WNEG 3'b101
-`define WPOS 3'b100
+`define WNEG 4'b0101
+`define WPOS 4'b0100
 
 
 module camera_datapath (input logic clk, rst,
 			input logic v0, v1, v2,
 			input logic ld_curr_camera,
 			input logic render_frame,
-			input logic[2:0] key,
+			input logic[3:0] key,
 			input logic[31:0] cnt,
-			output vector_t E, U, V, W);
+			input vector_t  U, V, W,
+			output vector_t E);
 
 `ifndef SYNTH
 	shortreal nc_x,nc_y,nc_z;
@@ -33,7 +34,8 @@ module camera_datapath (input logic clk, rst,
 	logic[31:0] shift, move_val, move_val_n;
 	//logic[2:0] last_key;
 	logic update_cam;
-	vector_t E_n,U_n,V_n,W_n;
+
+	vector_t E_n;
 	vector_t nextCam,nextCam_n;
 
 	
@@ -99,9 +101,9 @@ module camera_datapath (input logic clk, rst,
 
 	always_comb begin
 		// Don't change these -> we aren't thinking about rotation yet		
-		U_n = U;
-		V_n = V;
-		W_n = W;
+		//U_n = U;
+		//V_n = V;
+		//W_n = W;
 		E_n = E;
 		nextCam_n = nextCam;
 		move_val_n = move_val;	
@@ -138,17 +140,13 @@ module camera_datapath (input logic clk, rst,
 	always_ff @(posedge clk, posedge rst) begin
 		if(rst) begin
 			E <= {`INIT_CAM_X,`INIT_CAM_Y,`INIT_CAM_Z};
-			U <= {`FP_1,`FP_0,`FP_0};
-			V <= {`FP_0,`FP_1,`FP_0};
-			W <= {`FP_0,`FP_0,`FP_1};
+
 			nextCam <= {`FP_0,`FP_0,`FP_0};	
 		end
 		else begin
 			if(update_cam) E <= nextCam_n;
 			else E <= E_n;
-			U <= U_n;
-			V <= V_n;
-			W <= W_n;
+
 			nextCam <= nextCam_n;
 		end
 	end

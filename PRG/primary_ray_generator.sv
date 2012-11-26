@@ -59,8 +59,7 @@ module prg(input logic clk, rst,
 	assign pixelID_n = (pixelID == `num_rays-1) ? 'h0 : pixelID + 1;
 
 	assign nextX = (x == `VGA_NUM_COLS-1) ? 0 : x + 1;
-	assign nextY = (x == `VGA_NUM_COLS-1) ? y - 1 : y;
-
+	// nextY assigned in always_comb
 
 	assign rb_we = ds_valid;
 	assign rb_re = ~rb_empty && ~prg_to_shader_stall;
@@ -71,6 +70,7 @@ module prg(input logic clk, rst,
 
 
 	always_comb begin
+		nextY = (x == `VGA_NUM_COLS-1) ? y - 1 : y;
 		case(state)
 			IDLE:begin
 				if(start) nextState = ACTIVE;
@@ -78,6 +78,9 @@ module prg(input logic clk, rst,
 			end
 			ACTIVE:begin
 				nextState = ((pixelID == `num_rays-1) & x_y_valid) ? IDLE : ACTIVE;
+				if(nextState == IDLE) begin
+					nextY = `VGA_NUM_ROWS-1;
+				end
 			end
 		endcase
 	end

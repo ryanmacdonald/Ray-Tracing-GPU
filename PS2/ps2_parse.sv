@@ -105,6 +105,13 @@ module ps2_parse(clk, rst_b, ps2_pkt_DH, rec_ps2_pkt, keys);
         9'h01C : keys_i.a = {F0_seen,~F0_seen};
         9'h01B : keys_i.s = {F0_seen,~F0_seen};
         9'h023 : keys_i.d = {F0_seen,~F0_seen};
+
+	9'h03C : keys_i.u = {F0_seen,~F0_seen};
+	9'h03B : keys_i.j = {F0_seen,~F0_seen};
+	9'h043 : keys_i.i = {F0_seen,~F0_seen};
+	9'h042 : keys_i.k = {F0_seen,~F0_seen};
+	9'h044 : keys_i.o = {F0_seen,~F0_seen};
+	9'h04B : keys_i.l = {F0_seen,~F0_seen};
         default : ;
       endcase
     end

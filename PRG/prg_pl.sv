@@ -164,17 +164,23 @@ module prg_pl(input logic clk, rst,
 
 
 	always_ff @(posedge clk, posedge rst) begin
-			if(v0) begin
-				prayD.y <= add_3_result;
-				wD.y    <= mult_4_result;
+			if(rst) begin
+				prayD <= 'h0;
+				wD <= 'h0;
 			end
-			else if(v1) begin
-				prayD.z <= add_3_result;
-				wD.z    <= mult_4_result;
-			end
-			else if(v2) begin
-				prayD.x <= add_3_result;
-				wD.x    <= mult_4_result;
+			else begin
+				if(v0) begin
+					prayD.y <= add_3_result;
+					wD.y    <= mult_4_result;
+				end
+				else if(v1) begin
+					prayD.z <= add_3_result;
+					wD.z    <= mult_4_result;
+				end
+				else if(v2) begin
+					prayD.x <= add_3_result;
+					wD.x    <= mult_4_result;
+				end
 			end
 	end
 
