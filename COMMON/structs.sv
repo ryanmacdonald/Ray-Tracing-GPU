@@ -1,6 +1,9 @@
 `default_nettype none
 // uncomment the following line when synthesizing to board
 //`define SYNTH
+// comment the following when doing anything except the sint demo
+//`define SINT_DEMO
+
 `ifndef FUCKING_STRUCTS
 `define FUCKING_STRUCTS
 
@@ -40,11 +43,15 @@ typedef struct packed {
   logic [15:0] ID;
 } triID_t;
 
-
+`ifndef SINT_DEMO
 typedef struct packed {
   logic [8:0] ID;
 } rayID_t;
-
+`else
+typedef struct packed {
+  logic[18:0] ID;
+} rayID_t;
+`endif
 
 typedef struct packed {
   logic is_shadow;
@@ -200,6 +207,12 @@ typedef struct packed {
     nodeID = 0;
     restnode_search = 1;
 */
+
+typedef struct packed{
+	logic isShadow;
+	rayID_t rayID;
+} sint_pvs_entry_t;
+
 
 typedef struct packed{
   rayID_t rayID;
