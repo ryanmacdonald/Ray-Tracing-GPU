@@ -125,8 +125,8 @@
 ////////////////////// Defines for VGA //////////////////////
 
 `ifndef SYNTH // use a very low resolution in simulation
-  `define NUM_ROWS 50
-  `define NUM_COLS 50
+  `define NUM_ROWS 10
+  `define NUM_COLS 10
 `else 
 	`define NUM_ROWS  480
 	`define NUM_COLS  640

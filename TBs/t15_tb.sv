@@ -238,16 +238,18 @@ assign or_valids = t15.rp.prg_to_shader_valid |
 			@(posedge clk);
     $display("FUCK YEAH RENDER DONE");
     good = $time - t;
-    $display("length of render = %t, num cycles = %d",good,good/20);
+    $display("length of render = %t, num cycles = %d",good,good/`CLOCK_PERIOD);
     $finish;
     end
 
 
     initial begin
-		  #(100 * 1ms);
+	  while(~t15.render_frame)
+	  	@(posedge clk);
+	  #(1ms);
       bad = $time - t;
       $display("AWWWWWW YOU SUCK IT TIMED OUT");
-      $display("length of render = %t, num cycles = %d",bad,bad/20);
+      $display("length of render = %t, num cycles = %d",bad,bad/`CLOCK_PERIOD);
       $finish;
     end
 
