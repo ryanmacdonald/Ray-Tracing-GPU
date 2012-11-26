@@ -176,17 +176,19 @@ module t15_tb;
         end
         send_EOT(); */
 
-		$monitor("sl_block_num: %d data: %h valid_msg: %b",t15.sl_block_num,t15.xmodem_data_byte, t15.xmodem_saw_valid_msg_byte);
+		//$monitor("sl_block_num: %d data: %h valid_msg: %b",t15.sl_block_num,t15.xmodem_data_byte, t15.xmodem_saw_valid_msg_byte);
 
        	@(posedge clk);
        		#1;
         for(k=0; k<r; k++) begin
-			force t15.xmodem_data_byte = file_contents[k];
+			  if(k%128 == 0) $display("sending Block %d",k/128);
+      force t15.xmodem_data_byte = file_contents[k];
 			force t15.xmodem_saw_valid_msg_byte = 1'b1;
 			force t15.sl_block_num = byte_cnt / 128;
 			force t15.xmodem_saw_valid_block = (byte_cnt % 128 == 0);
 			byte_cnt++;
-        	@(posedge clk);
+        	@(posedge clk); #1 ;force t15.xmodem_saw_valid_msg_byte = 1'b0;
+          repeat(15) @(posedge clk);
        		#1;
 		end
     	force t15.xmodem_done = 1'b1;
