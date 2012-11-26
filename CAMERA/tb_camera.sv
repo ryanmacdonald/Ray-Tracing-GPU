@@ -47,8 +47,61 @@ module tb_camera;
 			key_release_ctrl_w(500);
 		join
 
+		// Hit the O key
+		@(posedge clk);
+		keys.o[0] <= 1;
+		keys.pressed <= 1;	
+		@(posedge clk);
+		keys.o[0] <= 0;
+		keys.pressed <= 0;
+		@(posedge clk);
+		fork 
+			render_done_ctrl(200);
+			render_done_ctrl(300);
+			key_release_ctrl_o(500);
+		join
 
+		// Hit the O key
+		@(posedge clk);
+		keys.o[0] <= 1;
+		keys.pressed <= 1;	
+		@(posedge clk);
+		keys.o[0] <= 0;
+		keys.pressed <= 0;
+		@(posedge clk);
+		fork 
+			render_done_ctrl(200);
+			render_done_ctrl(300);
+			key_release_ctrl_o(500);
+		join
 
+		// Hit the L key
+		@(posedge clk);
+		keys.l[0] <= 1;
+		keys.pressed <= 1;	
+		@(posedge clk);
+		keys.l[0] <= 0;
+		keys.pressed <= 0;
+		@(posedge clk);
+		fork 
+			render_done_ctrl(200);
+			render_done_ctrl(300);
+			key_release_ctrl_l(500);
+		join
+
+		// Hit the I key
+		@(posedge clk);
+		keys.i[0] <= 1;
+		keys.pressed <= 1;	
+		@(posedge clk);
+		keys.i[0] <= 0;
+		keys.pressed <= 0;
+		@(posedge clk);
+		fork 
+			render_done_ctrl(200);
+			render_done_ctrl(300);
+			key_release_ctrl_i(500);
+		join
 		//render_done_ctrl(50);
 		//render_done_ctrl(50);
 
@@ -114,5 +167,56 @@ module tb_camera;
 
 
 	endtask
+
+
+	task key_release_ctrl_l(int cycles);
+
+
+		repeat(cycles) @(posedge clk);
+
+		keys.l[1] <= 1;
+		keys.released <= 1;
+
+		@(posedge clk);
+
+		keys.l[1] <= 0;
+		keys.released <= 0;		
+
+
+	endtask
+
+	task key_release_ctrl_o(int cycles);
+
+
+		repeat(cycles) @(posedge clk);
+
+		keys.o[1] <= 1;
+		keys.released <= 1;
+
+		@(posedge clk);
+
+		keys.o[1] <= 0;
+		keys.released <= 0;		
+
+
+	endtask
+
+
+	task key_release_ctrl_i(int cycles);
+
+
+		repeat(cycles) @(posedge clk);
+
+		keys.i[1] <= 1;
+		keys.released <= 1;
+
+		@(posedge clk);
+
+		keys.i[1] <= 0;
+		keys.released <= 0;		
+
+
+	endtask
+
 
 endmodule: tb_camera

@@ -1,17 +1,4 @@
 
-
-
-module camera_controller(
-  input clk, rst,
-  input v0, v1, v2,
-
-  input keys_t keys, // Keys packet from PS/2 
-  
-  input rendering_done,
-  output logic render_frame,
-  output vector_t E, U, V, W
-
-  );
   // left right U
   // left = key_d   0
   // right = key_a  1
@@ -24,28 +11,66 @@ module camera_controller(
   // in = W_key     4
   // out = S_key    5
 
+module camera_controller(
+  input clk, rst,
+  input v0, v1, v2,
 
-  `ifndef SYNTH
-  shortreal Ex,Ey,Ez;
-  assign Ex = $bitstoshortreal(E.x);
-  assign Ey = $bitstoshortreal(E.y);
-  assign Ez = $bitstoshortreal(E.z);
-  `endif
+  input keys_t keys, // Keys packet from PS/2 
+  
+  input rendering_done,
+  output logic render_frame,
+  output vector_t E, U, V, W
+
+  );
+
+
+
+	`ifndef SYNTH
+		shortreal Ex,Ey,Ez;
+		shortreal Ux,Uy,Uz;
+		shortreal Vx,Vy,Vz;
+		shortreal Wx,Wy,Wz;
+		assign Ex = $bitstoshortreal(E.x);
+		assign Ey = $bitstoshortreal(E.y);
+		assign Ez = $bitstoshortreal(E.z);
+		assign Ux = $bitstoshortreal(U.x);
+		assign Uy = $bitstoshortreal(U.y);
+		assign Uz = $bitstoshortreal(U.z);
+		assign Vx = $bitstoshortreal(V.x);
+		assign Vy = $bitstoshortreal(V.y);
+		assign Vz = $bitstoshortreal(V.z);
+		assign Wx = $bitstoshortreal(W.x);
+		assign Wy = $bitstoshortreal(W.y);
+		assign Wz = $bitstoshortreal(W.z);	
+	`endif
+
+
+	logic cr_valid;
+	logic valid_rot;
+	vector_t U_n, V_n, W_n;
+
 	logic ld_curr_camera;
-	logic valid_key_press, valid_key_release;
+	logic valid_key_press, valid_key_release, valid_rot_key_press;
 
-	assign valid_key_press = (|{keys.d[0],keys.a[0],keys.e[0],keys.q[0],keys.w[0],keys.s[0]});
-  	assign valid_key_release = (|{keys.d[1],keys.a[1],keys.e[1],keys.q[1],keys.w[1],keys.s[1]});
+	assign valid_key_press = (|{keys.d[0],keys.a[0],keys.e[0],keys.q[0],keys.w[0],keys.s[0],
+				    keys.l[0],keys.j[0],keys.o[0],keys.u[0],keys.i[0],keys.k[0]});
+  	assign valid_key_release = (|{keys.d[1],keys.a[1],keys.e[1],keys.q[1],keys.w[1],keys.s[1],
+				      keys.l[1],keys.j[1],keys.o[1],keys.u[1],keys.i[1],keys.k[1]});
+
+	assign valid_rot_key_press =  |{keys.l[0],keys.j[0],keys.o[0],keys.u[0],keys.i[0],keys.k[0]};
+	//assign valid_rot_key_release =  |{keys.l[1],keys.j[1],keys.o[1],keys.u[1],keys.i[1],keys.k[1]};
 
 	logic rendering, rendering_n;
 	assign rendering_n = valid_key_release ? 1'b0 :
 			     ((valid_key_press || rendering) ? 1'b1 : 1'b0);
 	ff_ar #(1,0) rd(.q(rendering),.d(rendering_n),.clk,.rst);
 
-	logic[2:0] last_key, last_key_n;
-	ff_ar #(3,0) kr(.q(last_key),.d(last_key_n),.clk,.rst);
+	logic[3:0] last_key, last_key_n;
+	ff_ar #(4,0) kr(.q(last_key),.d(last_key_n),.clk,.rst);
 
-	enum logic {IDLE, RENDERING} state, nextState;
+	logic rot_en;
+
+	enum logic [1:0] {IDLE, ROTATING, RENDERING} state, nextState;
 
 	logic[31:0] cnt, cnt_n;
 	logic cnt_cl;
@@ -55,34 +80,58 @@ module camera_controller(
 	always_comb begin
 		last_key_n = last_key;
 		if(valid_key_press) begin
-			case({keys.d[0],keys.a[0],keys.e[0],keys.q[0],keys.w[0],keys.s[0]})
-				6'b10_00_00: last_key_n = 3'h0;
-				6'b01_00_00: last_key_n = 3'h1;
-				6'b00_10_00: last_key_n = 3'h2;
-				6'b00_01_00: last_key_n = 3'h3;
-				6'b00_00_10: last_key_n = 3'h4;
-				6'b00_00_01: last_key_n = 3'h5;
-				default: last_key_n = 3'h6;
+			case({keys.d[0],keys.a[0],keys.e[0],keys.q[0],keys.w[0],keys.s[0],
+			      keys.l[0],keys.j[0],keys.o[0],keys.u[0],keys.i[0],keys.k[0]})
+				12'b10_00_00_00_00_00: last_key_n = 4'd0;
+				12'b01_00_00_00_00_00: last_key_n = 4'd1;
+				12'b00_10_00_00_00_00: last_key_n = 4'd2;
+				12'b00_01_00_00_00_00: last_key_n = 4'd3;
+				12'b00_00_10_00_00_00: last_key_n = 4'd4;
+				12'b00_00_01_00_00_00: last_key_n = 4'd5;
+				12'b00_00_00_10_00_00: last_key_n = 4'd6;
+				12'b00_00_00_01_00_00: last_key_n = 4'd7;
+				12'b00_00_00_00_10_00: last_key_n = 4'd8;
+				12'b00_00_00_00_01_00: last_key_n = 4'd9;
+				12'b00_00_00_00_00_10: last_key_n = 4'd10;
+				12'b00_00_00_00_00_01: last_key_n = 4'd11;
+				default: last_key_n = 4'd12;
 			endcase
 		end
-		else if(valid_key_release) begin
-			last_key_n = 3'h6;
-		end
+		/*else if(valid_key_release) begin
+			last_key_n = 4'd12;
+		end*/
 	end
 
 
+	logic vr_q, vr_d;
+	assign vr_d = vr_q ? 1'b0 : 1'b1;
+	ff_ar_en #(1,0) vr(.q(vr_q),.d(vr_d),.en(rot_en),.clk,.rst);
+	
+	
+	// Determines if a rotation is valid
+	assign valid_rot = ~vr_q ||
+			   (last_key == last_key_n || last_key == last_key_n+1);
 
-	// Assumes that a key press will never be shorter than a render
+	// TODO: Assumes that a key press will never be shorter than a render
+	//	 Might need to change this for more complicated scenes
 	always_comb begin
-		cnt_cl = 0; ld_curr_camera = 0; render_frame = 0; 
+		rot_en = 0; cnt_cl = 0; ld_curr_camera = 0; render_frame = 0; 
 		case(state)
 			IDLE:begin
-				if(valid_key_press && ~rendering) begin
+				if(valid_rot_key_press && ~rendering && valid_rot) begin
+					render_frame = 1;
+					nextState = ROTATING;
+				end
+				else if(valid_key_press && ~rendering) begin
 					ld_curr_camera = 1;
 					render_frame = 1;	
 					nextState = RENDERING;
 				end
 				else nextState = IDLE;
+			end
+			ROTATING:begin
+				rot_en = 1;
+				nextState = IDLE;	
 			end
 			RENDERING:begin
 				if(valid_key_release) begin
@@ -105,134 +154,30 @@ module camera_controller(
 	always_ff @(posedge clk, posedge rst) begin
 		if(rst) state <= IDLE;
 		else state <= nextState;
+	end	
+
+	always_ff @(posedge clk, posedge rst) begin
+		if(rst) begin	
+			U <= {`FP_1,`FP_0,`FP_0};
+			V <= {`FP_0,`FP_1,`FP_0};
+			W <= {`FP_0,`FP_0,`FP_1};
+		end
+		else begin
+			if(rot_en) begin
+				U <= U_n;
+				V <= V_n;
+				W <= W_n;
+			end
+		end
 	end
-		
+
+	camera_rotator  cr(.key(last_key),
+			   .valid(cr_valid),
+			   .U,.V,.W,
+			   .U_n,.V_n,.W_n);
 
 	camera_datapath cd(.clk,.rst,.v0,.v1,.v2,.ld_curr_camera,.render_frame,
 			   .key(last_key),.cnt,.E,.U,.V,.W);
 
-
- /* 
-
-
-  logic[1:0] CS0, NS0;
-
-  logic rendering, rendering_n;
-  logic valid_key_press, valid_key_release;
-  logic pressed, released, ld_key_val;
-  logic[2:0] key_val_n, key_val; 
-  
-  assign rendering_n = rendering_done ? 1'b0 : (render_frame ? 1'b1 : rendering);
-  assign pressed = (CS0 == 2'b01);
-  assign released = ~pressed;
-
-  ff_ar #(1,'h0) ffrend(.q(rendering), .d(rendering_n), .clk, .rst);
-
-
-  always_comb begin
-    ld_key_val = 1'b0;
-    case(CS0)
-      2'b00 : begin
-        NS0 = valid_key_press ? 2'b01 : 2'b00 ;
-        ld_key_val = valid_key_press ;
-      end
-      2'b01 : begin
-        NS0 = valid_key_release ? 2'b10 : 2'b01 ;
-      end
-      2'b10 : begin
-        NS0 = rendering ? 2'b10 : 2'b00 ;
-      end
-      default: NS0 = 2'b00;
-    endcase
-  end
-
-  ff_ar #(2,2'b00) ff(.q(CS0), .d(NS0), .clk, .rst);
-
-  always_comb begin
-    key_val_n = 'h0;
-    if(ld_key_val) begin
-      case({keys.d[0],keys.a[0],keys.e[0],keys.q[0],keys.w[0],keys.s[0]})
-        6'b10_00_00 : key_val_n = 'h0;
-        6'b01_00_00 : key_val_n = 'h1;
-        6'b00_10_00 : key_val_n = 'h2;
-        6'b00_01_00 : key_val_n = 'h3;
-        6'b00_00_10 : key_val_n = 'h4;
-        6'b00_00_01 : key_val_n = 'h5;
-      endcase
-    end 
-  end
-  
-  ff_ar #(3,'h0) ff0(.q(key_val), .d(key_val_n), .clk, .rst);
-
-  
-  logic [31:0] mv_cnt, mv_cnt_n;
-  logic stop_cnt, start_cnt0, start_cnt25, clr_cnt;
-  logic is_counting, is_counting_n;
-
-  assign is_counting_n = stop_cnt ? 1'b0 : (start_cnt0 | start_cnt25 ? 1'b1 : is_counting);
-  
-  ff_ar #(1,1'b0) ff1(.q(is_counting), .d(is_counting_n), .clk, .rst);
-  
-  // TODO might be sketchy, check this shit
-  always_comb begin
-    mv_cnt_n = mv_cnt ;
-    case({clr_cnt|start_cnt0,start_cnt25,stop_cnt,v2&is_counting})
-      4'b1??? : mv_cnt_n = 'h0;
-      4'b01?? : mv_cnt_n = 'd25;
-      4'b001? : mv_cnt_n = mv_cnt ;
-      4'b0001 : mv_cnt_n = mv_cnt + 3'h3 ;
-    endcase
-  end
-
-	assign mv_cnt_n = clr_cnt|start_cnt0 ? 'h0 :
-		( start_cnt25 ? 'd25 :
-		( stop_cnt ? mv_cnt :
-		( v2 & is_counting ? mv_cnt+3'h3 : mv_cnt ) ) );
-
-  ff_ar #(32,'h0) ff2(.q(mv_cnt), .d(mv_cnt_n), .clk, .rst);
-
-  logic [1:0] CS1, NS1 ;
-  
-  always_comb begin
-    clr_cnt = 1'b0;
-    start_cnt0 = 1'b0;
-    start_cnt25 = 1'b0;
-    clr_cnt = 1'b0;
-    render_frame = 1'b0;
-    stop_cnt = 1'b0;
-    case(CS1)
-      2'b00 : begin
-        NS1 = pressed ? 2'b01 : 2'b00 ;
-        start_cnt0 = pressed;
-        render_frame = pressed & ~rendering;
-      end
-      2'b01 : begin
-        NS1 = released ? 2'b10 : 2'b01 ;
-        stop_cnt = released ;
-        render_frame = pressed & ~rendering;
-        start_cnt25 = pressed & ~rendering;
-      end
-      2'b10 : begin
-        NS1 = rendering ? 2'b10 : 2'b11 ;
-        render_frame = ~rendering ;
-      end
-      2'b11 : begin
-        NS1 = pressed ? 2'b01 : (rendering ? 2'b11 : 2'b00 ) ;
-        start_cnt0 = pressed;
-	clr_cnt = ~pressed & ~rendering;
-        render_frame = pressed & ~rendering;
-      end
-    endcase
-  end
-  
-  ff_ar #(2,2'b00) ff3(.q(CS1), .d(NS1), .clk, .rst);
-
-
-	camera_datapath cd(.clk(clk),.rst(rst),.v0,.v1,.v2,.ld_curr_camera(render_frame),
-			   .key(key_val),.cnt(mv_cnt),.E(E),.U(U),.V(V),.W(W));
-
-	
-
-*/
 
 endmodule
