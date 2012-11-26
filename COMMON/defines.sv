@@ -7,9 +7,12 @@
 	`define DC 'hx
 `endif
 
-`define FP_2 32'h4000_0000
-`define FP_1 32'h3F80_0000
-`define FP_0 32'h0
+`define FP_R2	 	 32'h3F35_04F3
+`define FP_NR2 		 32'hBF35_04F3
+`define FP_2		 32'h4000_0000
+`define FP_1		 32'h3F80_0000
+`define FP_N1		 32'hBF80_0000
+`define FP_0		 32'h0
 
 // Defs for camera initialization
 `ifdef SYNTH

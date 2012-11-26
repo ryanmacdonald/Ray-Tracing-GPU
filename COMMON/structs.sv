@@ -150,6 +150,12 @@ typedef struct packed {
   logic [1:0] a;
   logic [1:0] s;
   logic [1:0] d;
+  logic [1:0] u;
+  logic [1:0] j;
+  logic [1:0] i;
+  logic [1:0] k;
+  logic [1:0] o;
+  logic [1:0] l;
   logic pressed;
   logic released;
 } keys_t;
