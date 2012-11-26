@@ -3,7 +3,7 @@
 `define CLOCK_PERIOD 20
 
 `define MAX_PIXEL_IDS        `num_rays
-`define MAX_SCENE_FILE_BYTES 20000
+`define MAX_SCENE_FILE_BYTES 37000
 
 module t15_tb;
 
@@ -179,6 +179,19 @@ assign or_valids = t15.rp.prg_to_shader_valid |
 
     logic [7:0] file_contents [`MAX_SCENE_FILE_BYTES];
 
+  // valid block checker code
+  int num_valid_blocks;
+  initial begin
+    num_valid_blocks = 0;
+    forever begin
+      @(posedge clk);
+      if(t15.xm.saw_valid_block) begin
+        num_valid_blocks++;
+        $display("seen %d valid blocks",num_valid_blocks);
+      end
+    end
+  end
+
 	// used by screen dump
     int row, col;
 	integer file;
@@ -203,15 +216,16 @@ assign or_valids = t15.rp.prg_to_shader_valid |
         btns[0] <= 1'b1;
         //$value$plusargs("SCENE=%s",sf);
         //kdfp = $fopen(sf, "rb");
-        kdfp = $fopen("SCENES/t2s1.bin","rb");
+        kdfp = $fopen("SCENES/t4s3.scene","rb");
         r = $fread(file_contents,kdfp);
 		$fclose(kdfp);
 
 		// TODO: right now the sample scene is just one block. make this based on r later.
-        for(j=0; j<128; j++)
-            message[j] = file_contents[j];
-		send_block(message, 1, 0);
-
+    for(int k=1; k<(r/128)+2; k++) begin    
+       for(j=0; j<128; j++)
+            message[j] = file_contents[j+(k-1)*128];
+		  send_block(message, k, 0);
+    end
 		send_EOT();
 
 		@(posedge clk);

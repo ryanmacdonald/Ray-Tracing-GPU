@@ -1,4 +1,5 @@
 // OBVIOUSLY THIS FILE IS NOT NEAR COMPLETE
+/*
 module color_convert(
 	input logic clk, rst,
 	input vector_t color_in,
@@ -18,3 +19,4 @@ module color_convert(
 	assign color_out = (less_than_0) 
 
 endmodule
+*/
