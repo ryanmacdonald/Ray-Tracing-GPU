@@ -30,6 +30,7 @@ module shifter2 #(parameter W=8, RV={W{1'b0}}) (
     output logic q,
     input logic clk, rst);
 
+	logic en_ff;
     logic [W-1:0] shifted_bits, d_bits;
     assign q = d_bits[W-1];
 	  assign shifted_bits = ld ? d : {d_bits[W-2:0],1'b0} ;
