@@ -154,7 +154,7 @@ module t15_tb;
         btns[0] <= 1'b1;
         //$value$plusargs("SCENE=%s",sf);
         //kdfp = $fopen(sf, "rb");
-        kdfp = $fopen("SCENES/t2s1.scene","rb");
+        kdfp = $fopen("SCENES/t4s3.scene","rb");
         r = $fread(file_contents,kdfp);
         $fclose(kdfp);
 

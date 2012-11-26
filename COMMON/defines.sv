@@ -122,8 +122,8 @@
 ////////////////////// Defines for VGA //////////////////////
 
 `ifndef SYNTH // use a very low resolution in simulation
-  `define NUM_ROWS 10
-  `define NUM_COLS 10
+  `define NUM_ROWS 30
+  `define NUM_COLS 30
 `else 
 	`define NUM_ROWS  480
 	`define NUM_COLS  640
@@ -172,7 +172,7 @@
 `define MISS_COLOR 24'hff_ff_ff
 `define TRI_0_COLOR 24'haa_aa_aa
 `define TRI_2_COLOR 24'h08_cc_08
-`define TRI_1_COLOR 24'h0b_0b_dd
+`define TRI_1_COLOR 24'hf8_f8_02
 `define TRI_3_COLOR 24'hff_01_01
 
 `endif
