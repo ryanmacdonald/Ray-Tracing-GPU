@@ -28,8 +28,8 @@ module ryan_demo(
     inout PS2_DAT,
 
     // test input to start prg automatically (no ps2 input required)
-    input keys_t keys,
-    input logic start_prg,
+    //input keys_t keys,
+    //input logic start_prg,
      
     input logic clk);
 
@@ -50,7 +50,7 @@ module ryan_demo(
 
 	frame_buffer_handler fbh(.pb_data(pb_data_out),.*);
 
-	//keys_t keys;
+	keys_t keys;
 	logic rendering_done, render_frame;
 
 	
@@ -83,10 +83,9 @@ module ryan_demo(
 				.ce(clk_en),.de(data_en),.shift_reg(shift_data),
 				.pkt_rec(pkt_rec),.cnt11());
 
-	/*ps2_parse	  parse(.clk,.rst_b(~rst),
+	ps2_parse	  parse(.clk,.rst_b(~rst),
 				.ps2_pkt_DH(shift_data[30:23]),
-				.rec_ps2_pkt(pkt_rec),.keys(keys));*/
-
+				.rec_ps2_pkt(pkt_rec),.keys(keys));
 	logic[31:0] pw;
 	`ifdef SYNTH
 		assign pw = 32'h3C4CCCCD;
@@ -164,7 +163,7 @@ module ryan_demo(
 				.pb_full,
 				.pb_we);*/
 
-	fifo #(.WIDTH($bits(pixel_buffer_entry_t)),.DEPTH(200)) 
+	fifo #(.WIDTH($bits(pixel_buffer_entry_t)),.DEPTH(20)) 
 			  pb(.clk,.rst,.data_in(pb_data_in),
 			     .we(pb_we&&~pb_full),.re(pb_re),.full(pb_full),
 			     .empty(pb_empty),.data_out(pb_data_out),
