@@ -163,8 +163,37 @@ module raypipe (
 	rs_to_pcalc_t pcalc_to_shader_data ;
 	logic pcalc_to_shader_stall ;
 
- 
+	// TODO: put these in the appropriate places
+	// raystore
+    trav_to_rs_t   rs_to_trav0_sb_data;
+    ray_vec_t      rs_to_trav0_rd_data;
 
+    icache_to_rs_t rs_to_int_sb_data;
+    ray_vec_t      rs_to_int_rd_data;
+
+    list_to_rs_t   rs_to_pcalc_sb_data;
+    ray_vec_t      rs_to_pcalc_rd_data;
+
+	assign rs_to_trav0_data.ray_info        = rs_to_trav0_sb_data.ray_info;
+    assign rs_to_trav0_data.nodeID          = rs_to_trav0_sb_data.nodeID;
+    assign rs_to_trav0_data.node            = rs_to_trav0_sb_data.node;
+    assign rs_to_trav0_data.restnode_search = rs_to_trav0_sb_data.restnode_search;
+    assign rs_to_trav0_data.t_max           = rs_to_trav0_sb_data.t_max;
+    assign rs_to_trav0_data.t_min           = rs_to_trav0_sb_data.t_min;
+	assign rs_to_trav0_data.origin          = (rs_to_trav0_sb_data.node.node_type==2'b00) ? rs_to_trav0_rd_data.origin.x : ((rs_to_trav0_sb_data.node.node_type==2'b01) ? rs_to_trav0_rd_data.origin.y : rs_to_trav0_rd_data.origin.z);
+	assign rs_to_trav0_data.dir             = (rs_to_trav0_sb_data.node.node_type==2'b00) ? rs_to_trav0_rd_data.dir.x    : ((rs_to_trav0_sb_data.node.node_type==2'b01) ? rs_to_trav0_rd_data.dir.y    : rs_to_trav0_rd_data.dir.z);
+
+	assign rs_to_int_data.ray_info      = rs_to_int_sb_data.ray_info;
+	assign rs_to_int_data.ln_tri        = rs_to_int_sb_data.ln_tri;
+	assign rs_to_int_data.triID         = rs_to_int_sb_data.triID;
+	assign rs_to_int_data.tri_cacheline = rs_to_int_sb_data.tri_cacheline;
+	assign rs_to_int_data.ray_vec       = rs_to_int_rd_data;
+
+	assign rs_to_pcalc_data.rayID   = rs_to_pcalc_sb_data.rayID;
+	assign rs_to_pcalc_data.uv      = rs_to_pcalc_sb_data.uv;
+	assign rs_to_pcalc_data.t_int   = rs_to_pcalc_sb_data.t_int;
+	assign rs_to_pcalc_data.triID   = rs_to_pcalc_sb_data.triID;
+	assign rs_to_pcalc_data.ray_vec = rs_to_pcalc_rd_data;
 
 	//////////////////////// Cache signals ////////////////////////
 	////////// Icache//////////////
@@ -494,7 +523,7 @@ module raypipe (
 	);
 
   // raystore
-	raystore raystore_inst(
+/*	raystore raystore_inst(
 		.clk,
 		.rst,
 		.trav0_to_rs_data,
@@ -524,6 +553,57 @@ module raypipe (
 		.raystore_we,
 		.raystore_write_addr,
 		.raystore_write_data
+	); */
+
+	raystore_simple #(.SB_WIDTH($bits(trav_to_rs_t))) trav0_rs
+	(
+		.clk,
+		.rst,
+		.us_valid(trav0_to_rs_valid),
+		.us_sb_data(trav0_to_rs_data),
+		.raddr(trav0_to_rs_data.ray_info.rayID.ID),
+		.us_stall(trav0_to_rs_stall),
+		.we(raystore_we),
+		.wdata(raystore_write_data),
+		.waddr(raystore_write_addr),
+		.ds_valid(rs_to_trav0_valid),
+		.ds_sb_data(rs_to_trav0_sb_data),
+		.ds_rd_data(rs_to_trav0_rd_data),
+		.ds_stall(rs_to_trav0_stall)
+	);
+
+	raystore_simple #(.SB_WIDTH($bits(icache_to_rs_t))) icache_rs
+	(
+		.clk,
+		.rst,
+		.us_valid(icache_to_rs_valid),
+		.us_sb_data(icache_to_rs_data),
+		.raddr(icache_to_rs_data.ray_info.rayID.ID),
+		.us_stall(icache_to_rs_stall),
+		.we(raystore_we),
+		.wdata(raystore_write_data),
+		.waddr(raystore_write_addr),
+		.ds_valid(rs_to_int_valid),
+		.ds_sb_data(rs_to_int_sb_data),
+		.ds_rd_data(rs_to_int_rd_data),
+		.ds_stall(rs_to_int_stall)
+	);
+
+	raystore_simple #(.SB_WIDTH($bits(list_to_rs_t))) list_rs
+	(
+		.clk,
+		.rst,
+		.us_valid(list_to_rs_valid),
+		.us_sb_data(list_to_rs_data),
+		.raddr(list_to_rs_data.rayID.ID),
+		.us_stall(list_to_rs_stall),
+		.we(raystore_we),
+		.wdata(raystore_write_data),
+		.waddr(raystore_write_addr),
+		.ds_valid(rs_to_pcalc_valid),
+		.ds_sb_data(rs_to_pcalc_sb_data),
+		.ds_rd_data(rs_to_pcalc_rd_data),
+		.ds_stall(rs_to_pcalc_stall)
 	);
 
   // larb

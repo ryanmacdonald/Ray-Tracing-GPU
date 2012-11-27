@@ -19,6 +19,9 @@ t32:
 raystore:
 	$(CC) $(FLAGS) -top raystore_tb COMMON/*v COMMON/altfp*/*.v RAYTRACER/raystore/*v PRG/*v
 
+raystore_simple:
+	$(CC) $(FLAGS) -top raystore_simple_tb COMMON/*v COMMON/bram/*v COMMON/altfp*/*.v RAYTRACER/raystore/*v
+
 cache2:
 	$(CC) $(FLAGS) -top cache_tb2 COMMON/*v COMMON/bram/*v RAYTRACER/caches/*.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v TBs/cache_tb2.sv
 
