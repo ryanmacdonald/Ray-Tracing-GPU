@@ -520,7 +520,7 @@ module arbitor #(parameter NUM_IN=4, WIDTH = 10) (
   assign arb_fifo_we = chosen;
 
   // TODO: change to BRAM fifo
-  fifo #(.DEPTH(10), .WIDTH(WIDTH) ) arb_fifo_inst(
+  fifo #(.DEPTH(512), .WIDTH(WIDTH) ) arb_fifo_inst(
     .clk, .rst,
     .data_in(arb_fifo_in),
     .data_out(arb_fifo_out),
