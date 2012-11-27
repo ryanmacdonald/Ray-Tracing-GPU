@@ -54,6 +54,71 @@ module t15_tb;
     logic valid_and_not_stall;
     logic or_valids;
 
+    // Check the number of times we restart
+    int hash[int];
+    int cur_node;
+    int restcnt;
+    initial begin
+      restcnt = 0;
+      forever @(posedge clk) begin
+        if(t15.rp.ss_to_tarb_valid1 & !t15.rp.ss_to_tarb_stall1) begin
+          cur_node = t15.rp.ss_to_tarb_data1.nodeID;
+          restcnt += 1;
+          if(hash.exists(cur_node)) begin
+            hash[cur_node] += 1;
+          end
+          else begin
+            hash[cur_node] = 1;
+          end
+        end
+      end
+    end
+
+    int tmp_node;
+    final begin
+      $display("Total number of restarts: %d",restcnt);
+      if(hash.first(tmp_node))
+      do
+        $display("Restart node: %d  occured %d times",tmp_node,hash[tmp_node]);
+      while(hash.next(tmp_node));
+    end
+    
+  int list_to_ss_stall_cnt;
+  int trav0_to_ss_stall_cnt;
+  int sint_to_ss_stall_cnt;
+  int int_to_larb_stall_cnt;
+  int trav0_to_larb_stall_cnt;
+  int icache_to_rs_stall_cnt;
+
+  initial begin
+    list_to_ss_stall_cnt = 0;
+    trav0_to_ss_stall_cnt = 0;
+    sint_to_ss_stall_cnt = 0;
+    int_to_larb_stall_cnt = 0;
+    trav0_to_larb_stall_cnt = 0;
+    icache_to_rs_stall_cnt = 0;
+
+    forever @(posedge clk) begin
+      if(t15.rp.list_to_ss_stall) list_to_ss_stall_cnt +=1 ;
+      if(t15.rp.trav0_to_ss_stall) trav0_to_ss_stall_cnt +=1 ;
+      if(t15.rp.sint_to_ss_stall) sint_to_ss_stall_cnt +=1 ;
+      if(t15.rp.int_to_larb_stall) int_to_larb_stall_cnt +=1 ;
+      if(t15.rp.trav0_to_larb_stall) trav0_to_larb_stall_cnt +=1 ;
+      if(t15.rp.icache_to_rs_stall) icache_to_rs_stall_cnt +=1 ;
+    end
+  end
+
+  final begin
+    $display("Total number of Stalls for...");
+    $display("\tlist_to_ss = %-d",list_to_ss_stall_cnt);
+    $display("\ttrav0_to_ss = %-d",trav0_to_ss_stall_cnt);
+    $display("\tsint_to_ss = %-d",sint_to_ss_stall_cnt);
+    $display("\tint_to_larb = %-d",int_to_larb_stall_cnt);
+    $display("\ttrav0_to_larb = %-d",trav0_to_larb_stall_cnt);
+    $display("\ticache_to_rs = %-d",icache_to_rs_stall_cnt);
+  end
+
+
     monitor_module mm(.*);
 
     //////////// pixel ID checker code ////////////
@@ -165,7 +230,7 @@ module t15_tb;
         btns[0] <= 1'b1; */
         //$value$plusargs("SCENE=%s",sf);
         //kdfp = $fopen(sf, "rb");
-        kdfp = $fopen("SCENES/t4s3.scene","rb");
+        kdfp = $fopen("SCENES/bunny.scene","rb");
         r = $fread(file_contents,kdfp);
         $fclose(kdfp);
 
