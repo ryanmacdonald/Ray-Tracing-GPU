@@ -139,31 +139,63 @@ module t15_tb;
     int j, r;
     int kdfp;
 
+    int manual_addr;
+
+    int k;
+    int byte_cnt;
+
     initial begin
         switches <= 'b0;
         btns[2:0] <= 3'b111;
         rx_pin <= 1'b1;
 
+        byte_cnt = 0;
+       	force t15.xmodem_saw_invalid_block = 1'b0;
+    	force t15.xmodem_receiving_repeat_block = 1'b0;
+    	force t15.xmodem_done = 1'b0;
+		force t15.xmodem_saw_valid_msg_byte = 1'b0;
+
         @(posedge clk);
         t15.render_frame <= 1'b0;
 
         // Hit start button
-        @(posedge clk);
+/*        @(posedge clk);
         btns[0] <= 1'b0;
         repeat(100) @(posedge clk);
-        btns[0] <= 1'b1;
+        btns[0] <= 1'b1; */
         //$value$plusargs("SCENE=%s",sf);
         //kdfp = $fopen(sf, "rb");
-        kdfp = $fopen("SCENES/t2s1.scene","rb");
+        kdfp = $fopen("SCENES/t4s3.scene","rb");
         r = $fread(file_contents,kdfp);
         $fclose(kdfp);
 
-        for(int k=1; k<(r/128)+2; k++) begin    
+/*        for(int k=1; k<(r/128)+2; k++) begin
             for(j=0; j<128; j++)
                 message[j] = file_contents[j+(k-1)*128];
             send_block(message, k, 0);
         end
-        send_EOT();
+        send_EOT(); */
+
+		//$monitor("sl_block_num: %d data: %h valid_msg: %b",t15.sl_block_num,t15.xmodem_data_byte, t15.xmodem_saw_valid_msg_byte);
+
+       	@(posedge clk);
+       		#1;
+        for(k=0; k<r; k++) begin
+			  if(k%128 == 0) $display("sending Block %d",k/128);
+      force t15.xmodem_data_byte = file_contents[k];
+			force t15.xmodem_saw_valid_msg_byte = 1'b1;
+			force t15.sl_block_num = byte_cnt / 128;
+			force t15.xmodem_saw_valid_block = (byte_cnt % 128 == 0);
+			byte_cnt++;
+        	@(posedge clk); #1 ;force t15.xmodem_saw_valid_msg_byte = 1'b0;
+          repeat(15) @(posedge clk);
+       		#1;
+		end
+    	force t15.xmodem_done = 1'b1;
+		force t15.xmodem_saw_valid_msg_byte = 1'b0;
+    	@(posedge clk);
+    	#1;
+    	force t15.xmodem_done = 1'b0;
 
         @(posedge clk);
         t15.render_frame <= 1'b1;
