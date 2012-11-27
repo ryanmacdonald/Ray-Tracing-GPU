@@ -267,12 +267,15 @@ module simple_shader_unit(
   function color_t calc_color(logic is_hit, triID_t triID);
     if(~is_hit) return `MISS_COLOR;
     else begin
+      return `TRI_2_COLOR;
+      /*
       unique case(triID)
         16'h0 : return `TRI_0_COLOR;
         16'h1 : return `TRI_1_COLOR;
         16'h2 : return `TRI_2_COLOR;
         16'h3 : return `TRI_3_COLOR;
       endcase
+      */
     end
 
   endfunction
