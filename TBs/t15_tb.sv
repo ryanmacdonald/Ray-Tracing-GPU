@@ -89,7 +89,10 @@ module t15_tb;
   int int_to_larb_stall_cnt;
   int trav0_to_larb_stall_cnt;
   int icache_to_rs_stall_cnt;
-
+  
+  int rayID_cnt;
+  int shader_arb_stall_cnt;
+  
   initial begin
     list_to_ss_stall_cnt = 0;
     trav0_to_ss_stall_cnt = 0;
@@ -97,7 +100,8 @@ module t15_tb;
     int_to_larb_stall_cnt = 0;
     trav0_to_larb_stall_cnt = 0;
     icache_to_rs_stall_cnt = 0;
-
+    rayID_cnt = 0;
+    shader_arb_stall_cnt = 0;
     forever @(posedge clk) begin
       if(t15.rp.list_to_ss_stall) list_to_ss_stall_cnt +=1 ;
       if(t15.rp.trav0_to_ss_stall) trav0_to_ss_stall_cnt +=1 ;
@@ -105,6 +109,10 @@ module t15_tb;
       if(t15.rp.int_to_larb_stall) int_to_larb_stall_cnt +=1 ;
       if(t15.rp.trav0_to_larb_stall) trav0_to_larb_stall_cnt +=1 ;
       if(t15.rp.icache_to_rs_stall) icache_to_rs_stall_cnt +=1 ;
+      
+      if(t15.rp.simple_shader_unit_inst.rayID_empty & 
+         t15.rp.prg_to_shader_valid) rayID_cnt +=1 ;
+      if(t15.rp.simple_shader_unit_inst.arb_stall_ds) shader_arb_stall_cnt +=1 ;
     end
   end
 
@@ -116,8 +124,12 @@ module t15_tb;
     $display("\tint_to_larb = %-d",int_to_larb_stall_cnt);
     $display("\ttrav0_to_larb = %-d",trav0_to_larb_stall_cnt);
     $display("\ticache_to_rs = %-d",icache_to_rs_stall_cnt);
+    $display("\trayID_cnt = %-d",rayID_cnt);
+    $display("\tshader_arb_stall_cnt = %-d",shader_arb_stall_cnt);
   end
 
+  
+  
 
     monitor_module mm(.*);
 
