@@ -48,13 +48,13 @@ module tb_ryan_demo;
 		repeat(10) @(posedge clk);
 		
 		//start_prg <= 1;
-		keys.a[0] <= 1;
+		keys.i[0] <= 1;
 		keys.pressed <= 1;	
 
 		@(posedge clk);
 
 		//start_prg <= 0;
-		keys.a[0] <= 0;
+		keys.i[0] <= 0;
 		keys.pressed <= 0;
 
 		repeat(200) @(posedge clk);
@@ -65,12 +65,12 @@ module tb_ryan_demo;
 			@(posedge clk);
 		end
 
-		keys.a[1] <= 1;
+		keys.i[1] <= 1;
 		keys.released <= 1;
 
 		@(posedge clk);
 
-		keys.a[1] <= 0;
+		keys.i[1] <= 0;
 		keys.released <= 0;
 
 		repeat(200) @(posedge clk);

@@ -107,10 +107,13 @@ module camera_controller(
 	assign vr_d = vr_q ? 1'b0 : 1'b1;
 	ff_ar_en #(1,0) vr(.q(vr_q),.d(vr_d),.en(rot_en),.clk,.rst);
 	
+	logic[3:0] last_rot_key, last_rot_key_n;
+	logic rkr_en;
+	ff_ar_en #(4,0) rkr(.q(last_rot_key),.d(last_key_n),.en(rot_en),.clk,.rst);
 	
 	// Determines if a rotation is valid
 	assign valid_rot = ~vr_q ||
-			   (last_key == last_key_n || last_key == last_key_n+1);
+			   (last_rot_key[3:1] == last_key_n[3:1]);
 
 	// TODO: Assumes that a key press will never be shorter than a render
 	//	 Might need to change this for more complicated scenes
@@ -122,7 +125,7 @@ module camera_controller(
 					render_frame = 1;
 					nextState = ROTATING;
 				end
-				else if(valid_key_press && ~rendering) begin
+				else if(valid_key_press && ~valid_rot_key_press && ~rendering) begin
 					ld_curr_camera = 1;
 					render_frame = 1;	
 					nextState = RENDERING;

@@ -47,12 +47,12 @@ module tb_camera;
 			key_release_ctrl_w(500);
 		join
 
-		// Hit the O key
+		// Hit the K key
 		@(posedge clk);
-		keys.o[0] <= 1;
+		keys.k[0] <= 1;
 		keys.pressed <= 1;	
 		@(posedge clk);
-		keys.o[0] <= 0;
+		keys.k[0] <= 0;
 		keys.pressed <= 0;
 		@(posedge clk);
 		fork 
@@ -61,12 +61,12 @@ module tb_camera;
 			key_release_ctrl_o(500);
 		join
 
-		// Hit the O key
+		// Hit the K key
 		@(posedge clk);
-		keys.o[0] <= 1;
+		keys.k[0] <= 1;
 		keys.pressed <= 1;	
 		@(posedge clk);
-		keys.o[0] <= 0;
+		keys.k[0] <= 0;
 		keys.pressed <= 0;
 		@(posedge clk);
 		fork 
