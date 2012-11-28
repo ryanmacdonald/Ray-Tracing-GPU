@@ -18,7 +18,7 @@ module raystore_simple
 	input  logic                ds_stall
 );
 
-	always @(*) assert(!((raddr == waddr) && we && us_valid));
+	always @(posedge clk) assert(!((raddr == waddr) && we && us_valid));
 
 	typedef struct packed {
 		logic [SB_WIDTH-1:0] sb_data;

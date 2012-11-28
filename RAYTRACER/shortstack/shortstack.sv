@@ -684,7 +684,7 @@ endgenerate
   ss_elem_t rddataB_rest;
 
   always_comb begin
-    unique case({rest_is_reading,rest_wfifo_choice})
+    case({rest_is_reading,rest_wfifo_choice})
       4'b1_100 : begin
 				beA_rest = 6'b11_1111 ;
 				beB_rest = { {2{rest_write_fifo_out[2].nodeID_valid}}, {4{rest_write_fifo_out[2].t_max_scene_valid}} } ;
@@ -795,8 +795,25 @@ endgenerate
         wrenA_rest = 1;
         wrenB_rest = 1;
       end
+      default : begin
+        beA_rest = 'h0;
+        beB_rest = 'h0;
+        addrA_rest = `DC ;
+        addrB_rest = `DC ;
+        wrdataA_rest = `DC ;
+        wrdataB_rest = `DC ;
+        wrenA_rest = 1'b0;
+        wrenB_rest = 1'b0;
+      end
     endcase
   end
+
+  `ifndef SYNTH
+    always @(posedge clk) 
+      assert({rest_is_reading,rest_wfifo_choice} 
+      //inside(1_000,1_001,1_010, 1_100, 0_000, 0_001, 0_010, 0_100, 0_110, 0_101, 0_011);
+      inside{8,9,10, 12, 0, 1, 2, 4, 6, 5, 3 } );
+  `endif
 
   bram_dual_2port_be_512x48 rest_bram(
   //.aclr(rst),
