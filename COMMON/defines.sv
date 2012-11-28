@@ -16,13 +16,13 @@
 
 // Defs for camera initialization
 `ifdef SYNTH
-	`define INIT_CAM_X 32'h40800000
-	`define INIT_CAM_Y 32'h40400000
-	`define INIT_CAM_Z 32'hC1200000
+	`define INIT_CAM_X 32'h3f90_0000 // 40800000
+	`define INIT_CAM_Y 32'h39f0_0000 // 40400000
+	`define INIT_CAM_Z 32'hbfa0_0000 // C1200000
 `else
-	`define INIT_CAM_X $shortrealtobits(0.25) // 1.125
-	`define INIT_CAM_Y $shortrealtobits(0.0) // 1.125
-	`define INIT_CAM_Z $shortrealtobits(1.0) // -1.25
+	`define INIT_CAM_X $shortrealtobits(1.125) // 0.25
+	`define INIT_CAM_Y $shortrealtobits(1.125) // 0.0
+	`define INIT_CAM_Z $shortrealtobits(-1.25) // 1.0
 `endif
 
 
@@ -39,14 +39,14 @@
 
 // Number of primary rays for PRG
 
-`ifndef SYNTH
-	`define PW_REAL 0.25 // TODO: make this considerably smaller
-`else
-	`define PW_REAL 1.0
-`endif
+`define PW_REAL 0.25 // TODO: make this considerably smaller
 
 // Pixel width
+`ifndef SYNTH
 	`define PW $shortrealtobits(`PW_REAL)
+`else
+	`define PW 32'h3e80_0000 // 0.25
+`endif
 
 // Epsilon = 10^-20 for now?
 `define EPSILON 32'h1E3C_E508
@@ -123,8 +123,8 @@
 ////////////////////// Defines for VGA //////////////////////
 
 `ifndef SYNTH // use a very low resolution in simulation
-  `define NUM_ROWS 200
-  `define NUM_COLS 200
+  `define NUM_ROWS 100
+  `define NUM_COLS 100
 `else 
 	`define NUM_ROWS  480
 	`define NUM_COLS  640
