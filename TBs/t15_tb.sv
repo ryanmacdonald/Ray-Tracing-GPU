@@ -89,7 +89,10 @@ module t15_tb;
   int int_to_larb_stall_cnt;
   int trav0_to_larb_stall_cnt;
   int icache_to_rs_stall_cnt;
-
+  
+  int rayID_cnt;
+  int shader_arb_stall_cnt;
+  
   initial begin
     list_to_ss_stall_cnt = 0;
     trav0_to_ss_stall_cnt = 0;
@@ -97,7 +100,8 @@ module t15_tb;
     int_to_larb_stall_cnt = 0;
     trav0_to_larb_stall_cnt = 0;
     icache_to_rs_stall_cnt = 0;
-
+    rayID_cnt = 0;
+    shader_arb_stall_cnt = 0;
     forever @(posedge clk) begin
       if(t15.rp.list_to_ss_stall) list_to_ss_stall_cnt +=1 ;
       if(t15.rp.trav0_to_ss_stall) trav0_to_ss_stall_cnt +=1 ;
@@ -105,6 +109,10 @@ module t15_tb;
       if(t15.rp.int_to_larb_stall) int_to_larb_stall_cnt +=1 ;
       if(t15.rp.trav0_to_larb_stall) trav0_to_larb_stall_cnt +=1 ;
       if(t15.rp.icache_to_rs_stall) icache_to_rs_stall_cnt +=1 ;
+      
+      if(t15.rp.simple_shader_unit_inst.rayID_empty & 
+         t15.rp.prg_to_shader_valid) rayID_cnt +=1 ;
+      if(t15.rp.simple_shader_unit_inst.arb_stall_ds) shader_arb_stall_cnt +=1 ;
     end
   end
 
@@ -116,8 +124,34 @@ module t15_tb;
     $display("\tint_to_larb = %-d",int_to_larb_stall_cnt);
     $display("\ttrav0_to_larb = %-d",trav0_to_larb_stall_cnt);
     $display("\ticache_to_rs = %-d",icache_to_rs_stall_cnt);
+    $display("\trayID_cnt = %-d",rayID_cnt);
+    $display("\tshader_arb_stall_cnt = %-d",shader_arb_stall_cnt);
   end
 
+  
+    longint rayID_time[512];
+    realtime avg_time;
+    longint tot_time;
+    int cur_num_rays;
+    longint cur_clk;
+    initial begin
+      cur_clk = 0;
+      tot_time = 0;
+      cur_num_rays = -512;
+      forever @(posedge clk) begin
+        if(t15.rp.simple_shader_unit_inst.rayID_rdreq) rayID_time[t15.rp.simple_shader_unit_inst.rayID_fifo_out] = cur_clk;
+        if(t15.rp.simple_shader_unit_inst.rayID_wrreq) begin
+          tot_time += (cur_clk - rayID_time[t15.rp.simple_shader_unit_inst.rayID_fifo_in]);
+          cur_num_rays += 1;
+          if(cur_num_rays%100 == 0)
+            $display("curent average num clocks = %d for %d rays", tot_time/cur_num_rays, cur_num_rays);
+        end
+        cur_clk++;
+      end
+    end
+    final begin
+      $display("Final avg num clocks = %d for %d rays", tot_time/cur_num_rays, cur_num_rays);
+    end
 
     monitor_module mm(.*);
 
@@ -280,7 +314,7 @@ module t15_tb;
     initial begin
       while(~t15.render_frame)
           @(posedge clk);
-      #(1ms);
+      #(1s);
       bad = $time - t;
       $display("TIMED OUT");
       $display("length of render = %t, num cycles = %d",bad,bad/`CLOCK_PERIOD);

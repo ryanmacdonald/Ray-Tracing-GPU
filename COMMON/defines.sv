@@ -20,9 +20,9 @@
 	`define INIT_CAM_Y 32'h40400000
 	`define INIT_CAM_Z 32'hC1200000
 `else
-	`define INIT_CAM_X $shortrealtobits(1.125)
-	`define INIT_CAM_Y $shortrealtobits(1.125)
-	`define INIT_CAM_Z $shortrealtobits(-1.25)
+	`define INIT_CAM_X $shortrealtobits(0.25) // 1.125
+	`define INIT_CAM_Y $shortrealtobits(0.0) // 1.125
+	`define INIT_CAM_Z $shortrealtobits(1.0) // -1.25
 `endif
 
 
@@ -34,7 +34,7 @@
 
 // Number of caches and max read size for memory interface
 //`define numcaches 3 // T3DO: change back to 4 later
-`define numcaches 3 // TODO: change back to 4 later
+`define numcaches 4 // TODO: change back to 4 later
 `define maxTrans 64
 
 // Number of primary rays for PRG
@@ -123,8 +123,8 @@
 ////////////////////// Defines for VGA //////////////////////
 
 `ifndef SYNTH // use a very low resolution in simulation
-  `define NUM_ROWS 40
-  `define NUM_COLS 40
+  `define NUM_ROWS 200
+  `define NUM_COLS 200
 `else 
 	`define NUM_ROWS  480
 	`define NUM_COLS  640

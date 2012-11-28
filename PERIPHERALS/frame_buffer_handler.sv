@@ -67,6 +67,7 @@ module fbh_writer(
 
     assign sram_we_b = ~(sram_re_b & ~pb_empty);
     assign pb_re = second_write & ~sram_we_b;
+//	assign pb_re = ~pb_empty; // NOTE: this is a hack
 
     color_t pb_pixel;
     pixel_buffer_entry_t pb_PID;

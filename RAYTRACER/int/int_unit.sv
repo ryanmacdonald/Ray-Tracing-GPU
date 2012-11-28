@@ -126,7 +126,7 @@ module int_unit(
    
   
   `ifndef SYNTH
-    always @(*) assert(!((list_full|larb_full) & pipe_ds_valid));
+    always @(posedge clk) assert(!((list_full|larb_full) & pipe_ds_valid));
     initial $display("list_fifo width= %d\nlarb_fifo width=%d\n",$bits(int_to_list_t),$bits(leaf_info_t));
   `endif
 
