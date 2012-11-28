@@ -129,7 +129,29 @@ module t15_tb;
   end
 
   
-  
+    longint rayID_time[512];
+    realtime avg_time;
+    longint tot_time;
+    int cur_num_rays;
+    longint cur_clk;
+    initial begin
+      cur_clk = 0;
+      tot_time = 0;
+      cur_num_rays = -512;
+      forever @(posedge clk) begin
+        if(t15.rp.simple_shader_unit_inst.rayID_rdreq) rayID_time[t15.rp.simple_shader_unit_inst.rayID_fifo_out] = cur_clk;
+        if(t15.rp.simple_shader_unit_inst.rayID_wrreq) begin
+          tot_time += (cur_clk - rayID_time[t15.rp.simple_shader_unit_inst.rayID_fifo_in]);
+          cur_num_rays += 1;
+          if(cur_num_rays%100 == 0)
+            $display("curent average num clocks = %d for %d rays", tot_time/cur_num_rays, cur_num_rays);
+        end
+        cur_clk++;
+      end
+    end
+    final begin
+      $display("Final avg num clocks = %d for %d rays", tot_time/cur_num_rays, cur_num_rays);
+    end
 
     monitor_module mm(.*);
 
@@ -242,7 +264,7 @@ module t15_tb;
         btns[0] <= 1'b1; */
         //$value$plusargs("SCENE=%s",sf);
         //kdfp = $fopen(sf, "rb");
-        kdfp = $fopen("SCENES/bunny.scene","rb");
+        kdfp = $fopen("SCENES/t4s3.scene","rb");
         r = $fread(file_contents,kdfp);
         $fclose(kdfp);
 

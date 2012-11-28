@@ -1,5 +1,6 @@
 *.exe
 *.swp
+*.txt
 simv
 ucli.key
 *inter.vpd*
