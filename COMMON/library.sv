@@ -315,11 +315,6 @@ module VS_buf #(parameter WIDTH = 8) (
     assign stall_us = stall & valid_us;
 
 
-/*  `ifdef SYNTH
-    assign data_ds = tmp_valid ? tmp_data : data_us ;
-    assign tmp_data_n = stall ? tmp_data : data_us ;
-    assign tmp_valid_n = stall_ds ? (stall ? tmp_valid : valid_us ) : 1'b0; */
-//  `else
     assign data_ds = tmp_valid ? tmp_data : (valid_us ? data_us : `DC) ;
 
     always_comb begin // stall_ds assumes that valid_ds is asserted
@@ -336,7 +331,6 @@ module VS_buf #(parameter WIDTH = 8) (
         2'b11 : tmp_valid_n = tmp_valid ? 1 : 0 ;
       endcase
     end
-//  `endif
 
   always_ff @(posedge clk, posedge rst) begin
     if(rst) begin

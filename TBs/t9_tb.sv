@@ -256,17 +256,17 @@ module t9_tb;
 
         repeat(5100) @(posedge clk);
 
-/*        @(posedge clk);
-        force t9.render_frame = 1'b0; */
+        @(posedge clk);
+        force t9.render_frame = 1'b0;
 
         // Hit start button
-        @(posedge clk);
+/*        @(posedge clk);
         btns[0] <= 1'b0;
         repeat(100) @(posedge clk);
-        btns[0] <= 1'b1;
+        btns[0] <= 1'b1; */
         //$value$plusargs("SCENE=%s",sf);
         //kdfp = $fopen(sf, "rb");
-        kdfp = $fopen("SCENES/t4s3.scene","rb");
+        kdfp = $fopen("SCENES/t4s3_flipped.scene","rb");
         r = $fread(file_contents,kdfp);
         $fclose(kdfp);
 
@@ -278,7 +278,7 @@ module t9_tb;
         send_EOT(); */
 
         //$monitor("sl_block_num: %d data: %h valid_msg: %b",t9.sl_block_num,t9.xmodem_data_byte, t9.xmodem_saw_valid_msg_byte);
-        $monitor("rendering_done: %d render_frame: %b",t9.rendering_done, t9.render_frame);
+//        $monitor("rendering_done: %d render_frame: %b",t9.rendering_done, t9.render_frame);
 
         @(posedge clk);
         #1;
@@ -300,13 +300,19 @@ module t9_tb;
         #1;
         force t9.xmodem_done = 1'b0;
 
-        @(posedge clk);
+/*        @(posedge clk);
         force t9.keys.a[0] = 1'b1;
         force t9.keys.pressed = 1'b1;
         t = $time;
         @(posedge clk);
         force t9.keys.a[0] = 1'b0;
-        force t9.keys.pressed = 1'b0;
+        force t9.keys.pressed = 1'b0; */
+
+        @(posedge clk);
+        force t9.render_frame = 1'b1;
+        t = $time;
+        @(posedge clk);
+        force t9.render_frame = 1'b0;
 
 
         while(~t9.rendering_done)
@@ -315,6 +321,7 @@ module t9_tb;
         good = $time - t;
         $display("length of render = %t, num cycles = %d",good,good/`CLOCK_PERIOD);
 
+		/*
         repeat(10000) @(posedge clk);
 
         @(posedge clk);
@@ -324,7 +331,7 @@ module t9_tb;
         @(posedge clk);
         force t9.keys.a[1] = 1'b0;
         force t9.keys.released = 1'b0;
-
+*/
 
         $finish;
     end // end of initial block

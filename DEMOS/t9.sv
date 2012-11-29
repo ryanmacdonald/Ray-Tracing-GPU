@@ -46,12 +46,11 @@ module t_minus_9_days(
 
     logic pll_clk;
 
-	// TODO: remember to uncomment the SYNTH thing
-/*    `ifdef SYNTH // in synthesis, use the PLL clk
+    `ifdef SYNTH // in synthesis, use the PLL clk
     	assign sdram_clk = pll_clk;
-    `else // in simulation, use the board clk */
+    `else // in simulation, use the board clk
     	assign sdram_clk = clk;
-//    `endif
+    `endif
 
 	logic        rst;
 	logic        start_btn;

@@ -7,6 +7,9 @@ FLAGS=-sverilog -debug_all
 default: trtr.sv
 	$(CC) $(FLAGS) trtr.sv
 
+t8:
+	$(CC) $(FLAGS) -top t8_tb COMMON/*v SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v DEMOS/t8.sv TBs/t8_tb.sv 
+
 trtr:
 	$(CC) $(FLAGS) -top trtr_tb COMMON/*v COMMON/altfp*/*.v RAYTRACER/int/* PRG/*v TBs/trtr_tb.sv PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv DEMOS/trtr.sv 
 

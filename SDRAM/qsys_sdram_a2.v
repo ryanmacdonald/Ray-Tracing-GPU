@@ -19,11 +19,11 @@ module sdram_a2 (
 		output wire           zs_ras_n,
 		output wire           zs_we_n,
 		
-/*		`ifdef SYNTH
+		`ifdef SYNTH
 		output wire altpll_0_c0_clk,
-		`else */
+		`else
 		output reg altpll_0_c0_clk,
-//		`endif
+		`endif
 
 		// Interface from caches
 		input  wire read, write,
@@ -204,8 +204,7 @@ module sdram_a2 (
 		.zs_we_n        (zs_we_n)                                 //      .export
 	);
 
-	// TODO: remember to uncomment this
-/*	`ifdef SYNTH
+	`ifdef SYNTH
 	qsys_sdram_a2_altpll_0 altpll_0 (
 		.clk       (clk_clk),                            //       inclk_interface.clk
 		.reset     (rst_controller_001_reset_out_reset), // inclk_interface_reset.reset
@@ -220,13 +219,12 @@ module sdram_a2 (
 		.phasedone ()                                    //     phasedone_conduit.export
 	);
 	`else
-*/
 	// SKETCHY AS FUCK
 	// #delay is totally hacked to make za_valid coincide with za_data
 	always @(clk_clk) begin // used to be posedge or negedge
 		altpll_0_c0_clk <= #0 clk_clk;
 	end
-//	`endif
+	`endif
 
 	altera_reset_controller #(
 		.NUM_RESET_INPUTS        (1),

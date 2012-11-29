@@ -1,7 +1,7 @@
 `ifndef DEFINES
 `define DEFINES
 
-`define SYNTH
+//`define SYNTH
 
 `ifdef SYNTH
 	`define DC 'h0
@@ -128,8 +128,8 @@
   `define NUM_ROWS 100
   `define NUM_COLS 100
 `else 
-	`define NUM_ROWS  480 // TODO: change back
-	`define NUM_COLS  640 // TODO: change back
+	`define NUM_ROWS  480
+	`define NUM_COLS  640
 `endif
 
 `define VGA_NUM_ROWS        10'd`NUM_ROWS
