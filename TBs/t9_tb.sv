@@ -5,7 +5,7 @@
 `define MAX_PIXEL_IDS        `num_rays
 `define MAX_SCENE_FILE_BYTES 37000
 
-module t15_tb;
+module t9_tb;
 
     // general IO
     logic [17:0] LEDR;
@@ -61,8 +61,8 @@ module t15_tb;
     initial begin
       restcnt = 0;
       forever @(posedge clk) begin
-        if(t15.rp.ss_to_tarb_valid1 & !t15.rp.ss_to_tarb_stall1) begin
-          cur_node = t15.rp.ss_to_tarb_data1.nodeID;
+        if(t9.rp.ss_to_tarb_valid1 & !t9.rp.ss_to_tarb_stall1) begin
+          cur_node = t9.rp.ss_to_tarb_data1.nodeID;
           restcnt += 1;
           if(hash.exists(cur_node)) begin
             hash[cur_node] += 1;
@@ -103,16 +103,16 @@ module t15_tb;
     rayID_cnt = 0;
     shader_arb_stall_cnt = 0;
     forever @(posedge clk) begin
-      if(t15.rp.list_to_ss_stall) list_to_ss_stall_cnt +=1 ;
-      if(t15.rp.trav0_to_ss_stall) trav0_to_ss_stall_cnt +=1 ;
-      if(t15.rp.sint_to_ss_stall) sint_to_ss_stall_cnt +=1 ;
-      if(t15.rp.int_to_larb_stall) int_to_larb_stall_cnt +=1 ;
-      if(t15.rp.trav0_to_larb_stall) trav0_to_larb_stall_cnt +=1 ;
-      if(t15.rp.icache_to_rs_stall) icache_to_rs_stall_cnt +=1 ;
+      if(t9.rp.list_to_ss_stall) list_to_ss_stall_cnt +=1 ;
+      if(t9.rp.trav0_to_ss_stall) trav0_to_ss_stall_cnt +=1 ;
+      if(t9.rp.sint_to_ss_stall) sint_to_ss_stall_cnt +=1 ;
+      if(t9.rp.int_to_larb_stall) int_to_larb_stall_cnt +=1 ;
+      if(t9.rp.trav0_to_larb_stall) trav0_to_larb_stall_cnt +=1 ;
+      if(t9.rp.icache_to_rs_stall) icache_to_rs_stall_cnt +=1 ;
       
-      if(t15.rp.simple_shader_unit_inst.rayID_empty & 
-         t15.rp.prg_to_shader_valid) rayID_cnt +=1 ;
-      if(t15.rp.simple_shader_unit_inst.arb_stall_ds) shader_arb_stall_cnt +=1 ;
+      if(t9.rp.simple_shader_unit_inst.rayID_empty & 
+         t9.rp.prg_to_shader_valid) rayID_cnt +=1 ;
+      if(t9.rp.simple_shader_unit_inst.arb_stall_ds) shader_arb_stall_cnt +=1 ;
     end
   end
 
@@ -139,9 +139,9 @@ module t15_tb;
       tot_time = 0;
       cur_num_rays = -512;
       forever @(posedge clk) begin
-        if(t15.rp.simple_shader_unit_inst.rayID_rdreq) rayID_time[t15.rp.simple_shader_unit_inst.rayID_fifo_out] = cur_clk;
-        if(t15.rp.simple_shader_unit_inst.rayID_wrreq) begin
-          tot_time += (cur_clk - rayID_time[t15.rp.simple_shader_unit_inst.rayID_fifo_in]);
+        if(t9.rp.simple_shader_unit_inst.rayID_rdreq) rayID_time[t9.rp.simple_shader_unit_inst.rayID_fifo_out] = cur_clk;
+        if(t9.rp.simple_shader_unit_inst.rayID_wrreq) begin
+          tot_time += (cur_clk - rayID_time[t9.rp.simple_shader_unit_inst.rayID_fifo_in]);
           cur_num_rays += 1;
           if(cur_num_rays%100 == 0)
             $display("curent average num clocks = %d for %d rays", tot_time/cur_num_rays, cur_num_rays);
@@ -153,7 +153,7 @@ module t15_tb;
       $display("Final avg num clocks = %d for %d rays", tot_time/cur_num_rays, cur_num_rays);
     end
 
-//    monitor_module mm(.*);
+    monitor_module mm(.*);
 
     //////////// pixel ID checker code ////////////
     bit [`MAX_PIXEL_IDS][$bits(pixelID_t)-1:0] pixelIDs_us ;
@@ -161,8 +161,8 @@ module t15_tb;
 
     logic pixel_valid_us, pixel_valid_ds;
 
-    assign pixel_valid_us = t15.rp.prg_to_shader_valid & ~t15.rp.prg_to_shader_stall;
-    assign pixel_valid_ds = t15.pb_we;
+    assign pixel_valid_us = t9.rp.prg_to_shader_valid & ~t9.rp.prg_to_shader_stall;
+    assign pixel_valid_ds = t9.pb_we;
 
     int num_pixels_us;
     int num_pixels_ds;
@@ -172,7 +172,7 @@ module t15_tb;
         forever begin
             @(posedge clk);
             if(pixel_valid_us) begin
-                pixelIDs_us[t15.rp.prg_to_shader_data.pixelID] += 1;
+                pixelIDs_us[t9.rp.prg_to_shader_data.pixelID] += 1;
               num_pixels_us++;
             
             if(num_pixels_us > `MAX_PIXEL_IDS)
@@ -186,7 +186,7 @@ module t15_tb;
         forever begin
             @(posedge clk);
             if(pixel_valid_ds) begin
-                pixelIDs_ds[t15.pb_data_us.pixelID] += 1 ;
+                pixelIDs_ds[t9.pb_data_us.pixelID] += 1 ;
                 num_pixels_ds++;
                 if(num_pixels_ds%100 == 0)
                     $display("num_pixels_ds = %-d/%-d",num_pixels_ds,`MAX_PIXEL_IDS);
@@ -222,7 +222,7 @@ module t15_tb;
         num_valid_blocks = 0;
         forever begin
             @(posedge clk);
-            if(t15.xm.saw_valid_block) begin
+            if(t9.xm.saw_valid_block) begin
                 num_valid_blocks++;
                 $display("seen %d valid blocks",num_valid_blocks);
             end
@@ -249,19 +249,21 @@ module t15_tb;
         rx_pin <= 1'b1;
 
         byte_cnt = 0;
-       	force t15.xmodem_saw_invalid_block = 1'b0;
-    	force t15.xmodem_receiving_repeat_block = 1'b0;
-    	force t15.xmodem_done = 1'b0;
-		force t15.xmodem_saw_valid_msg_byte = 1'b0;
+        force t9.xmodem_saw_invalid_block = 1'b0;
+        force t9.xmodem_receiving_repeat_block = 1'b0;
+        force t9.xmodem_done = 1'b0;
+        force t9.xmodem_saw_valid_msg_byte = 1'b0;
 
-        @(posedge clk);
-        t15.render_frame <= 1'b0;
+        repeat(5100) @(posedge clk);
+
+/*        @(posedge clk);
+        force t9.render_frame = 1'b0; */
 
         // Hit start button
-/*        @(posedge clk);
+        @(posedge clk);
         btns[0] <= 1'b0;
         repeat(100) @(posedge clk);
-        btns[0] <= 1'b1; */
+        btns[0] <= 1'b1;
         //$value$plusargs("SCENE=%s",sf);
         //kdfp = $fopen(sf, "rb");
         kdfp = $fopen("SCENES/t4s3.scene","rb");
@@ -275,44 +277,61 @@ module t15_tb;
         end
         send_EOT(); */
 
-		//$monitor("sl_block_num: %d data: %h valid_msg: %b",t15.sl_block_num,t15.xmodem_data_byte, t15.xmodem_saw_valid_msg_byte);
-
-       	@(posedge clk);
-       		#1;
-        for(k=0; k<r; k++) begin
-			  if(k%128 == 0) $display("sending Block %d",k/128);
-      force t15.xmodem_data_byte = file_contents[k];
-			force t15.xmodem_saw_valid_msg_byte = 1'b1;
-			force t15.sl_block_num = byte_cnt / 128;
-			force t15.xmodem_saw_valid_block = (byte_cnt % 128 == 0);
-			byte_cnt++;
-        	@(posedge clk); #1 ;force t15.xmodem_saw_valid_msg_byte = 1'b0;
-          repeat(15) @(posedge clk);
-       		#1;
-		end
-    	force t15.xmodem_done = 1'b1;
-		force t15.xmodem_saw_valid_msg_byte = 1'b0;
-    	@(posedge clk);
-    	#1;
-    	force t15.xmodem_done = 1'b0;
+        //$monitor("sl_block_num: %d data: %h valid_msg: %b",t9.sl_block_num,t9.xmodem_data_byte, t9.xmodem_saw_valid_msg_byte);
+        $monitor("rendering_done: %d render_frame: %b",t9.rendering_done, t9.render_frame);
 
         @(posedge clk);
-        t15.render_frame <= 1'b1;
+        #1;
+        for(k=0; k<r; k++) begin
+            if(k%128 == 0)
+                $display("sending Block %d",k/128);
+            force t9.xmodem_data_byte = file_contents[k];
+            force t9.xmodem_saw_valid_msg_byte = 1'b1;
+            force t9.sl_block_num = byte_cnt / 128;
+            force t9.xmodem_saw_valid_block = (byte_cnt % 128 == 0);
+            byte_cnt++;
+            @(posedge clk); #1 ;force t9.xmodem_saw_valid_msg_byte = 1'b0;
+            repeat(15) @(posedge clk);
+            #1;
+        end
+        force t9.xmodem_done = 1'b1;
+        force t9.xmodem_saw_valid_msg_byte = 1'b0;
+        @(posedge clk);
+        #1;
+        force t9.xmodem_done = 1'b0;
+
+        @(posedge clk);
+        force t9.keys.a[0] = 1'b1;
+        force t9.keys.pressed = 1'b1;
         t = $time;
         @(posedge clk);
-        t15.render_frame <= 1'b0;
+        force t9.keys.a[0] = 1'b0;
+        force t9.keys.pressed = 1'b0;
 
-        while(~t15.rendering_done)
+
+        while(~t9.rendering_done)
             @(posedge clk);
         $display("FUCK YEAH RENDER DONE");
         good = $time - t;
         $display("length of render = %t, num cycles = %d",good,good/`CLOCK_PERIOD);
+
+        repeat(10000) @(posedge clk);
+
+        @(posedge clk);
+        force t9.keys.a[1] = 1'b1;
+        force t9.keys.released = 1'b1;
+        t = $time;
+        @(posedge clk);
+        force t9.keys.a[1] = 1'b0;
+        force t9.keys.released = 1'b0;
+
+
         $finish;
     end // end of initial block
 
-	// time-out initial block
+    // time-out initial block
     initial begin
-      while(~t15.render_frame)
+      while(~t9.render_frame)
           @(posedge clk);
       #(1s);
       bad = $time - t;
@@ -331,7 +350,7 @@ module t15_tb;
 
     //////////// MODULE INSTANTIATIONS ////////////
 
-    t_minus_15_days                                t15(.*);
+    t_minus_9_days                                 t9(.*);
     sram                                           sr(.*);
     qsys_sdram_mem_model_sdram_partner_module_0    dram(.*, .clk(sdram_clk));
 

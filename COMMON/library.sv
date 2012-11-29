@@ -315,19 +315,19 @@ module VS_buf #(parameter WIDTH = 8) (
     assign stall_us = stall & valid_us;
 
 
-  `ifdef SYNTH
+/*  `ifdef SYNTH
     assign data_ds = tmp_valid ? tmp_data : data_us ;
     assign tmp_data_n = stall ? tmp_data : data_us ;
-    assign tmp_valid_n = stall_ds ? (stall ? tmp_valid : valid_us ) : 1'b0;
-  `else
-    assign data_ds = tmp_valid ? tmp_data : (valid_us ? data_us : 'hX) ;
+    assign tmp_valid_n = stall_ds ? (stall ? tmp_valid : valid_us ) : 1'b0; */
+//  `else
+    assign data_ds = tmp_valid ? tmp_data : (valid_us ? data_us : `DC) ;
 
     always_comb begin // stall_ds assumes that valid_ds is asserted
       case({stall_ds, stall})
-        2'b00 : tmp_data_n = 'hX;
-        2'b10 : tmp_data_n = valid_ds ? data_us : 'hX ;
-        2'b01 : tmp_data_n = 'hX ;
-        2'b11 : tmp_data_n = tmp_valid ? tmp_data : 'hX ;
+        2'b00 : tmp_data_n = `DC;
+        2'b10 : tmp_data_n = valid_ds ? data_us : `DC ;
+        2'b01 : tmp_data_n = `DC ;
+        2'b11 : tmp_data_n = tmp_valid ? tmp_data : `DC ;
       endcase
       case({stall_ds, stall})
         2'b00 : tmp_valid_n = 0;
@@ -336,7 +336,7 @@ module VS_buf #(parameter WIDTH = 8) (
         2'b11 : tmp_valid_n = tmp_valid ? 1 : 0 ;
       endcase
     end
-  `endif
+//  `endif
 
   always_ff @(posedge clk, posedge rst) begin
     if(rst) begin
@@ -484,7 +484,7 @@ module arbitor #(parameter NUM_IN=4, WIDTH = 10) (
   logic arb_fifo_empty;
   logic arb_fifo_re;
   logic arb_fifo_we;
-  logic [9:0] num_left_in_arb_fifo;
+  logic [1:0] num_left_in_arb_fifo;
 
   logic [NUM_IN-1:0][$clog2(NUM_IN)-1:0] rrptr_arr, rrptr_arr_n;
   
@@ -522,18 +522,43 @@ module arbitor #(parameter NUM_IN=4, WIDTH = 10) (
   assign arb_fifo_in = chosen_data;
   assign arb_fifo_we = chosen;
 
-  // TODO: change to BRAM fifo
-  fifo #(.DEPTH(512), .WIDTH(WIDTH) ) arb_fifo_inst(
-    .clk, .rst,
-    .data_in(arb_fifo_in),
-    .data_out(arb_fifo_out),
-    .full(arb_fifo_full),
-    .empty(arb_fifo_empty),
-    .re(arb_fifo_re),
-    .we(arb_fifo_we),
-    .num_left_in_fifo(num_left_in_arb_fifo),
-    .exists_in_fifo());    
-  
+  generate
+	if(WIDTH==37) begin: fucking_suck_on_my_balls
+		altbramfifo_w37_d512 bram_fifo(
+			.aclr(rst),
+			.clock(clk),
+			.data(arb_fifo_in),
+			.rdreq(arb_fifo_re),
+			.wrreq(arb_fifo_we),
+			.empty(arb_fifo_empty),
+			.full(arb_fifo_full),
+			.q(arb_fifo_out));
+	end
+	else if(WIDTH==96) begin : fucking_suck_on_my_balls
+		altbramfifo_w96_d512 bram_fifo (
+			.aclr(rst),
+			.clock(clk),
+			.data(arb_fifo_in),
+			.rdreq(arb_fifo_re),
+			.wrreq(arb_fifo_we),
+			.empty(arb_fifo_empty),
+			.full(arb_fifo_full),
+			.q(arb_fifo_out));
+	end
+	else begin : fucking_suck_on_my_balls
+	  fifo #(.DEPTH(2), .WIDTH(WIDTH) ) arb_fifo_inst (
+		.clk, .rst,
+		.data_in(arb_fifo_in),
+		.data_out(arb_fifo_out),
+		.full(arb_fifo_full),
+		.empty(arb_fifo_empty),
+		.re(arb_fifo_re),
+		.we(arb_fifo_we),
+		.num_left_in_fifo(num_left_in_arb_fifo),
+		.exists_in_fifo());    
+	end
+  endgenerate
+ 
   assign valid_ds = ~arb_fifo_empty;
   assign arb_fifo_re = valid_ds & ~stall_ds ;
   assign data_ds = arb_fifo_out;
@@ -594,22 +619,31 @@ module general_arbitor #(parameter NUM_IN=4, NUM_OUT=2, WIDTH=10)  (
   assign stall_us = valid_us & ~choice;
   assign arb_fifo_in = chosen_data;
   assign arb_fifo_we = chosen;
-
-  // TODO: change to BRAM fifo
-  fifo #(.DEPTH(512), .WIDTH(WIDTH) ) arb_fifo_inst [NUM_OUT-1:0] (
-    .clk, .rst,
-    .data_in(arb_fifo_in),
-    .data_out(arb_fifo_out),
-    .full(arb_fifo_full),
-    .empty(arb_fifo_empty),
-    .re(arb_fifo_re),
-    .we(arb_fifo_we),
-    .num_left_in_fifo(num_left_in_arb_fifo),
-    .exists_in_fifo());    
+  
+	altbramfifo_w96_d512 bram_fifo [NUM_OUT-1:0] (
+		.aclr(rst),
+		.clock(clk),
+		.data(arb_fifo_in),
+		.rdreq(arb_fifo_re),
+		.wrreq(arb_fifo_we),
+		.empty(arb_fifo_empty),
+		.full(arb_fifo_full),
+		.q(arb_fifo_out));
+/*
+	  fifo #(.DEPTH(512), .WIDTH(WIDTH) ) arb_fifo_inst [NUM_OUT-1:0] (
+		.clk, .rst,
+		.data_in(arb_fifo_in),
+		.data_out(arb_fifo_out),
+		.full(arb_fifo_full),
+		.empty(arb_fifo_empty),
+		.re(arb_fifo_re),
+		.we(arb_fifo_we),
+		.num_left_in_fifo(num_left_in_arb_fifo),
+		.exists_in_fifo());    
+*/
   
   assign valid_ds = ~arb_fifo_empty;
   assign arb_fifo_re = valid_ds & ~stall_ds ;
   assign data_ds = arb_fifo_out;
-
 
 endmodule

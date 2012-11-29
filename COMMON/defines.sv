@@ -1,6 +1,8 @@
 `ifndef DEFINES
 `define DEFINES
 
+`define SYNTH
+
 `ifdef SYNTH
 	`define DC 'h0
 `else
@@ -17,7 +19,7 @@
 // Defs for camera initialization
 `ifdef SYNTH
 	`define INIT_CAM_X 32'h3f90_0000 // 40800000
-	`define INIT_CAM_Y 32'h39f0_0000 // 40400000
+	`define INIT_CAM_Y 32'h3f90_0000 // 40400000
 	`define INIT_CAM_Z 32'hbfa0_0000 // C1200000
 `else
 	`define INIT_CAM_X $shortrealtobits(1.125) // 0.25
@@ -126,8 +128,8 @@
   `define NUM_ROWS 100
   `define NUM_COLS 100
 `else 
-	`define NUM_ROWS  480
-	`define NUM_COLS  640
+	`define NUM_ROWS  480 // TODO: change back
+	`define NUM_COLS  640 // TODO: change back
 `endif
 
 `define VGA_NUM_ROWS        10'd`NUM_ROWS
@@ -160,12 +162,12 @@
 	`define half_screen_width  $shortrealtobits(`PW_REAL*(-(`VGA_NUM_COLS/2.0)))
 	`define half_screen_height $shortrealtobits(`PW_REAL*(-(`VGA_NUM_ROWS/2.0)))
 	// D = 6 for now
-	`define SCREEN_DIST $shortrealtobits(`PW_REAL*(`VGA_NUM_ROWS/2.0)) // 45 degrees viewing angle
+	`define SCREEN_DIST $shortrealtobits(`PW_REAL*(`VGA_NUM_ROWS/2.0)) // 90 degrees viewing angle
 `else
-	`define half_screen_width  32'hC080_0000 // -4
-	`define half_screen_height 32'hC040_0000 // -3
+	`define half_screen_width  32'hC2a0_0000 // -80 (previously: -4)
+	`define half_screen_height 32'hC270_0000 // -60 (previously: -3)
 	// D = 4 for now
-	`define SCREEN_DIST 32'h4080_0000 // 4
+	`define SCREEN_DIST 32'h4270_0000 // 60 (previously: 4)
 `endif
 ////////////////////// End of Defines for PRG //////////////////////
 
