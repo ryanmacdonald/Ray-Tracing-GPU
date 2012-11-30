@@ -41,7 +41,7 @@ module camera_controller(
 		assign Vz = $bitstoshortreal(V.z);
 		assign Wx = $bitstoshortreal(W.x);
 		assign Wy = $bitstoshortreal(W.y);
-		assign Wz = $bitstoshortreal(W.z);	
+		assign Wz = $bitstoshortreal(W.z);
 	`endif
 
 

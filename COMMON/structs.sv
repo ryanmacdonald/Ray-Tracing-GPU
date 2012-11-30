@@ -1,6 +1,5 @@
 `default_nettype none
 // uncomment the following line when synthesizing to board
-//`define SYNTH
 // comment the following when doing anything except the sint demo
 //`define SINT_DEMO
 

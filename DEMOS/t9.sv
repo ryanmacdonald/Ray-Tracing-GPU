@@ -1,6 +1,6 @@
 `default_nettype none
 
-module t_minus_15_days(
+module t_minus_9_days(
     // general IO
     output logic [17:0] LEDR,
     output logic [8:0] LEDG,
@@ -63,7 +63,7 @@ module t_minus_15_days(
 	vector_t  E, U, V, W;
 
 	// NOTE: should come from camera controller
-	assign E.x = `INIT_CAM_X;
+	/*assign E.x = `INIT_CAM_X;
 	assign E.y = `INIT_CAM_Y;
 	assign E.z = `INIT_CAM_Z;
 	assign U.x = `FP_1;
@@ -74,7 +74,7 @@ module t_minus_15_days(
 	assign V.z = `FP_0;
 	assign W.x = `FP_0;
 	assign W.y = `FP_0;
-	assign W.z = `FP_1;
+	assign W.z = `FP_1; */
 
 	// Ray pipe outputs
 	pixel_buffer_entry_t pb_data_us;
@@ -148,16 +148,38 @@ module t_minus_15_days(
 	assign sceneAABB.xmin = 'h0;
 	assign sceneAABB.ymin = 'h0;
 	assign sceneAABB.zmin = 'h0;
-	assign sceneAABB.xmax = $shortrealtobits(2);
-	assign sceneAABB.ymax = $shortrealtobits(2);
-	assign sceneAABB.zmax = $shortrealtobits(2);
+	assign sceneAABB.xmax = 32'h4000_0000; // $shortrealtobits(2);
+	assign sceneAABB.ymax = 32'h4000_0000; // $shortrealtobits(2);
+	assign sceneAABB.zmax = 32'h4000_0000; // $shortrealtobits(2);
 
 
 	// Module instantiations
 
-	// TODO: instantiate PS/2 controller
+	////////////////// PS/2 //////////////////
+	logic start;
+	negedge_detector start_ned(.ed(start), .in(start_btn), .clk, .rst);
+	logic [32:0] shift_data;
+	logic ps2_clk, ps2_data;
+	logic ps2_data_out, ps2_clk_out;
+	logic clk_en, data_en, pkt_rec;
+	logic[7:0] data_pkt_HD;
+	assign data_pkt_HD = 8'hFF;
+	assign ps2_clk = clk_en ? 1'b1 : PS2_CLK;
+	assign ps2_data = data_en ? 1'b1 : PS2_DAT;
+	assign PS2_CLK = clk_en ? ps2_clk_out : 1'bz;
+	assign PS2_DAT = data_en ? ps2_data_out : 1'bz;
+	ps2		  mouse(.iSTART(start),.iRST_n(~rst),.iCLK_50(clk),
+				.ps2_clk(ps2_clk),.ps2_data(ps2_data),
+				.ps2_clk_out(ps2_clk_out),.ps2_dat_out(ps2_data_out),
+				.ce(clk_en),.de(data_en),.shift_reg(shift_data),
+				.pkt_rec(pkt_rec),.cnt11());
 
-//	camera_controller ccu(.*);
+	ps2_parse	  parse(.clk,.rst_b(~rst),
+				.ps2_pkt_DH(shift_data[30:23]),
+				.rec_ps2_pkt(pkt_rec),.keys(keys));
+	////////////////// End of PS/2 //////////////////
+
+	camera_controller ccu(.*);
 
     xmodem xm(.*);
 
@@ -168,10 +190,10 @@ module t_minus_15_days(
 	raypipe_2trav rp(.*);
 
 	// TODO: replace with bram
-	fifo #(.WIDTH($bits(pixel_buffer_entry_t)), .DEPTH(2)) pb(.*, .we(pb_we), .re(pb_re), .data_in(pb_data_us),
+	fifo #(.WIDTH($bits(pixel_buffer_entry_t)), .DEPTH(20)) pb(.*, .we(pb_we), .re(pb_re), .data_in(pb_data_us),
 		.data_out(pb_data_ds), .num_left_in_fifo(),
 		.empty(pb_empty), .full(pb_full), .exists_in_fifo());
 
 	frame_buffer_handler fbh(.*, .pb_data(pb_data_ds));
 
-endmodule: t_minus_15_days
+endmodule: t_minus_9_days

@@ -1,6 +1,8 @@
 `ifndef DEFINES
 `define DEFINES
 
+//`define SYNTH
+
 `ifdef SYNTH
 	`define DC 'h0
 `else
@@ -16,13 +18,20 @@
 
 // Defs for camera initialization
 `ifdef SYNTH
-	`define INIT_CAM_X 32'h40800000
-	`define INIT_CAM_Y 32'h40400000
-	`define INIT_CAM_Z 32'hC1200000
+	`define INIT_CAM_X 32'h3f90_0000 // 40800000
+	`define INIT_CAM_Y 32'h3f90_0000 // 40400000
+	`define INIT_CAM_Z 32'hbfa0_0000 // C1200000
 `else
-	`define INIT_CAM_X $shortrealtobits(0.25)
+  /*
+  `define INIT_CAM_X $shortrealtobits(0.25)
 	`define INIT_CAM_Y $shortrealtobits(0)
 	`define INIT_CAM_Z $shortrealtobits(1)
+*/
+
+  `define INIT_CAM_X $shortrealtobits(1.125) // 0.25
+	`define INIT_CAM_Y $shortrealtobits(1.125) // 0.0
+	`define INIT_CAM_Z $shortrealtobits(-1.25) // 1.0
+
 `endif
 
 
@@ -34,19 +43,19 @@
 
 // Number of caches and max read size for memory interface
 //`define numcaches 3 // T3DO: change back to 4 later
-`define numcaches 3 // TODO: change back to 4 later
+`define numcaches 4 // TODO: change back to 4 later
 `define maxTrans 64
 
 // Number of primary rays for PRG
 
-`ifndef SYNTH
-	`define PW_REAL 0.25 // TODO: make this considerably smaller
-`else
-	`define PW_REAL 1.0
-`endif
+`define PW_REAL 0.25 // TODO: make this considerably smaller
 
 // Pixel width
+`ifndef SYNTH
 	`define PW $shortrealtobits(`PW_REAL)
+`else
+	`define PW 32'h3e80_0000 // 0.25
+`endif
 
 // Epsilon = 10^-20 for now?
 `define EPSILON 32'h1E3C_E508
@@ -160,12 +169,12 @@
 	`define half_screen_width  $shortrealtobits(`PW_REAL*(-(`VGA_NUM_COLS/2.0)))
 	`define half_screen_height $shortrealtobits(`PW_REAL*(-(`VGA_NUM_ROWS/2.0)))
 	// D = 6 for now
-	`define SCREEN_DIST $shortrealtobits(`PW_REAL*(`VGA_NUM_ROWS/2.0)) // 45 degrees viewing angle
+	`define SCREEN_DIST $shortrealtobits(`PW_REAL*(`VGA_NUM_ROWS/2.0)) // 90 degrees viewing angle
 `else
-	`define half_screen_width  32'hC080_0000 // -4
-	`define half_screen_height 32'hC040_0000 // -3
+	`define half_screen_width  32'hC2a0_0000 // -80 (previously: -4)
+	`define half_screen_height 32'hC270_0000 // -60 (previously: -3)
 	// D = 4 for now
-	`define SCREEN_DIST 32'h4080_0000 // 4
+	`define SCREEN_DIST 32'h4270_0000 // 60 (previously: 4)
 `endif
 ////////////////////// End of Defines for PRG //////////////////////
 

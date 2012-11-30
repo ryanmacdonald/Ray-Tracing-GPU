@@ -219,7 +219,6 @@ module sdram_a2 (
 		.phasedone ()                                    //     phasedone_conduit.export
 	);
 	`else
-
 	// SKETCHY AS FUCK
 	// #delay is totally hacked to make za_valid coincide with za_data
 	always @(clk_clk) begin // used to be posedge or negedge
