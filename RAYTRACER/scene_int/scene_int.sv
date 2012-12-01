@@ -48,12 +48,12 @@ module scene_int(
 	ff_ar_en #($bits(shader_to_sint_t),0) rr(.q(ray),.d(shader_to_sint_data),.en(shader_to_sint_valid & ~shader_to_sint_stall),.clk,.rst);
 
 	
-	logic isShadow, miss;
+	logic is_shadow, miss;
 	scene_int_pl pl(.ray(ray),.v0(v0),.v1(v1),.v2(v2),
 			.xmin(sceneAABB.xmin),.xmax(sceneAABB.xmax),
 			.ymin(sceneAABB.ymin),.ymax(sceneAABB.ymax),
 			.zmin(sceneAABB.zmin),.zmax(sceneAABB.zmax),
-			.isShadow(isShadow), .clk, .rst,
+			.isShadow(is_shadow), .clk, .rst,
 			.tmin_scene(tmin_scene),.tmax_scene(tmax_scene),
 			.miss(miss));
 
@@ -61,8 +61,8 @@ module scene_int(
 	sint_pvs_entry_t us_data, ds_data;
 	logic[4:0] num_left_in_fifo;
 	assign us_data.rayID = shader_to_sint_data.rayID;
-	assign us_data.isShadow = shader_to_sint_data.is_shadow;
-	assign isShadow = ds_data[0];
+	assign us_data.is_shadow = shader_to_sint_data.is_shadow;
+	assign is_shadow = ds_data.is_shadow;
 	pipe_valid_stall #(.WIDTH($bits(sint_pvs_entry_t)),.DEPTH(18)) pvs
 			     (.clk,.rst,.us_valid(shader_to_sint_valid&&~shader_to_sint_stall),
 			      .us_data(us_data),.us_stall(us_stall),
@@ -86,7 +86,7 @@ module scene_int(
 	assign tf_data_in.rayID = ds_data.rayID;
 	assign tf_data_in.tmin = tmin_scene;
 	assign tf_data_in.tmax = tmax_scene;
-	assign tf_data_in.is_shadow = ds_data.isShadow;
+	assign tf_data_in.is_shadow = ds_data.is_shadow;
 	assign tf_data_in.miss = miss;
 	
 	// tarb fifo data_out assigns
@@ -143,9 +143,11 @@ module scene_int(
 
 	// Sh fifo data_in assigns
 	assign ssh_data_in.rayID = ds_data.rayID;
+  assign ssh_data_in.is_shadow = ds_data.is_shadow;
 
 	// Sh fifo data_out assigns
 	assign sint_to_shader_data.rayID = ssh_data_out.rayID;
+	assign sint_to_shader_data.is_shadow = ssh_data_out.is_shadow;
 
 	fifo #(.WIDTH($bits(sint_to_shader_t)),.DEPTH(18))
 	     ssh(.clk,.rst,.data_in(ssh_data_in),.we(ssh_we),.re(ssh_re),

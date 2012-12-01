@@ -22,7 +22,11 @@ module int_unit(
 
   output logic int_to_larb_valid,
   output leaf_info_t int_to_larb_data,
-  input logic int_to_larb_stall
+  input logic int_to_larb_stall,
+  
+  output logic int_to_shader_valid,
+  output int_to_shader_t int_to_shader_data,
+  input logic int_to_shader_stall
 
   );
 
@@ -73,8 +77,12 @@ module int_unit(
   end
   
   logic int_us_stall;
-  logic [8:0] min_num_left_in_fifo;
-  assign min_num_left_in_fifo = 9'd256 - (list_num_fifo>larb_num_fifo ? list_num_fifo : larb_num_fifo) ;
+
+  logic [5:0] num_left_in_shader_fifo;
+  logic [8:0] min_num_left_in_fifo1, min_num_left_in_fifo;
+  assign min_num_left_in_fifo1 = 9'd256 - (list_num_fifo>larb_num_fifo ? list_num_fifo : larb_num_fifo) ;
+  assign min_num_left_in_fifo = min_num_left_in_fifo1 > {3'b0,num_left_in_shader_fifo} ? num_left_in_shader_fifo : min_num_left_in_fifo1;
+  
   // The math pipleile is 45 latency
   pipe_valid_stall #(.WIDTH($bits(int_pipe_in)), .DEPTH(45), .NUM_W(9)) pipe_inst(
     .clk, .rst,
@@ -98,6 +106,35 @@ module int_unit(
 	logic	  larb_rdreq;
 	logic	  larb_wrreq;
 	logic	  larb_empty;
+  
+  logic shader_fifo_re;
+  logic shader_fifo_we;
+  logic shader_fifo_empty;
+  logic shader_fifo_full;
+  int_to_shader_t shader_fifo_in, shader_fifo_out;
+
+  logic shadow_hit;
+  assign shadow_hit = hit & t_int_lt1 ;
+
+  assign shader_fifo_we = pipe_ds_valid & int_pipe_out.ray_info.is_shadow & shadow_hit ;
+  assign shader_fifo_in = int_pipe_out.ray_info.rayID;
+  assign int_to_shader_valid = ~shader_fifo_empty;
+  assign int_to_shader_data = shader_fifo_out;
+  assign shader_fifo_re = int_to_shader_valid & ~int_to_shader_stall ;
+
+  fifo #(.DEPTH(46), .WIDTH($bits(int_to_shader_t)) ) shader_fifo_inst(
+    .clk, .rst,
+    .data_in(shader_fifo_in),
+    .data_out(shader_fifo_out),
+    .full(shader_fifo_full),
+    .empty(shader_fifo_empty),
+    .re(shader_fifo_re),
+    .we(shader_fifo_we),
+    .num_left_in_fifo(num_left_in_shader_fifo),
+    .exists_in_fifo());
+
+  
+
   
   struct packed {
     ray_info_t ray_info;
@@ -126,12 +163,15 @@ module int_unit(
    
   
   `ifndef SYNTH
-    always @(*) assert(!((list_full|larb_full) & pipe_ds_valid));
+    always @(posedge clk) assert(!((list_full|larb_full) & pipe_ds_valid));
     initial $display("list_fifo width= %d\nlarb_fifo width=%d\n",$bits(int_to_list_t),$bits(leaf_info_t));
   `endif
 
-  assign list_wrreq = pipe_ds_valid & (hit | is_last);
-  assign larb_wrreq = pipe_ds_valid & (~is_last);
+  // TODO SKETCHY
+  assign list_wrreq = pipe_ds_valid & (int_pipe_out.ray_info.is_shadow ? 
+                                       is_last & ~shadow_hit : (hit | is_last) );
+
+  assign larb_wrreq = pipe_ds_valid & ~is_last & ~shader_fifo_we;
 
   altbramfifo_w129_d256 list_fifo(
 	.aclr(rst),

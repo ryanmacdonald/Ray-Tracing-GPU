@@ -100,6 +100,8 @@ module simple_shader_unit(
   struct packed {
     logic is_hit;
     triID_t triID;
+    logic bb_miss; // for testing
+    logic is_shadow; // 
   } ray_data_VSpipe_in, ray_data_VSpipe_out;
 
   logic ray_data_VSpipe_valid_us, ray_data_VSpipe_stall_us;
@@ -128,6 +130,8 @@ module simple_shader_unit(
     pixelID_t pixelID;
     triID_t triID;
     logic is_hit;
+    logic bb_miss; // for testing
+    logic is_shadow; 
   } ray_data_fifo_in, ray_data_fifo_out;
   
   logic ray_data_fifo_full;
@@ -139,6 +143,8 @@ module simple_shader_unit(
     ray_data_fifo_in.pixelID = rddata_ray_data;
     ray_data_fifo_in.triID = ray_data_VSpipe_out.triID;
     ray_data_fifo_in.is_hit = ray_data_VSpipe_out.is_hit;
+    ray_data_fifo_in.bb_miss = ray_data_VSpipe_out.bb_miss; // added bb_miss for testing
+    ray_data_fifo_in.is_shadow = ray_data_VSpipe_out.is_shadow; 
   end
   assign ray_data_fifo_re = ~pb_full & ~ray_data_fifo_empty;
   assign ray_data_fifo_we = ray_data_VSpipe_valid_ds;
@@ -162,7 +168,7 @@ module simple_shader_unit(
   // output to pixel buffer
       // call calc_color function here.
   always_comb begin
-    pb_data_out.color = calc_color(ray_data_fifo_out.is_hit,ray_data_fifo_out.triID);
+    pb_data_out.color = calc_color(ray_data_fifo_out.is_hit,ray_data_fifo_out.triID, ray_data_fifo_out.bb_miss, ray_data_fifo_out.is_shadow); // added bb_miss
     pb_data_out.pixelID = ray_data_fifo_out.pixelID;
   end
 
@@ -172,6 +178,8 @@ module simple_shader_unit(
     rayID_t rayID;
     triID_t triID;
     logic is_hit;
+    logic bb_miss; // for testing
+    logic is_shadow; 
   } to_shader_t;
   
   // Arbitor for the *to_shader units
@@ -183,15 +191,23 @@ module simple_shader_unit(
     pcalc_data_in.rayID = pcalc_to_shader_data.rayID ;
     pcalc_data_in.triID = pcalc_to_shader_data.triID ;
     pcalc_data_in.is_hit = 1'b1;
+    pcalc_data_in.bb_miss = 1'b0; // for testing
+    pcalc_data_in.is_shadow = 1'b0; // for testing \ TODO
     int_data_in.rayID = int_to_shader_data.rayID;
     int_data_in.triID = 'd0; // `DC ;
     int_data_in.is_hit = 1'b1;
+    int_data_in.bb_miss = 1'b0; // for testing
+    int_data_in.is_shadow = 1'b1; // for testing \ TODO
     sint_data_in.rayID = sint_to_shader_data.rayID ;
     sint_data_in.triID = 'd0; // `DC ;
     sint_data_in.is_hit = 1'b0;
+    sint_data_in.bb_miss = 1'b1; // for testing
+    sint_data_in.is_shadow = sint_to_shader_data.is_shadow; // for testing \ TODO
     ss_data_in.rayID = ss_to_shader_data.rayID ;
     ss_data_in.triID = 'd0; // `DC ;
     ss_data_in.is_hit = 1'b0;
+    ss_data_in.bb_miss = 1'b0; // for testing
+    ss_data_in.is_shadow = ss_to_shader_data.is_shadow; // for testing \ TODO
   end
 
  	logic [3:0] arb_valid_us;
@@ -234,6 +250,8 @@ module simple_shader_unit(
   always_comb begin
     ray_data_VSpipe_in.triID = arb_data_ds.triID;
     ray_data_VSpipe_in.is_hit = arb_data_ds.is_hit;
+    ray_data_VSpipe_in.bb_miss = arb_data_ds.bb_miss; // for testing
+    ray_data_VSpipe_in.is_shadow = arb_data_ds.is_shadow; // for testing \ TODO
   end
   assign ray_data_VSpipe_valid_us = arb_valid_ds;
   assign raddr_ray_data = arb_data_ds.rayID;
@@ -251,7 +269,7 @@ module simple_shader_unit(
   assign shader_to_sint_valid = prg_to_shader_valid & ~rayID_empty;
   always_comb begin
     shader_to_sint_data.rayID = rayID_fifo_out;
-    shader_to_sint_data.is_shadow = 1'b0;
+    shader_to_sint_data.is_shadow = {$random}%4;
     shader_to_sint_data.ray_vec = prg_ray_vec;
   end
   assign rayID_rdreq = prg_to_shader_valid & ~prg_to_shader_stall ;
@@ -264,19 +282,22 @@ module simple_shader_unit(
 
 //------------------------------------------------------------------------
 
-  function color_t calc_color(logic is_hit, triID_t triID);
-    if(~is_hit) return `MISS_COLOR;
-    else begin
-      return `TRI_2_COLOR;
-      /*
-      unique case(triID)
-        16'h0 : return `TRI_0_COLOR;
-        16'h1 : return `TRI_1_COLOR;
-        16'h2 : return `TRI_2_COLOR;
-        16'h3 : return `TRI_3_COLOR;
-      endcase
-      */
-    end
+  function color_t calc_color(logic is_hit, triID_t triID, logic bb_miss, logic is_shadow); // added bb_miss for testing
+    casex ({bb_miss,is_shadow,is_hit})
+      3'b1?? : return 24'hff_00_ff; // added for testing
+      3'b010 : return 24'h80_80_80; 
+      3'b000 : return `MISS_COLOR;
+      3'b011 : return 24'h00_00_ff ;
+      3'b001 : begin
+        unique case(triID)
+          16'h0 : return `TRI_0_COLOR;
+          16'h1 : return `TRI_1_COLOR;
+          16'h2 : return `TRI_2_COLOR;
+          16'h3 : return `TRI_3_COLOR;
+          default: return 24'h00_00_00;
+        endcase
+      end
+    endcase
 
   endfunction
 

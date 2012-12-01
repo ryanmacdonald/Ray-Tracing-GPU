@@ -1,5 +1,6 @@
 *.exe
 *.swp
+*.txt
 simv
 ucli.key
 *inter.vpd*
@@ -9,7 +10,6 @@ session*
 .synopsys_dve_rebuild.tcl
 .__*
 *.tcl
-screen.txt
 
 DVEfiles/
 simv.daidir/

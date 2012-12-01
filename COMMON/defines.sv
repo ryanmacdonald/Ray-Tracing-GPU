@@ -1,11 +1,11 @@
 `ifndef DEFINES
 `define DEFINES
 
+
 // uncomment the following line when synthesizing to board
 //`define SYNTH
 // comment the following when doing anything except the sint demo
 `define SINT_DEMO
-
 
 `ifdef SYNTH
 	`define DC 'h0
@@ -26,13 +26,22 @@
 
 // Defs for camera initialization
 `ifdef SYNTH
-	`define INIT_CAM_X 32'hC0000000
-	`define INIT_CAM_Y 32'hC0000000
-	`define INIT_CAM_Z 32'hC0C00000
+
+
+	`define INIT_CAM_X 32'h3f90_0000 // 40800000
+	`define INIT_CAM_Y 32'h3f90_0000 // 40400000
+	`define INIT_CAM_Z 32'hbfa0_0000 // C1200000
 `else
-	`define INIT_CAM_X $shortrealtobits(-2.0)
-	`define INIT_CAM_Y $shortrealtobits(-2.0)
-	`define INIT_CAM_Z $shortrealtobits(-6.0)
+  /*
+  `define INIT_CAM_X $shortrealtobits(0.25)
+	`define INIT_CAM_Y $shortrealtobits(0)
+	`define INIT_CAM_Z $shortrealtobits(1)
+*/
+
+  `define INIT_CAM_X $shortrealtobits(1.125) // 0.25
+  `define INIT_CAM_Y $shortrealtobits(1.125) // 0.0
+  `define INIT_CAM_Z $shortrealtobits(-1.25) // 1.0
+
 `endif
 
 
@@ -44,7 +53,7 @@
 
 // Number of caches and max read size for memory interface
 //`define numcaches 3 // T3DO: change back to 4 later
-`define numcaches 3 // TODO: change back to 4 later
+`define numcaches 4 // TODO: change back to 4 later
 `define maxTrans 64
 
 // Number of primary rays for PRG
@@ -72,7 +81,6 @@
 `define PW_4 `FP_2
 `define PW_5 `FP_1
 `endif
-
 
 // Epsilon = 10^-20 for now?
 `define EPSILON 32'h1E3C_E508
@@ -259,6 +267,7 @@
 	// D = 4 for now
 	`define SCREEN_DIST 32'h4370_0000 // 240
 `endif
+
 ////////////////////// End of Defines for PRG //////////////////////
 
 ////////////////////// Defines for shader /////////////////////////
