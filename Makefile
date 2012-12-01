@@ -103,10 +103,10 @@ dp:
 	$(CC) $(FLAGS) -top tb_dp COMMON/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shade_unit/dot_prod.sv TBs/tb_dp.sv 
 
 pcalc:
-	$(CC) $(FLAGS) -top tb_pcalc COMMON/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shade_unit/pcalc.sv TBs/tb_pcalc.sv
+	$(CC) $(FLAGS) -top tb_pcalc COMMON/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shader/pcalc.sv TBs/tb_pcalc.sv
 
 reflector:
-	$(CC) $(FLAGS) -top tb_refl COMMON/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shade_unit/*v TBs/tb_refl.sv
+	$(CC) $(FLAGS) -top tb_refl COMMON/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shader/*v TBs/tb_refl.sv
 
 
 shader: 
@@ -115,8 +115,13 @@ shader:
 pipedemo: 
 	$(CC) $(FLAGS) -top pipedemo COMMON/*v COMMON/altfp*/*.v COMMON/bram/*.v COMMON/altb*/*v RAYTRACER/*/*v PRG/*sv RAYTRACER/raypipe.sv DEMOS/pipedemo.sv
 
+
+norm:
+	$(CC) $(FLAGS) -top tb_norm COMMON/*v COMMON/altfp*/*.v RAYTRACER/shader/*v TBs/tb_norm.sv
+
+
 ryan:
-	$(CC) $(FLAGS) -top tb_ryan_demo COMMON/*v COMMON/altfp*/*.v PS2/* COMMON/altbram_fifo/*v RAYTRACER/scene_int/* PRG/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv CAMERA/*v TBs/tb_ryan_demo.sv DEMOS/ryan_demo.sv 
+	$(CC) $(FLAGS) -top tb_ryan_demo COMMON/defines.sv COMMON/*v COMMON/altfp*/*.v PS2/* COMMON/altbram_fifo/*v RAYTRACER/scene_int/* PRG/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv CAMERA/*v TBs/tb_ryan_demo.sv DEMOS/ryan_demo.sv 
 
 
 clean:

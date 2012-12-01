@@ -50,7 +50,8 @@ module camera_controller(
 	vector_t U_n, V_n, W_n;
 
 	logic ld_curr_camera;
-	logic valid_key_press, valid_key_release, valid_rot_key_press;
+	logic valid_key_press, valid_key_release;
+	logic valid_rot_key_press, valid_msr_key_press;
 
 	assign valid_key_press = (|{keys.d[0],keys.a[0],keys.e[0],keys.q[0],keys.w[0],keys.s[0],
 				    keys.l[0],keys.j[0],keys.o[0],keys.u[0],keys.i[0],keys.k[0]});
@@ -58,7 +59,8 @@ module camera_controller(
 				      keys.l[1],keys.j[1],keys.o[1],keys.u[1],keys.i[1],keys.k[1]});
 
 	assign valid_rot_key_press =  |{keys.l[0],keys.j[0],keys.o[0],keys.u[0],keys.i[0],keys.k[0]};
-	//assign valid_rot_key_release =  |{keys.l[1],keys.j[1],keys.o[1],keys.u[1],keys.i[1],keys.k[1]};
+
+	assign valid_msr_key_press = |{keys.n7[0],keys.n8[0],keys.n9[0],keys.n0[0]};
 
 	logic rendering, rendering_n;
 	assign rendering_n = valid_key_release ? 1'b0 :
@@ -67,6 +69,12 @@ module camera_controller(
 
 	logic[3:0] last_key, last_key_n;
 	ff_ar #(4,0) kr(.q(last_key),.d(last_key_n),.clk,.rst);
+
+	float_t move_scale, move_scale_n;
+	logic msr_en;
+	// move_scale_n assigned in always_comb at bottom of file 
+	assign msr_en = (valid_msr_key_press && ~rendering);
+	ff_ar_en #($bits(float_t),`move_scale) msr(.q(move_scale),.d(move_scale_n),.en(msr_en),.clk,.rst);
 
 	logic rot_en;
 
@@ -107,7 +115,7 @@ module camera_controller(
 	assign vr_d = vr_q ? 1'b0 : 1'b1;
 	ff_ar_en #(1,0) vr(.q(vr_q),.d(vr_d),.en(rot_en),.clk,.rst);
 	
-	logic[3:0] last_rot_key, last_rot_key_n;
+	logic[3:0] last_rot_key;
 	logic rkr_en;
 	ff_ar_en #(4,0) rkr(.q(last_rot_key),.d(last_key_n),.en(rot_en),.clk,.rst);
 	
@@ -125,7 +133,7 @@ module camera_controller(
 					render_frame = 1;
 					nextState = ROTATING;
 				end
-				else if(valid_key_press && ~valid_rot_key_press && ~rendering) begin
+				else if(valid_key_press && ~valid_rot_key_press && rendering) begin
 					ld_curr_camera = 1;
 					render_frame = 1;	
 					nextState = RENDERING;
@@ -154,11 +162,28 @@ module camera_controller(
 		endcase
 	end
 
+
+	// Comb logic which assigns move_scale_n
+	always_comb begin
+		move_scale_n = move_scale;
+		case({keys.n7[0],keys.n8[0],keys.n9[0],keys.n0[0]})
+			4'b1000: move_scale_n = `FP_1;
+			4'b0100: move_scale_n = `FP_2;
+			4'b0010: move_scale_n = `FP_4;
+			4'b0001: move_scale_n = `FP_8;
+			default: ;
+		endcase
+	end
+
+
+	// State flop stuff
 	always_ff @(posedge clk, posedge rst) begin
 		if(rst) state <= IDLE;
 		else state <= nextState;
 	end	
 
+
+	// Normal vector flops
 	always_ff @(posedge clk, posedge rst) begin
 		if(rst) begin	
 			U <= {`FP_1,`FP_0,`FP_0};
@@ -174,12 +199,13 @@ module camera_controller(
 		end
 	end
 
+	// Rotation and datapath instantiations
 	camera_rotator  cr(.key(last_key),
 			   .valid(cr_valid),
 			   .U,.V,.W,
 			   .U_n,.V_n,.W_n);
 
-	camera_datapath cd(.clk,.rst,.v0,.v1,.v2,.ld_curr_camera,.render_frame,
+	camera_datapath cd(.clk,.rst,.v0,.v1,.v2,.move_scale,.ld_curr_camera,.render_frame,
 			   .key(last_key),.cnt,.E,.U,.V,.W);
 
 

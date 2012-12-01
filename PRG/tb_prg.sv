@@ -53,7 +53,7 @@ module tb_prg;
 //		int_to_prg_stall <= 0;
 
 		
-		repeat(1000000) @(posedge clk);
+		repeat(1000) @(posedge clk);
 
 		$finish;
 

@@ -99,6 +99,8 @@ module ps2_parse(clk, rst_b, ps2_pkt_DH, rec_ps2_pkt, keys);
       keys_i.pressed = ~F0_seen;
       keys_i.released = F0_seen;
       case({E0_seen,ps2_pkt_DH})
+
+	// Translation keys
         9'h015 : keys_i.q = {F0_seen,~F0_seen};
         9'h01D : keys_i.w = {F0_seen,~F0_seen};
         9'h024 : keys_i.e = {F0_seen,~F0_seen};
@@ -106,12 +108,28 @@ module ps2_parse(clk, rst_b, ps2_pkt_DH, rec_ps2_pkt, keys);
         9'h01B : keys_i.s = {F0_seen,~F0_seen};
         9'h023 : keys_i.d = {F0_seen,~F0_seen};
 
+	// Rotation keys
 	9'h03C : keys_i.u = {F0_seen,~F0_seen};
 	9'h03B : keys_i.j = {F0_seen,~F0_seen};
 	9'h043 : keys_i.i = {F0_seen,~F0_seen};
 	9'h042 : keys_i.k = {F0_seen,~F0_seen};
 	9'h044 : keys_i.o = {F0_seen,~F0_seen};
 	9'h04B : keys_i.l = {F0_seen,~F0_seen};
+
+	// Resolution keys
+	9'h016 : keys_i.n1 = {F0_seen,~F0_seen};
+	9'h01E : keys_i.n2 = {F0_seen,~F0_seen};
+	9'h026 : keys_i.n3 = {F0_seen,~F0_seen};
+	9'h025 : keys_i.n4 = {F0_seen,~F0_seen};
+	9'h02E : keys_i.n5 = {F0_seen,~F0_seen};
+	9'h036 : keys_i.n6 = {F0_seen,~F0_seen};
+
+	// Camera speed keys
+	9'h03D : keys_i.n7 = {F0_seen,~F0_seen};
+	9'h03E : keys_i.n8 = {F0_seen,~F0_seen};
+	9'h046 : keys_i.n9 = {F0_seen,~F0_seen};
+	9'h045 : keys_i.n0 = {F0_seen,~F0_seen};
+
         default : ;
       endcase
     end

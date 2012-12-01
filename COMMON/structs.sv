@@ -1,7 +1,4 @@
 `default_nettype none
-// uncomment the following line when synthesizing to board
-// comment the following when doing anything except the sint demo
-//`define SINT_DEMO
 
 `ifndef FUCKING_STRUCTS
 `define FUCKING_STRUCTS
@@ -159,6 +156,19 @@ typedef struct packed {
   logic [1:0] k;
   logic [1:0] o;
   logic [1:0] l;
+
+  logic [1:0] n1;
+  logic [1:0] n2;
+  logic [1:0] n3;
+  logic [1:0] n4;
+  logic [1:0] n5;
+  logic [1:0] n6;
+
+  logic [1:0] n7;
+  logic [1:0] n8;
+  logic [1:0] n9;
+  logic [1:0] n0;
+
   logic pressed;
   logic released;
 } keys_t;

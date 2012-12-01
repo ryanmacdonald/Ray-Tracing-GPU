@@ -39,10 +39,8 @@ module tb_int_prg;
 		start <= 1;
 		@(posedge clk);
 		start <= 0;
-		
-		while(~done) @(posedge clk);
 
-		repeat(100) @(posedge clk);
+		repeat(1000) @(posedge clk);
 
 
 		$finish;

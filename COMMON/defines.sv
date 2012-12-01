@@ -1,7 +1,11 @@
 `ifndef DEFINES
 `define DEFINES
 
+
+// uncomment the following line when synthesizing to board
 //`define SYNTH
+// comment the following when doing anything except the sint demo
+`define SINT_DEMO
 
 `ifdef SYNTH
 	`define DC 'h0
@@ -11,6 +15,10 @@
 
 `define FP_R2	 	 32'h3F35_04F3
 `define FP_NR2 		 32'hBF35_04F3
+`define FP_32		 32'h4200_0000
+`define FP_16		 32'h4180_0000
+`define FP_8		 32'h4100_0000
+`define FP_4		 32'h4080_0000
 `define FP_2		 32'h4000_0000
 `define FP_1		 32'h3F80_0000
 `define FP_N1		 32'hBF80_0000
@@ -18,6 +26,8 @@
 
 // Defs for camera initialization
 `ifdef SYNTH
+
+
 	`define INIT_CAM_X 32'h3f90_0000 // 40800000
 	`define INIT_CAM_Y 32'h3f90_0000 // 40400000
 	`define INIT_CAM_Z 32'hbfa0_0000 // C1200000
@@ -29,8 +39,8 @@
 */
 
   `define INIT_CAM_X $shortrealtobits(1.125) // 0.25
-	`define INIT_CAM_Y $shortrealtobits(1.125) // 0.0
-	`define INIT_CAM_Z $shortrealtobits(-1.25) // 1.0
+  `define INIT_CAM_Y $shortrealtobits(1.125) // 0.0
+  `define INIT_CAM_Z $shortrealtobits(-1.25) // 1.0
 
 `endif
 
@@ -48,13 +58,28 @@
 
 // Number of primary rays for PRG
 
-`define PW_REAL 0.25 // TODO: make this considerably smaller
-
-// Pixel width
 `ifndef SYNTH
-	`define PW $shortrealtobits(`PW_REAL)
+	`define PW_REAL 0.25 // TODO: make this considerably smaller
+	`define PW_FP 32'h3E80_0000
 `else
-	`define PW 32'h3e80_0000 // 0.25
+	`define PW_REAL 1.0
+	`define PW_FP `FP_1
+`endif
+
+`ifndef SYNTH
+`define PW_0 $shortrealtobits(`PW_REAL*32)
+`define PW_1 $shortrealtobits(`PW_REAL*16)
+`define PW_2 $shortrealtobits(`PW_REAL*8)
+`define PW_3 $shortrealtobits(`PW_REAL*4)
+`define PW_4 $shortrealtobits(`PW_REAL*2)
+`define PW_5 $shortrealtobits(`PW_REAL)
+`else
+`define PW_0 `FP_32
+`define PW_1 `FP_16
+`define PW_2 `FP_8
+`define PW_3 `FP_4
+`define PW_4 `FP_2
+`define PW_5 `FP_1
 `endif
 
 // Epsilon = 10^-20 for now?
@@ -131,13 +156,64 @@
 
 ////////////////////// Defines for VGA //////////////////////
 
-`ifndef SYNTH // use a very low resolution in simulation
-  `define NUM_ROWS 80
-  `define NUM_COLS 80
-`else 
-	`define NUM_ROWS  480
-	`define NUM_COLS  640
+`define MAX_ROWS 10'd480
+`define MAX_COLS 10'd640
+
+//Defines number of pixels at each resolution
+`define RES_0 (20*15)
+`define ROWS_RES_0 15
+`define COLS_RES_0 20
+
+`define RES_1 (20*15*4)
+`define ROWS_RES_1 30
+`define COLS_RES_1 40
+
+`define RES_2 (20*15*16)
+`define ROWS_RES_2 60
+`define COLS_RES_2 80
+
+`define RES_3 (20*15*64)
+`define ROWS_RES_3 120
+`define COLS_RES_3 160
+
+`define RES_4 (20*15*256)
+`define ROWS_RES_4 240
+`define COLS_RES_4 320
+
+`define RES_5 (20*15*1024)
+`define ROWS_RES_5 480
+`define COLS_RES_5 640
+
+
+`define RES_SCALE2
+
+
+`ifdef RES_SCALE0
+	`define NUM_ROWS `ROWS_RES_0
+	`define NUM_COLS `COLS_RES_0
+	`define RES_SCALE 0
+`elsif RES_SCALE1
+	`define NUM_ROWS `ROWS_RES_1
+	`define NUM_COLS `COLS_RES_1
+	`define RES_SCALE 1
+`elsif RES_SCALE2
+	`define NUM_ROWS `ROWS_RES_2
+	`define NUM_COLS `COLS_RES_2
+	`define RES_SCALE 2
+`elsif RES_SCALE3
+	`define NUM_ROWS `ROWS_RES_3
+	`define NUM_COLS `COLS_RES_3
+	`define RES_SCALE 3
+`elsif RES_SCALE4
+	`define NUM_ROWS `ROWS_RES_4
+	`define NUM_COLS `COLS_RES_4
+	`define RES_SCALE 4
+`elsif RES_SCALE5
+	`define NUM_ROWS `ROWS_RES_5
+	`define NUM_COLS `COLS_RES_5
+	`define RES_SCALE 5
 `endif
+
 
 `define VGA_NUM_ROWS        10'd`NUM_ROWS
 `define VGA_NUM_COLS        10'd`NUM_COLS
@@ -164,18 +240,34 @@
 
 ////////////////////// Defines for PRG //////////////////////
 `define num_rays (`NUM_ROWS*`NUM_COLS*1) // 307200
+
+// Values in the range [0,5], determines resolution.
+// Default value is max resolution
+
+
+// Defines the dimensions of a sub-box
+`define PRG_BOX_ROWS 5'd15
+`define PRG_BOX_COLS 5'd20
+
+
+`define X_MULT (`MAX_COLS/32)
+`define Y_MULT (`MAX_ROWS/32)
+
+
+
 // defines for -w/2 and -h/2 //half width = -4, half height = -3
 `ifndef SYNTH
-	`define half_screen_width  $shortrealtobits(`PW_REAL*(-(`VGA_NUM_COLS/2.0)))
-	`define half_screen_height $shortrealtobits(`PW_REAL*(-(`VGA_NUM_ROWS/2.0)))
+	`define half_screen_width  $shortrealtobits(`PW_REAL*(-(`MAX_COLS/2.0)))
+	`define half_screen_height $shortrealtobits(`PW_REAL*(-(`MAX_ROWS/2.0)))
 	// D = 6 for now
-	`define SCREEN_DIST $shortrealtobits(`PW_REAL*(`VGA_NUM_ROWS/2.0)) // 90 degrees viewing angle
+	`define SCREEN_DIST $shortrealtobits(`PW_REAL*(`MAX_ROWS/2.0)) // 45 degrees viewing angle
 `else
-	`define half_screen_width  32'hC2a0_0000 // -80 (previously: -4)
-	`define half_screen_height 32'hC270_0000 // -60 (previously: -3)
+	`define half_screen_width  32'hC3A0_0000 // -320
+	`define half_screen_height 32'hC370_0000 // -240
 	// D = 4 for now
-	`define SCREEN_DIST 32'h4270_0000 // 60 (previously: 4)
+	`define SCREEN_DIST 32'h4370_0000 // 240
 `endif
+
 ////////////////////// End of Defines for PRG //////////////////////
 
 ////////////////////// Defines for shader /////////////////////////

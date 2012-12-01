@@ -29,7 +29,7 @@ module ryan_demo(
 
     // test input to start prg automatically (no ps2 input required)
     //input keys_t keys,
-    //input logic start_prg,
+    input logic start_prg,
      
     input logic clk);
 
@@ -95,8 +95,8 @@ module ryan_demo(
 
 	logic prg_ready, us_stall;
 	prg_ray_t prg_data;
-	prg		  prg(.clk,.rst,.v0,.v1,.v2,.start(render_frame),
-			      .E,.U,.V,.W,.pw(`PW),
+	prg		  prg(.clk,.rst,.v0,.v1,.v2,.start(start_prg),
+			      .E,.U,.V,.W,.keys,
 			      .prg_to_shader_stall(us_stall),
 			      .prg_to_shader_valid(prg_ready),
 			      .prg_to_shader_data(prg_data));	  
