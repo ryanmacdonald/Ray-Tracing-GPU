@@ -1,4 +1,4 @@
-/*
+
 module pcalc_unit(
   input logic v0, v1, v2,
   input logic clk, rst,
@@ -27,13 +27,13 @@ module pcalc_unit(
   .pos(pos_out)
   );
 
-typedef struct packed {
-  rayID_t rayID;
-  bari_uv_t uv;
-  float_t t_int;
-  triID_t triID;
-  ray_vec_t ray_vec;
-} rs_to_pcalc_t;
+  typedef struct packed {
+    rayID_t rayID;
+    bari_uv_t uv;
+    float_t t_int;
+    triID_t triID;
+    ray_vec_t ray_vec;
+  } rs_to_pcalc_t;
 
 
   // pipe_VS
@@ -55,8 +55,8 @@ typedef struct packed {
   assign rs_to_pcalc_stall = pcalc_VSpipe_stall_us;
   
 
-  pipe_valid_stall #(.WIDTH($bits(pcalc_VSpipe_in)), .DEPTH(4)) pcalc_VSpipe_inst(
-    .clk, .rst,
+  pipe_valid_stall1 #(.WIDTH($bits(pcalc_VSpipe_in)), .DEPTH(16)) pcalc_VSpipe_inst(
+    .clk, .rst, .v0, 
     .us_valid(pcalc_VSpipe_valid_us),
     .us_data(pcalc_VSpipe_in),
     .us_stall(pcalc_VSpipe_stall_us),
@@ -65,9 +65,35 @@ typedef struct packed {
     .ds_stall(pcalc_VSpipe_stall_ds),
     .num_left_in_fifo(num_left_in_last_fifo) );
 
-
-
-  // Fifo
   
+  pcalc_to_shader_t pcalc_fifo_in, pcalc_fifo_out;
 
-*/
+  // fifo to accumulate Definite misses and definite hits
+  logic pcalc_fifo_full;
+  logic pcalc_fifo_empty;
+  logic pcalc_fifo_re;
+  logic pcalc_fifo_we;
+  always_comb begin
+    pcalc_fifo_in.rayID = list_VSpipe_out.rayID ;
+    pcalc_fifo_in.triID = list_VSpipe_out.triID ;
+    pcalc_fifo_in.p_int = pos_out ;
+  end
+  assign pcalc_fifo_we = pcalc_VSpipe_valid_ds;
+
+  fifo #(.DEPTH(6), .WIDTH($bits(pcalc_to_shader_t)) ) pcalc_fifo_inst(
+    .clk, .rst,
+    .data_in(pcalc_fifo_in),
+    .data_out(pcalc_fifo_out),
+    .full(pcalc_fifo_full),
+    .empty(pcalc_fifo_empty),
+    .re(pcalc_fifo_re),
+    .we(pcalc_fifo_we),
+    .num_left_in_fifo(num_left_in_pcalc_fifo),
+    .exists_in_fifo());
+ 
+    assign pcalc_to_shader_valid = ~pcalc_fifo_empty;
+    assign pcalc_to_shader_data = pcalc_fifo_out;
+    assign pcalc_fifo_re = pcalc_to_shader_valid & ~pcalc_to_shader_stall ;
+
+
+endmodule
