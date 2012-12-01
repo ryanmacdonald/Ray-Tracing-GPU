@@ -174,8 +174,11 @@ module raypipe_2trav (
 	logic int_to_list_valid ;
 	int_to_list_t int_to_list_data ;
 	logic int_to_list_stall ;
-
-////int_to_shader TODO path for shadow rays
+	
+  // int_to_shader
+	logic int_to_shader_valid ;
+	int_to_shader_t int_to_shader_data ;
+	logic int_to_shader_stall ;
 
 	// list_to_rs
 	logic list_to_rs_valid ;
@@ -505,9 +508,9 @@ module raypipe_2trav (
 		.pcalc_to_shader_valid,
 		.pcalc_to_shader_data,
 		.pcalc_to_shader_stall,
-		.int_to_shader_valid(1'b0),
-		.int_to_shader_data(9`DC),
-		.int_to_shader_stall(),
+		.int_to_shader_valid,
+		.int_to_shader_data,
+		.int_to_shader_stall,
 		.sint_to_shader_valid,
 		.sint_to_shader_data,
 		.sint_to_shader_stall,
@@ -811,8 +814,11 @@ module raypipe_2trav (
 		.int_to_list_stall,
 		.int_to_larb_valid,
 		.int_to_larb_data,
-		.int_to_larb_stall
-	);
+		.int_to_larb_stall,
+		.int_to_shader_valid,
+		.int_to_shader_data,
+		.int_to_shader_stall
+  );
 
 
   // list

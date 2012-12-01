@@ -168,7 +168,7 @@ module t_minus_15_days(
 	raypipe_2trav rp(.*);
 
 	// TODO: replace with bram
-	fifo #(.WIDTH($bits(pixel_buffer_entry_t)), .DEPTH(2)) pb(.*, .we(pb_we), .re(pb_re), .data_in(pb_data_us),
+	fifo #(.WIDTH($bits(pixel_buffer_entry_t)), .DEPTH(50)) pb(.*, .we(pb_we), .re(pb_re), .data_in(pb_data_us),
 		.data_out(pb_data_ds), .num_left_in_fifo(),
 		.empty(pb_empty), .full(pb_full), .exists_in_fifo());
 

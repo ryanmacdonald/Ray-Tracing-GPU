@@ -3,7 +3,7 @@
   Takes in a cacheline (Matrix + translate)
   A ray_vec
   and does a intersection test with them (t_int > epsilon && bari_test)  NO MAX test
-
+  does a max test against 1 as well for shadow rays
 */
 
 module int_math(

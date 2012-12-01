@@ -111,6 +111,12 @@ typedef struct packed {
 } color_t ;
 
 typedef struct packed {
+  float_t red;
+  float_t green;
+  float_t blue;
+} floatcolor_t;
+
+typedef struct packed {
   color_t color;
   pixelID_t pixelID;
 } pixel_buffer_entry_t;
@@ -119,8 +125,6 @@ typedef struct packed {
   float_t u;
   float_t v;
 } bari_uv_t;
-
-
 
 typedef struct packed {
   float24_t m11;
@@ -179,20 +183,22 @@ typedef struct packed {
 
 typedef struct packed {
   logic [1:0] node_type;
-  float28_t split; // probably needs to be 25 bits
+  float28_t split;
   nodeID_t right_ID;
   logic low_empty;
   logic high_empty;
-//  logic reserve;
 
 } norm_node_t;
 
-// TODO change this to SHADER_to_raystore
-// sint_to_rs_t   (This will write ray_vec to raystore)
-typedef struct packed { 
+// TODO edit these appropriately
+typedef struct packed {
   rayID_t rayID;
-  ray_vec_t ray_vec;
-} sint_to_rs_t ; // DONT USE
+} shader_to_scache_t;
+
+typedef struct packed {
+  rayID_t rayID;
+} scache_to_shader_t;
+
 
 
 typedef struct packed {
@@ -214,7 +220,7 @@ typedef struct packed {
 */
 
 typedef struct packed{
-	logic isShadow;
+	logic is_shadow;
 	rayID_t rayID;
 } sint_pvs_entry_t;
 
@@ -229,6 +235,7 @@ typedef struct packed{
 
 typedef struct packed{
   rayID_t rayID;
+  logic is_shadow;
 } sint_to_shader_t;
 
 // tarb_t // Traversal Arbiter
@@ -347,6 +354,7 @@ typedef struct packed {
   bari_uv_t uv;
 
 } int_to_list_t ;
+
 
 typedef struct packed {
   rayID_t rayID;

@@ -404,6 +404,54 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20, NUM_W = $clog2(DEPTH+
   assign us_stall = ds_stall & (one_cnt >= num_left_in_fifo); // Used to & with us_valid
 
 endmodule
+
+
+module pipe_valid_stall3 #(parameter WIDTH = 8, DEPTH = 20, NUM_W = $clog2((DEPTH/3)+2)) (
+  input logic clk, rst,
+  input logic v0, v1, v2,
+  input logic us_valid,
+  input logic [WIDTH-1:0] us_data,
+  output logic us_stall,
+
+  output logic ds_valid,
+  output logic [WIDTH-1:0] ds_data,
+  input logic ds_stall,
+
+  input logic [NUM_W-1:0] num_left_in_fifo);
+
+  logic [DEPTH-1:0] valid_buf, valid_buf_n;
+
+
+  buf_t1 #(.LAT(DEPTH), .WIDTH(1)) valid_buf(.clk, .rst, .v0, .data_in(us_valid & ~us_stall ),.data_out(ds_valid_out));
+  buf_t1 #(.LAT(DEPTH), .WIDTH(WIDTH)) data_buf(.clk,.rst,.data_in(us_data),.data_out(ds_data));
+
+  v_out_valid;
+  always_comb begin
+    case(DEPTH%3)
+      0 : v_out_valid = v0 ;
+      1 : v_out_valid = v1 ;
+      2 : v_out_valid = v2 ;
+    endcase
+  end
+
+  logic [NUM_W-1:0] one_cnt, one_cnt_n;
+  always_comb begin
+    case({us_valid & ~us_stall, ds_valid})
+      2'b00 : one_cnt_n = one_cnt;
+      2'b10 : one_cnt_n = one_cnt + 1'b1;
+      2'b01 : one_cnt_n = one_cnt - 1'b1;
+      2'b11 : one_cnt_n = one_cnt ;
+    endcase
+  end
+
+  ff_ar #(NUM_W,0) cnt_inst(.d(one_cnt_n),.q(one_cnt),.clk,.rst);
+
+  assign us_stall = ~v0 | (ds_stall & (one_cnt >= num_left_in_fifo)); // Used to & with us_valid
+  assign ds_valid = v_out_valid & ds_valid_out ;
+
+endmodule
+
+
 /*
 module lshape #(parameter SIDE_W = 10, UNSTALL_W = 100, DEPTH = 20)
   (
@@ -635,6 +683,78 @@ module general_arbitor #(parameter NUM_IN=4, NUM_OUT=2, WIDTH=10)  (
 		.num_left_in_fifo(num_left_in_arb_fifo),
 		.exists_in_fifo());    
 */
+  
+  assign valid_ds = ~arb_fifo_empty;
+  assign arb_fifo_re = valid_ds & ~stall_ds ;
+  assign data_ds = arb_fifo_out;
+
+endmodule
+
+
+module samll_arbitor #(parameter NUM_IN=4, NUM_OUT=2, WIDTH=10)  (
+	input logic clk, rst,
+
+	input logic [NUM_IN-1:0] valid_us,
+	output logic [NUM_IN-1:0] stall_us,
+	input logic [NUM_IN-1:0][WIDTH-1:0] data_us,
+
+	output logic [NUM_OUT-1:0] valid_ds,
+	input logic [NUM_OUT-1:0] stall_ds,
+	output [NUM_OUT-1:0][WIDTH-1:0] data_ds
+);
+
+	logic [NUM_OUT-1:0][WIDTH-1:0] arb_fifo_in, arb_fifo_out;
+	logic [NUM_OUT-1:0] arb_fifo_full;
+	logic [NUM_OUT-1:0] arb_fifo_empty;
+	logic [NUM_OUT-1:0] arb_fifo_re;
+	logic [NUM_OUT-1:0] arb_fifo_we;
+	logic [9:0] num_left_in_arb_fifo; // TODO verify width
+
+	logic [NUM_IN-1:0][$clog2(NUM_IN)-1:0] rrp_arr, rrp_arr_n;
+
+	logic [NUM_IN-1:0] choice;
+	logic [NUM_OUT-1:0] chosen;
+	logic [NUM_OUT-1:0][WIDTH-1:0] chosen_data;
+
+	genvar j;
+	generate
+	  for(j=0; j<NUM_IN; j++) begin : hurrdurr_rptr
+		assign rrp_arr_n[j] = |choice ? (rrp_arr[j] == (NUM_IN-1) ? 'h0 : rrp_arr[j] + 1'b1) : rrp_arr[j] ;
+		ff_ar #($clog2(NUM_IN),j) rrp_arr_buf(.d(rrp_arr_n[j]), .q(rrp_arr[j]), .clk, .rst);
+	  end :hurrdurr_rptr
+	endgenerate
+
+	always_comb begin
+		chosen = 'b0;
+		choice = 'b0;
+		chosen_data = `DC;
+		for(int i=0; i<NUM_OUT; i++) begin
+			for(int j=0; j<NUM_IN; j++) begin
+				if(~arb_fifo_full[i] && ~chosen[i] && valid_us[rrp_arr[j]] && ~choice[rrp_arr[j]]) begin
+					chosen_data[i] = data_us[rrp_arr[j]];
+					chosen[i] = 1'b1;
+					choice[rrp_arr[j]] = 1'b1;
+				end
+			end
+		end
+	end
+
+  // TODO: verify the code below
+
+  assign stall_us = valid_us & ~choice;
+  assign arb_fifo_in = chosen_data;
+  assign arb_fifo_we = chosen;
+  
+	  fifo #(.DEPTH(2), .WIDTH(WIDTH) ) arb_fifo_inst [NUM_OUT-1:0] (
+		.clk, .rst,
+		.data_in(arb_fifo_in),
+		.data_out(arb_fifo_out),
+		.full(arb_fifo_full),
+		.empty(arb_fifo_empty),
+		.re(arb_fifo_re),
+		.we(arb_fifo_we),
+		.num_left_in_fifo(num_left_in_arb_fifo),
+		.exists_in_fifo());    
   
   assign valid_ds = ~arb_fifo_empty;
   assign arb_fifo_re = valid_ds & ~stall_ds ;
