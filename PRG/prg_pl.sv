@@ -22,8 +22,8 @@
 module prg_pl(input logic clk, rst,
 	   input logic v0, v1, v2,
 	//   input logic start,
-	   input logic[$clog2(`VGA_NUM_COLS)-1:0] x,
-	   input logic[$clog2(`VGA_NUM_ROWS)-1:0] y,
+	   input logic[$clog2(`MAX_COLS)-1:0] x,
+	   input logic[$clog2(`MAX_ROWS)-1:0] y,
 	   input vector_t E, U, V, W,
 	   input float_t pw,
 	   output logic rayReady,
@@ -53,12 +53,12 @@ module prg_pl(input logic clk, rst,
 
 	////// FP INSTATIATIONS AND INTERCONNECT //////	 
 
-  logic[$clog2(`VGA_NUM_ROWS)-1:0] y_buf;
-	ff_ar #($clog2(`VGA_NUM_ROWS),0) y_buf_flop(.q(y_buf),.d(y),.clk,.rst);
+  logic[$clog2(`MAX_ROWS)-1:0] y_buf;
+	ff_ar #($clog2(`MAX_ROWS),0) y_buf_flop(.q(y_buf),.d(y),.clk,.rst);
 
 	logic[31:0] conv_dataa, conv_result;
-	assign conv_dataa = v0 ? { {(32-$clog2(`VGA_NUM_COLS)){1'b0}},x} : 
-                           { {(32-$clog2(`VGA_NUM_ROWS)){1'b0}},y_buf} ;
+	assign conv_dataa = v0 ? { {(32-$clog2(`MAX_COLS)){1'b0}},x} : 
+                           { {(32-$clog2(`MAX_ROWS)){1'b0}},y_buf} ;
 	altfp_convert conv(.aclr(rst),.clock(clk),
 			   .dataa(conv_dataa),.result(conv_result));
 

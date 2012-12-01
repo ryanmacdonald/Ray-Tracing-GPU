@@ -41,10 +41,13 @@ module scene_loader(
 	logic [31:0] four_xmodem_bytes;
     logic [7:0] data_reg0, data_reg1, data_reg2;
 
+    sl_state is, cs, good_ns, ns;
+    sl_state checkpoint, next_checkpoint;
+
     logic segment_done;
     assign segment_done = (cs.seg_offset_cnt == cs.seg_size);
 
-    assign addr_offset = {meta_block_num, sl_block_num, byte_cnt[6:2]};
+//    assign addr_offset = {meta_block_num, sl_block_num, byte_cnt[6:2]}; // not used anymore, I think
     assign sl_addr = base_addr + cs.seg_offset_cnt; // TODO: consider using concatenation
 
     assign received_four_bytes = byte3_ready & xmodem_saw_valid_msg_byte;
@@ -72,9 +75,6 @@ module scene_loader(
     ff_ar_en #(8,8'd0) data_register2 (.q(data_reg2), .d(xmodem_data_byte), .en(byte2_ready), .clk, .rst);
 
 	// what follows is based on checkpoints
-
-	sl_state is, cs, good_ns, ns;
-	sl_state checkpoint, next_checkpoint;
 
 	// initial state assignments
 

@@ -971,22 +971,20 @@ endgenerate
   assign rest_VSpipe_stall_ds = ss_to_tarb_stall1 | ss_to_shader_stall ;
 
   // trav0
-  assign rest_write_fifo_we[2] = sint_to_ss_valid & ~rest_write_fifo_full[2] ;
   assign sint_to_ss_stall = sint_to_ss_valid & rest_write_fifo_full[2] ;
-
 
   logic list_rest_read_valid;
   logic list_stack_read_valid;
   assign list_rest_read_valid = list_to_ss_valid & list_to_ss_data.ray_info.ss_num == 'h0 & ~rest_read_fifo_full[2] ;
   assign list_stack_read_valid = list_to_ss_valid & list_to_ss_data.ray_info.ss_num != 'h0 & ~stack_read_fifo_full[2] ;
   
-  assign rest_read_fifo_we[2] = list_rest_read_valid ;
-  assign stack_read_fifo_we[2] = list_stack_read_valid ;
   assign list_to_ss_stall = list_to_ss_valid & ~(list_rest_read_valid | list_stack_read_valid) ;
-
 
   // Case on (pop, update_maxscene, push, update_restnode)
   always_comb begin
+    rest_write_fifo_we[2] = sint_to_ss_valid & ~rest_write_fifo_full[2] ;
+    rest_read_fifo_we[2] = list_rest_read_valid ;
+    stack_read_fifo_we[2] = list_stack_read_valid ;
     rest_read_fifo_we[0] = 1'b0;
     rest_write_fifo_we[0] = 1'b0;
     stack_read_fifo_we[0] = 1'b0;
@@ -1020,9 +1018,6 @@ endgenerate
       endcase
     end
 
-  end
-  
-  always_comb begin
     rest_read_fifo_we[1] = 1'b0;
     rest_write_fifo_we[1] = 1'b0;
     stack_read_fifo_we[1] = 1'b0;

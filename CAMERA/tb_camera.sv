@@ -34,6 +34,25 @@ module tb_camera;
 			key_release_ctrl(500);
 		join
 
+
+
+
+		// Change move scale
+		@(posedge clk);
+		keys.n8[0] <= 1;
+		keys.pressed <= 1;
+		@(posedge clk);
+		keys.n8[0] <= 0;
+		keys.pressed <= 0;
+		repeat(10) @(posedge clk);
+		keys.n8[1] <= 1;
+		keys.released <= 1;
+		@(posedge clk)
+		keys.n8[1] <= 0;
+		keys.released <= 0;
+
+
+
 		@(posedge clk);
 		keys.w[0] <= 1;
 		keys.pressed <= 1;	

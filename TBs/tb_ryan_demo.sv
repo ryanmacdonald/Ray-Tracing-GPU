@@ -47,13 +47,13 @@ module tb_ryan_demo;
 		btns[3] <= 1;
 		repeat(10) @(posedge clk);
 		
-		//start_prg <= 1;
+		start_prg <= 1;
 		keys.i[0] <= 1;
 		keys.pressed <= 1;	
 
 		@(posedge clk);
 
-		//start_prg <= 0;
+		start_prg <= 0;
 		keys.i[0] <= 0;
 		keys.pressed <= 0;
 
@@ -73,8 +73,7 @@ module tb_ryan_demo;
 		keys.i[1] <= 0;
 		keys.released <= 0;
 
-		repeat(200) @(posedge clk);
-
+		//repeat(200) @(posedge clk);
 		// Add this for full resoultion simulation
 		//repeat(20000) @(posedge clk);
 

@@ -15,6 +15,7 @@
 
 module camera_datapath (input logic clk, rst,
 			input logic v0, v1, v2,
+			input float_t move_scale,
 			input logic ld_curr_camera,
 			input logic render_frame,
 			input logic[3:0] key,
@@ -58,7 +59,7 @@ module camera_datapath (input logic clk, rst,
 	logic mult_1_underflow, mult_1_overflow, mult_1_zero, mult_1_nan;
 	logic[31:0] mult_1_result;
 	assign mult_1_dataa = conv_result;
-	assign mult_1_datab = `move_scale; 
+	assign mult_1_datab = move_scale; 
 	altfp_mult  mult_1(.dataa(mult_1_dataa),.datab(mult_1_datab),
 			   .underflow(mult_1_underflow),.overflow(mult_1_overflow),
 			   .nan(mult_1_nan),.zero(mult_1_zero),
