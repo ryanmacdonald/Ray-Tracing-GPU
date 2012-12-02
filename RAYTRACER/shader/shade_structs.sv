@@ -27,14 +27,14 @@ typedef struct packed {
 } dirpint_to_sendreflect_t;
 
 typedef struct packed {
-  
-} triidstate_to_scache
+  rayID_t rayID;
+  triID_t triID;
+} triidstate_to_scache;
 
 typedef struct packed{
   rayID_t rayID;
   vector_t p_int;
 } sr_pvs_entry_t;
-
 
 
 typedef struct packed {
@@ -50,11 +50,12 @@ typedef struct packed {
 
 typedef struct packed {
   rayID_t rayID;
-  
+  float_color_t f_color;
 } raydone_t;
 
 typedef struct packed {
-  
+  pixelID_t pixelID;
+  float_color_t f_color;
 
 } pixstore_to_cc_t;
 

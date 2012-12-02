@@ -5,7 +5,7 @@
 // uncomment the following line when synthesizing to board
 //`define SYNTH
 // comment the following when doing anything except the sint demo
-`define SINT_DEMO
+//`define SINT_DEMO
 
 `ifdef SYNTH
 	`define DC 'h0

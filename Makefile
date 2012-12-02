@@ -128,7 +128,7 @@ norm:
 
 
 pixstore:
-	$(CC) $(FLAGS) -top pix_store COMMON/*v COMMON/bram/*.v RAYTRACER/shader/*v
+	$(CC) $(FLAGS) -top pixstore COMMON/*v COMMON/bram/*.v RAYTRACER/shader/shade_structs.sv RAYTRACER/shader/pixstore.sv
 
 
 ryan:

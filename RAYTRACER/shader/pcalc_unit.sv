@@ -33,6 +33,7 @@ module pcalc_unit(
   struct packed {
     rayID_t rayID;
     triID_t triID;
+    vector_t dir;
   } pcalc_VSpipe_in, pcalc_VSpipe_out;
 
   logic pcalc_VSpipe_valid_us, pcalc_VSpipe_stall_us;
@@ -42,6 +43,7 @@ module pcalc_unit(
   always_comb begin
     pcalc_VSpipe_in.rayID = rs_to_pcalc.rayID;
     pcalc_VSpipe_in.triID = rs_to_pcalc.triID;
+    pcalc_VSpipe_in.dir = rs_to_pcalc.ray_vec.dir;
   end
   assign pcalc_VSpipe_valid_us = rs_to_pcalc_valid;
   assign rs_to_pcalc_stall = pcalc_VSpipe_stall_us;
@@ -69,6 +71,7 @@ module pcalc_unit(
     pcalc_fifo_in.rayID = list_VSpipe_out.rayID ;
     pcalc_fifo_in.triID = list_VSpipe_out.triID ;
     pcalc_fifo_in.p_int = pos_out ;
+    pcalc_fifo_in.dir = list_VSpipe_out.dir ;
   end
   assign pcalc_fifo_we = pcalc_VSpipe_valid_ds;
 

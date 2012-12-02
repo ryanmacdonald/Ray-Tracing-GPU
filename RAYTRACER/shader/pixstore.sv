@@ -7,14 +7,14 @@ module pixstore (
   input logic we_pixstore,
   
     
-  input arb_to_pixstore_data_t arb_to_pixstore_data,
+  input raydone_t arb_to_pixstore_data,
   input logic arb_to_pixstore_valid,
   output logic arb_to_pixstore_stall,
   
   
   input logic pixstore_to_cc_stall,
   output pixstore_to_cc_t pixstore_to_cc_data,
-  output logic pixstore_to_cc_vald
+  output logic pixstore_to_cc_valid
 
 
   );
@@ -27,7 +27,7 @@ module pixstore (
 
   logic wren_pixstore;
   rayID_t raddr_pixstore;
-  pixID_t rddata_pixstore;
+  pixelID_t rddata_pixstore;
   assign raddr_pixstore = arb_to_pixstore_data;
 
   bram_dual_rw_512x19 pixstore_bram(
@@ -35,22 +35,20 @@ module pixstore (
   .rdaddress(raddr_pixstore),
   .wraddress(waddr_pixstore),
   .clock(clk),
-  .data(wrdata_pixstore),
+  .data(wdata_pixstore),
   .wren(wren_pixstore),
   .q(rddata_pixstore) );
 
 
 //------------------------------------------------------------------------
-  pixelID_t pixstore_VSpipe_in, pixstore_VSpipe_out;
+  float_color_t pixstore_VSpipe_in, pixstore_VSpipe_out;
 
   logic pixstore_VSpipe_valid_us, pixstore_VSpipe_stall_us;
   logic pixstore_VSpipe_valid_ds, pixstore_VSpipe_stall_ds;
   logic [1:0] num_left_in_pixstore_fifo;
 
   assign pixstore_VSpipe_valid_us = arb_to_pixstore_valid;
-  always_comb begin
-    pixstore_VSpipe_data_us.
-  end
+  assign pixstore_VSpipe_in = arb_to_pixstore_data.f_color;
 
   pipe_valid_stall #(.WIDTH($bits(pixstore_VSpipe_in)), .DEPTH(2)) pipe_inst(
     .clk, .rst,
@@ -67,10 +65,7 @@ module pixstore (
   //fifo for pixel buffer
 
 
-  struct packed {
-    pixelID_t pixelID;
-    float_color_t f_color;
-  } pixstore_fifo_in, pixstore_fifo_out;
+  pixstore_to_cc_t pixstore_fifo_in, pixstore_fifo_out;
   
   logic pixstore_fifo_full;
   logic pixstore_fifo_empty;
@@ -79,15 +74,13 @@ module pixstore (
 
   always_comb begin
     pixstore_fifo_in.pixelID = rddata_pixstore;
-    pixstore_fifo_in.triID = pixstore_VSpipe_out.triID;
-    pixstore_fifo_in.is_hit = pixstore_VSpipe_out.is_hit;
-    pixstore_fifo_in.bb_miss = pixstore_VSpipe_out.bb_miss; // added bb_miss for testing
-    pixstore_fifo_in.is_shadow = pixstore_VSpipe_out.is_shadow; 
+    pixstore_fifo_in.f_color = pixstore_VSpipe_out; 
   end
-  assign pixstore_fifo_re = ~pb_full & ~pixstore_fifo_empty;
+  assign pixstore_fifo_re = ~pixstore_to_cc_stall & ~pixstore_fifo_empty;
   assign pixstore_fifo_we = pixstore_VSpipe_valid_ds;
-  assign pixstore_VSpipe_stall_ds = pb_full & ~pixstore_fifo_empty;
-  assign pb_we = pixstore_fifo_re ;
+  assign pixstore_VSpipe_stall_ds = pixstore_to_cc_stall;
+  assign pixstore_to_cc_valid = ~pixstore_fifo_empty ;
+  assign pixstore_to_cc_data = pixstore_fifo_out ;
 
   fifo #(.DEPTH(3), .WIDTH($bits(pixstore_fifo_in)) ) pixstore_fifo_inst(
     .clk, .rst,

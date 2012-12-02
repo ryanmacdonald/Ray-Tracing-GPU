@@ -111,7 +111,7 @@ typedef struct packed {
   float_t red;
   float_t green;
   float_t blue;
-} floatcolor_t;
+} float_color_t;
 
 typedef struct packed {
   color_t color;
@@ -402,6 +402,7 @@ typedef struct packed {
 typedef struct packed {
   rayID_t rayID;
   vector_t p_int;
+  vector_t dir;
   triID_t triID;
 } pcalc_to_shader_t;
 
