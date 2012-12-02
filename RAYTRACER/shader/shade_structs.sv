@@ -24,6 +24,10 @@ typedef struct packed {
   vector_t normal;
 } dirpint_to_sendreflect_t;
 
+typedef struct packed {
+  
+} triidstate_to_scache
+
 typedef struct packed{
   rayID_t rayID;
   vector_t p_int;
@@ -46,5 +50,7 @@ typedef struct packed {
 } raydone_t;
 
 typedef struct packed {
-  logic wut;
-} pix_store_to_calc_final_t;
+  
+
+} pixstore_to_cc_t;
+

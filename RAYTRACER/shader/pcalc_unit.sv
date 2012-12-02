@@ -8,13 +8,15 @@ module pcalc_unit(
   output logic rs_to_pcalc_stall,
 
   output logic pcalc_to_shader_valid,
-  output pcalc_to_shader_data,
+  output pcalc_to_shader_t pcalc_to_shader_data,
   input logic pcalc_to_shader_stall,
   
   input ray_vec_t vec,
   input float_t t,
   output vector_t pos);
  
+
+  vector_t pos_out;
 
   // pcalc math
   pcalc_math pcalc_math_inst(
@@ -24,14 +26,6 @@ module pcalc_unit(
   .t(rs_to_pcalc_data.t_int),
   .pos(pos_out)
   );
-
-  typedef struct packed {
-    rayID_t rayID;
-    bari_uv_t uv;
-    float_t t_int;
-    triID_t triID;
-    ray_vec_t ray_vec;
-  } rs_to_pcalc_t;
 
 
   // pipe_VS
@@ -43,7 +37,7 @@ module pcalc_unit(
 
   logic pcalc_VSpipe_valid_us, pcalc_VSpipe_stall_us;
   logic pcalc_VSpipe_valid_ds, pcalc_VSpipe_stall_ds;
-  logic [2:0] num_left_in_last_fifo;
+  logic [2:0] num_left_in_pcalc_fifo;
 
   always_comb begin
     pcalc_VSpipe_in.rayID = rs_to_pcalc.rayID;
@@ -61,7 +55,7 @@ module pcalc_unit(
     .ds_valid(pcalc_VSpipe_valid_ds),
     .ds_data(pcalc_VSpipe_out),
     .ds_stall(pcalc_VSpipe_stall_ds),
-    .num_left_in_fifo(num_left_in_last_fifo) );
+    .num_left_in_fifo(num_left_in_pcalc_fifo) );
 
   
   pcalc_to_shader_t pcalc_fifo_in, pcalc_fifo_out;

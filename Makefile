@@ -108,6 +108,7 @@ dp:
 pcalc:
 	$(CC) $(FLAGS) -top tb_pcalc COMMON/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shader/pcalc.sv TBs/tb_pcalc.sv
 
+
 reflector:
 	$(CC) $(FLAGS) -top tb_refl COMMON/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shader/dot_prod.sv RAYTRACER/shader/reflector.sv TBs/tb_refl.sv
 
@@ -121,6 +122,10 @@ pipedemo:
 
 norm:
 	$(CC) $(FLAGS) -top tb_norm COMMON/*v COMMON/altfp*/*.v RAYTRACER/shader/*v TBs/tb_norm.sv
+
+
+pixstore:
+	$(CC) $(FLAGS) -top pix_store COMMON/*v COMMON/bram/*.v RAYTRACER/shader/*v
 
 
 ryan:

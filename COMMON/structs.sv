@@ -399,6 +399,12 @@ typedef struct packed {
   ray_vec_t ray_vec;
 } rs_to_pcalc_t;
 
+typedef struct packed {
+  rayID_t rayID;
+  vector_t p_int;
+  triID_t triID;
+} pcalc_to_shader_t;
+
 /*
 // int_to_mailbox // sends to mailbox if triangle was greater than t_max_leaf
 typedef struct packed {
