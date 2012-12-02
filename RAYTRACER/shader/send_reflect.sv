@@ -32,7 +32,8 @@ module send_reflect(input logic clk, rst,
 	vector_t N_rpl, raydir_rpl, reflected_rpl;
 	assign N_rpl = dirpint_to_sendreflect_data.normal;
 	assign raydir_rpl = dirpint_to_sendreflect_data.dir;
-	reflector rpl(.N(N_rpl),.raydir(raydir_rpl),.reflected(reflected_rpl),
+	reflector rpl(.N(N_rpl),.raydir(raydir_rpl),
+		      .reflected(reflected_rpl),
 		      .v0,.v1,.v2,.clk,.rst);
 
 	
@@ -43,7 +44,7 @@ module send_reflect(input logic clk, rst,
 	assign us_valid = dirpint_to_sendreflect_valid && ~dirpint_to_sendreflect_stall;
 	assign us_data.rayID = dirpint_to_sendreflect_data.rayID;
 	assign us_data.p_int = dirpint_to_sendreflect_data.p_int;
-	assign dirpint_to_sendreflect_stall = us_stall;
+	assign dirpint_to_sendreflect_stall = us_stall || ~v0;
 	pipe_valid_stall3 #($bits(sr_pvs_entry_t),42) pvs(.us_valid,.us_data,.us_stall,
 					     .ds_valid,.ds_data,.ds_stall,
 					     .num_left_in_fifo(f_num_left_in_fifo),

@@ -9,7 +9,9 @@ typedef struct packed {
 
 typedef struct packed {
   rayID_t rayID;
-
+  vector_t p_int;
+  vector_t normal;
+  vector_t light;
 } scache_to_sendshadow_t;
 
 typedef struct packed {
@@ -28,6 +30,8 @@ typedef struct packed{
   rayID_t rayID;
   vector_t p_int;
 } sr_pvs_entry_t;
+
+
 
 typedef struct packed {
   rayID_t rayID;

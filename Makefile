@@ -98,6 +98,9 @@ ps2_demo:
 send_refl:
 	$(CC) $(FLAGS) -top tb_send_reflect COMMON/*v RAYTRACER/shader/shade_structs.sv COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shader/dot_prod.sv RAYTRACER/shader/reflector.sv RAYTRACER/shader/send_reflect.sv RAYTRACER/shader/TBs/tb_send_reflect.sv
 
+send_shad:
+	$(CC) $(FLAGS) -top tb_send_shadow COMMON/*v RAYTRACER/shader/shade_structs.sv COMMON/altfp_compare/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shader/dot_prod.sv RAYTRACER/shader/send_shadow.sv RAYTRACER/shader/TBs/tb_send_shadow.sv
+
 ss: 
 	$(CC) $(FLAGS) -top tb_ss COMMON/*v COMMON/altfp*/*.v COMMON/bram/*.v  RAYTRACER/trav/* RAYTRACER/list/* RAYTRACER/raystore/* RAYTRACER/shortstack/*.sv
 
