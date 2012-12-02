@@ -166,6 +166,7 @@ module camera_controller(
 	// Comb logic which assigns move_scale_n
 	always_comb begin
 		move_scale_n = move_scale;
+		`ifndef SYNTH
 		case({keys.n7[0],keys.n8[0],keys.n9[0],keys.n0[0]})
 			4'b1000: move_scale_n = `FP_1;
 			4'b0100: move_scale_n = `FP_2;
@@ -173,6 +174,15 @@ module camera_controller(
 			4'b0001: move_scale_n = `FP_8;
 			default: ;
 		endcase
+		`else
+		case({keys.n7[0],keys.n8[0],keys.n9[0],keys.n0[0]})
+			4'b1000: move_scale_n = 32'h32ABCC77;
+			4'b0100: move_scale_n = 32'h332BCC77;
+			4'b0010: move_scale_n = 32'h33ABCC77;
+			4'b0001: move_scale_n = 32'h342BCC77;
+			default: ;
+		endcase
+		`endif
 	end
 
 

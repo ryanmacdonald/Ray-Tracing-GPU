@@ -422,10 +422,10 @@ module pipe_valid_stall3 #(parameter WIDTH = 8, DEPTH = 20, NUM_W = $clog2((DEPT
   logic [DEPTH-1:0] valid_buf, valid_buf_n;
 
 
-  buf_t1 #(.LAT(DEPTH), .WIDTH(1)) valid_buf(.clk, .rst, .v0, .data_in(us_valid & ~us_stall ),.data_out(ds_valid_out));
-  buf_t1 #(.LAT(DEPTH), .WIDTH(WIDTH)) data_buf(.clk,.rst,.data_in(us_data),.data_out(ds_data));
+  buf_t1 #(.LAT(DEPTH), .WIDTH(1)) v_buf(.clk, .rst, .v0, .data_in(us_valid & ~us_stall ),.data_out(ds_valid_out));
+  buf_t1 #(.LAT(DEPTH), .WIDTH(WIDTH)) data_buf(.clk,.rst,.v0,.data_in(us_data),.data_out(ds_data));
 
-  v_out_valid;
+  logic v_out_valid;
   always_comb begin
     case(DEPTH%3)
       0 : v_out_valid = v0 ;

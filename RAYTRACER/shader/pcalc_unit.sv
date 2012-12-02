@@ -9,13 +9,11 @@ module pcalc_unit(
 
   output logic pcalc_to_shader_valid,
   output pcalc_to_shader_data,
-  input logic pcalc_to_shader_stall
-
-  );
+  input logic pcalc_to_shader_stall,
   
-    input ray_vec_t vec,
-	  input float_t t,
-	  output vector_t pos);
+  input ray_vec_t vec,
+  input float_t t,
+  output vector_t pos);
  
 
   // pcalc math
