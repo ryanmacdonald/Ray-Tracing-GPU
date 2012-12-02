@@ -95,6 +95,9 @@ lshape:
 ps2_demo:
 	$(CC) $(FLAGS) -top ps2_demo COMMON/*v PS2/*v PERIPHERALS/*v
 
+send_refl:
+	$(CC) $(FLAGS) -top tb_send_reflect COMMON/*v RAYTRACER/shader/shade_structs.sv COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shader/dot_prod.sv RAYTRACER/shader/reflector.sv RAYTRACER/shader/send_reflect.sv RAYTRACER/shader/TBs/tb_send_reflect.sv
+
 ss: 
 	$(CC) $(FLAGS) -top tb_ss COMMON/*v COMMON/altfp*/*.v COMMON/bram/*.v  RAYTRACER/trav/* RAYTRACER/list/* RAYTRACER/raystore/* RAYTRACER/shortstack/*.sv
 
@@ -106,7 +109,7 @@ pcalc:
 	$(CC) $(FLAGS) -top tb_pcalc COMMON/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shader/pcalc.sv TBs/tb_pcalc.sv
 
 reflector:
-	$(CC) $(FLAGS) -top tb_refl COMMON/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shader/*v TBs/tb_refl.sv
+	$(CC) $(FLAGS) -top tb_refl COMMON/*v COMMON/altfp_mult/*v COMMON/altfp_add/*v RAYTRACER/shader/dot_prod.sv RAYTRACER/shader/reflector.sv TBs/tb_refl.sv
 
 
 shader: 

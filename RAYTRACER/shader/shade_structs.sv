@@ -19,9 +19,15 @@ typedef struct packed {
 
 typedef struct packed {
   rayID_t rayID;
-  vector_t // dir, p_int, normal
+  vector_t dir;
+  vector_t p_int; 
+  vector_t normal;
+} dirpint_to_sendreflect_t;
 
-} dirpint_to_sendreflect;
+typedef struct packed{
+  rayID_t rayID;
+  vector_t p_int;
+} sr_pvs_entry_t;
 
 typedef struct packed {
   rayID_t rayID;
@@ -40,6 +46,5 @@ typedef struct packed {
 } raydone_t;
 
 typedef struct packed {
-  
-
-} pix_store_to_calc_final_t
+  logic wut;
+} pix_store_to_calc_final_t;

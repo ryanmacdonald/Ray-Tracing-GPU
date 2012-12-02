@@ -71,6 +71,8 @@ module tb_prg;
 	end
 
 	always #5 clk = ~clk;
+	
+
 
 endmodule: tb_prg
 
