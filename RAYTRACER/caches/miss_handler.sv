@@ -80,7 +80,6 @@ module miss_handler
 	/**************** data register ****************/
 
 	logic [0:NUM_REQ-1][31:0] next_from_mh_data;
-	logic [$clog2(LINE_W)-1:0] data_reg_index_lo, data_reg_index_hi;
 	always_comb begin
 		next_from_mh_data = from_mh_data;
 		if(ld_data_inc_addr)

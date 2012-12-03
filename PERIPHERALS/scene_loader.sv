@@ -14,6 +14,7 @@ module scene_loader(
     output logic [31:0] sl_io, // SDRAM width
     output logic sl_we,
     output logic sl_done,
+    output logic segment_done, // hacky...
     input logic [7:0] xmodem_data_byte,
     input logic [7:0] sl_block_num,
     input logic xmodem_saw_valid_msg_byte,
@@ -44,10 +45,8 @@ module scene_loader(
     sl_state is, cs, good_ns, ns;
     sl_state checkpoint, next_checkpoint;
 
-    logic segment_done;
     assign segment_done = (cs.seg_offset_cnt == cs.seg_size);
 
-//    assign addr_offset = {meta_block_num, sl_block_num, byte_cnt[6:2]}; // not used anymore, I think
     assign sl_addr = base_addr + cs.seg_offset_cnt; // TODO: consider using concatenation
 
     assign received_four_bytes = byte3_ready & xmodem_saw_valid_msg_byte;

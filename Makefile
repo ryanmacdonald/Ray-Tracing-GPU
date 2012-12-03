@@ -14,11 +14,13 @@ trtr:
 	$(CC) $(FLAGS) -top trtr_tb COMMON/*v COMMON/altfp*/*.v RAYTRACER/int/* PRG/*v TBs/trtr_tb.sv PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv DEMOS/trtr.sv 
 
 t15:
-	$(CC) $(FLAGS) -top t15_tb COMMON/*v COMMON/altfp*/*.v COMMON/bram/*v COMMON/altbram_fifo/*v TBs/t15_tb.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v SDRAM/submodules/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/temporary_scene_retriever.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv CAMERA/*.sv RAYTRACER/raypipe*.sv  RAYTRACER/*/*v PRG/*v  DEMOS/t15.sv
+	$(CC) $(FLAGS) -top t15_tb COMMON/*v COMMON/altfp*/*.v COMMON/bram/*v COMMON/altbram_fifo/*v TBs/t15_tb.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v SDRAM/submodules/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv CAMERA/*.sv RAYTRACER/raypipe*.sv  RAYTRACER/*/*v PRG/*v  DEMOS/t15.sv
 
 t9:
-	$(CC) $(FLAGS) -top t9_tb COMMON/*v COMMON/altfp*/*.v COMMON/bram/*v COMMON/altbram_fifo/*v TBs/t9_tb.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v SDRAM/submodules/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/temporary_scene_retriever.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv CAMERA/*.sv RAYTRACER/raypipe*.sv  RAYTRACER/*/*v PRG/*v  DEMOS/t9.sv PS2/*v
+	$(CC) $(FLAGS) -top t9_tb COMMON/*v COMMON/altfp*/*.v COMMON/bram/*v COMMON/altbram_fifo/*v TBs/t9_tb.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v SDRAM/submodules/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv CAMERA/*.sv RAYTRACER/raypipe_2trav.sv  RAYTRACER/*/*v PRG/*v  DEMOS/t9.sv PS2/*v
 
+t5:
+	$(CC) $(FLAGS) -top t5_tb COMMON/*v COMMON/altfp*/*.v COMMON/bram/*v COMMON/altbram_fifo/*v TBs/t5_tb.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v SDRAM/submodules/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv CAMERA/*.sv RAYTRACER/raypipe_simple_caches.sv  RAYTRACER/*/*v PRG/*v  DEMOS/t5.sv PS2/*v
 
 t32:
 	$(CC) $(FLAGS) -top t32_tb COMMON/*v COMMON/altfp*/*.v TBs/t32_tb.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v SDRAM/submodules/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/temporary_scene_retriever.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv DEMOS/t32.sv

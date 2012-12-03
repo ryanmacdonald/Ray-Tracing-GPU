@@ -175,7 +175,7 @@ typedef struct packed {
 	// HDF assignments
 	assign hdf_data_in.side = pvs_ds_data.side;
 	assign hdf_data_in.rdata = rdata;
-	assign hdf_data_in.addr = pvs_ds_data.addr;
+	assign hdf_data_in.addr = pvs_ds_data.addr; // NOTE: is this needed?
 	assign hdf_we = pvs_ds_valid & hit;
 	assign hdf_re = ~ds_stall;
 
