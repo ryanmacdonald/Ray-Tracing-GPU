@@ -18,12 +18,6 @@ typedef struct packed {
 typedef struct packed {
   logic sign;
   logic [7:0] exp;
-  logic [6:0] man;
-} float24_t;
-
-typedef struct packed {
-  logic sign;
-  logic [7:0] exp;
   logic [18:0] man;
 } float28_t;
 

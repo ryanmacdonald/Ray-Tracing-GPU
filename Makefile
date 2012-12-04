@@ -126,6 +126,9 @@ pipedemo:
 norm:
 	$(CC) $(FLAGS) -top tb_norm COMMON/*v COMMON/altfp*/*.v RAYTRACER/shader/*v TBs/tb_norm.sv
 
+calc_direct:
+	$(CC) $(FLAGS) -top tb_calc_direct COMMON/*v COMMON/altfp*/*.v RAYTRACER/shader/shade_structs.sv RAYTRACER/shader/BU/calc_direct.sv RAYTRACER/shader/BU/norm.sv RAYTRACER/shader/BU/dot_prod.sv RAYTRACER/shader/TBs/tb_calc_direct.sv
+
 
 pixstore:
 	$(CC) $(FLAGS) -top pixstore COMMON/*v COMMON/bram/*.v RAYTRACER/shader/shade_structs.sv RAYTRACER/shader/pixstore.sv
