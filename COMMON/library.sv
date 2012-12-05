@@ -406,6 +406,7 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20, NUM_W = $clog2(DEPTH+
 endmodule
 
 
+
 module pipe_valid_stall3 #(parameter WIDTH = 8, DEPTH = 20, NUM_W = $clog2((DEPTH/3)+2)) (
   input logic clk, rst,
   input logic v0, v1, v2,
@@ -724,62 +725,82 @@ module general_arbitor #(parameter NUM_IN=4, NUM_OUT=2, WIDTH=10)  (
 
 endmodule
 
-/*
-module samll_arbitor #(parameter NUM_IN=4, NUM_OUT=2, WIDTH=10)  (
-	input logic clk, rst,
 
-	input logic [NUM_IN-1:0] valid_us,
-	output logic [NUM_IN-1:0] stall_us,
-	input logic [NUM_IN-1:0][WIDTH-1:0] data_us,
+module small_arbitor #(parameter NUM_IN=4, WIDTH = 10, FIFO_DEPTH = 2) (
 
-	output logic [NUM_OUT-1:0] valid_ds,
-	input logic [NUM_OUT-1:0] stall_ds,
-	output [NUM_OUT-1:0][WIDTH-1:0] data_ds
-);
+  input clk, rst,
+  input logic [NUM_IN-1:0] valid_us,
+  output logic [NUM_IN-1:0] stall_us,
+  input logic [NUM_IN-1:0][WIDTH-1:0] data_us,
 
-	logic [NUM_OUT-1:0][WIDTH-1:0] arb_fifo_in, arb_fifo_out;
-	logic [NUM_OUT-1:0] arb_fifo_full;
-	logic [NUM_OUT-1:0] arb_fifo_empty;
-	logic [NUM_OUT-1:0] arb_fifo_re;
-	logic [NUM_OUT-1:0] arb_fifo_we;
-	logic [9:0] num_left_in_arb_fifo; // TODO verify width
 
-	logic [NUM_IN-1:0][$clog2(NUM_IN)-1:0] rrp_arr, rrp_arr_n;
+  output logic valid_ds,
+  input logic stall_ds,
+  output [WIDTH-1:0] data_ds
 
-	logic [NUM_IN-1:0] choice;
-	logic [NUM_OUT-1:0] chosen;
-	logic [NUM_OUT-1:0][WIDTH-1:0] chosen_data;
+  );
 
-	genvar j;
-	generate
-	  for(j=0; j<NUM_IN; j++) begin : hurrdurr_rptr
-		assign rrp_arr_n[j] = |choice ? (rrp_arr[j] == (NUM_IN-1) ? 'h0 : rrp_arr[j] + 1'b1) : rrp_arr[j] ;
-		ff_ar #($clog2(NUM_IN),j) rrp_arr_buf(.d(rrp_arr_n[j]), .q(rrp_arr[j]), .clk, .rst);
-	  end :hurrdurr_rptr
-	endgenerate
+  
+	logic [NUM_IN-1:0] valid_TMP_us;
+	logic [NUM_IN-1:0] stall_TMP_us;
+	logic [NUM_IN-1:0][WIDTH-1:0] data_TMP_us;
 
-	always_comb begin
-		chosen = 'b0;
-		choice = 'b0;
-		chosen_data = `DC;
-		for(int i=0; i<NUM_OUT; i++) begin
-			for(int j=0; j<NUM_IN; j++) begin
-				if(~arb_fifo_full[i] && ~chosen[i] && valid_us[rrp_arr[j]] && ~choice[rrp_arr[j]]) begin
-					chosen_data[i] = data_us[rrp_arr[j]];
-					chosen[i] = 1'b1;
-					choice[rrp_arr[j]] = 1'b1;
-				end
-			end
-		end
-	end
 
-  // TODO: verify the code below
+  VS_buf #(WIDTH) VS_buf_inputs[NUM_IN-1:0] (
+    .clk, .rst,
+    .stall_us,
+    .data_us,
+    .valid_us,
+    .stall_ds(stall_TMP_us),
+    .data_ds(data_TMP_us),
+    .valid_ds(valid_TMP_us)
+  );
 
-  assign stall_us = valid_us & ~choice;
+
+  logic [WIDTH-1:0] arb_fifo_in, arb_fifo_out;
+  logic arb_fifo_full;
+  logic arb_fifo_empty;
+  logic arb_fifo_re;
+  logic arb_fifo_we;
+  logic [1:0] num_left_in_arb_fifo;
+
+  logic [NUM_IN-1:0][$clog2(NUM_IN)-1:0] rrptr_arr, rrptr_arr_n;
+  
+
+  genvar j;
+  generate
+    for(j=0; j<NUM_IN; j++) begin : hurrdurr_rptr
+      assign rrptr_arr_n[j] = ~arb_fifo_full & (|valid_TMP_us) ? (rrptr_arr[j] == (NUM_IN-1) ? 'h0 : rrptr_arr[j] + 1'b1) : rrptr_arr[j] ;
+      ff_ar #($clog2(NUM_IN),j) rrptr_arr_buf(.d(rrptr_arr_n[j]), .q(rrptr_arr[j]), .clk, .rst);
+    end :hurrdurr_rptr
+  endgenerate
+
+  logic [NUM_IN-1:0] choice;
+  logic chosen;
+  logic [WIDTH-1:0] chosen_data;
+  always_comb begin
+    choice = 'h0;
+    chosen_data = `DC;
+    choice[rrptr_arr[0]] = ~arb_fifo_full & valid_TMP_us[rrptr_arr[0]];
+    chosen = ~arb_fifo_full & valid_TMP_us[rrptr_arr[0]];
+    if(chosen) chosen_data = data_TMP_us[rrptr_arr[0]];
+    for(int i=1; i<NUM_IN; i++) begin
+      choice[rrptr_arr[i]] = chosen ? 1'b0 : ~arb_fifo_full & valid_TMP_us[rrptr_arr[i]] ;
+	  if(~chosen & ~arb_fifo_full & valid_TMP_us[rrptr_arr[i]]) begin
+      		  chosen_data = data_TMP_us[rrptr_arr[i]];
+      		  chosen = 1'b1;
+	  end
+//      chosen = chosen | (~arb_fifo_full & valid_TMP_us[rrptr_arr[i]]) ;
+
+    end
+  end
+  
+  assign stall_TMP_us = valid_TMP_us & ~choice;
+  
   assign arb_fifo_in = chosen_data;
   assign arb_fifo_we = chosen;
-  
-	  fifo #(.DEPTH(2), .WIDTH(WIDTH) ) arb_fifo_inst [NUM_OUT-1:0] (
+	  
+    fifo #(.DEPTH(FIFO_DEPTH), .WIDTH(WIDTH) ) arb_fifo_inst (
 		.clk, .rst,
 		.data_in(arb_fifo_in),
 		.data_out(arb_fifo_out),
@@ -789,10 +810,12 @@ module samll_arbitor #(parameter NUM_IN=4, NUM_OUT=2, WIDTH=10)  (
 		.we(arb_fifo_we),
 		.num_left_in_fifo(num_left_in_arb_fifo),
 		.exists_in_fifo());    
-  
+ 
+
   assign valid_ds = ~arb_fifo_empty;
   assign arb_fifo_re = valid_ds & ~stall_ds ;
   assign data_ds = arb_fifo_out;
 
+
 endmodule
-*/
+

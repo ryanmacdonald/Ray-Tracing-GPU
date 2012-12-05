@@ -44,7 +44,7 @@ module send_reflect(input logic clk, rst,
 	assign us_valid = dirpint_to_sendreflect_valid && ~dirpint_to_sendreflect_stall;
 	assign us_data.rayID = dirpint_to_sendreflect_data.rayID;
 	assign us_data.p_int = dirpint_to_sendreflect_data.p_int;
-	assign dirpint_to_sendreflect_stall = us_stall || ~v0;
+	assign dirpint_to_sendreflect_stall = dirpint_to_sendreflect_valid && (us_stall || ~v0);
 	pipe_valid_stall3 #($bits(sr_pvs_entry_t),42) pvs(.us_valid,.us_data,.us_stall,
 					     .ds_valid,.ds_data,.ds_stall,
 					     .num_left_in_fifo(f_num_left_in_fifo),

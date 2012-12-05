@@ -35,6 +35,8 @@ typedef struct packed {
 
 } vector24_t;
 
+
+
 typedef struct packed {
   logic [15:0] ID;
 } triID_t;
@@ -112,6 +114,12 @@ typedef struct packed {
   float_t green;
   float_t blue;
 } float_color_t;
+
+typedef struct packed {
+  float24_t red;
+  float24_t green;
+  float24_t blue;
+} float24_color_t;
 
 typedef struct packed {
   color_t color;

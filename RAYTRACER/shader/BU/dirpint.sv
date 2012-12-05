@@ -6,7 +6,7 @@ module dirpint (
   input rayID_t waddr_dirpint,
   input logic we_dirpint,
   
-    
+  
   input scache_to_dirpint_t scache_to_dirpint_data,
   input logic scache_to_dirpint_valid,
   output logic scache_to_dirpint_stall,
@@ -16,7 +16,7 @@ module dirpint (
   output dirpint_to_cc_t dirpint_to_cc_data,
   output logic dirpint_to_cc_valid
 
-
+  
   );
 
 
@@ -28,7 +28,7 @@ module dirpint (
   logic wren_dirpint;
   rayID_t raddr_dirpint;
   ray_vec_t rddata_dirpint;
-  assign raddr_dirpint = arb_to_dirpint_data;
+  assign raddr_dirpint = scache_to_dirpint_data.rayID;
 
   bram_dual_rw_512x19 dirpint_bram(
   //.aclr(rst),
@@ -36,7 +36,7 @@ module dirpint (
   .wraddress(waddr_dirpint),
   .clock(clk),
   .data(wdata_dirpint),
-  .wren(wren_dirpint),
+  .wren(we_dirpint),
   .q(rddata_dirpint) );
 
 
