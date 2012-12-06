@@ -87,9 +87,9 @@ module prg(input logic clk, rst,
 	
 	// Logic to assign appropriate scales, indices, num_rays, constants
 	always_comb begin
-		//num_rays = `RES_0;
-		//max_y_index = 5'd0; pw = `PW_0; 
-		//rows = `ROWS_RES_0; cols = `COLS_RES_0;
+		num_rays = `RES_0;
+		max_y_index = 5'd0; pw = `PW_0; 
+		rows = `ROWS_RES_0; cols = `COLS_RES_0;
 		case(scale)
 			3'd0:begin
 				num_rays = `RES_0;

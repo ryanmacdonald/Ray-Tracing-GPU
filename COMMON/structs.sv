@@ -18,12 +18,6 @@ typedef struct packed {
 typedef struct packed {
   logic sign;
   logic [7:0] exp;
-  logic [6:0] man;
-} float24_t;
-
-typedef struct packed {
-  logic sign;
-  logic [7:0] exp;
   logic [18:0] man;
 } float28_t;
 
@@ -110,9 +104,9 @@ typedef struct packed {
 } ray_vec_t;
 
 typedef struct packed {
-  logic [7:0] red;
-  logic [7:0] green;
-  logic [7:0] blue;
+  logic [4:0] red;
+  logic [4:0] green;
+  logic [5:0] blue;
 } color_t ;
 
 typedef struct packed {

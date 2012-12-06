@@ -406,6 +406,7 @@ module pipe_valid_stall #(parameter WIDTH = 8, DEPTH = 20, NUM_W = $clog2(DEPTH+
 endmodule
 
 
+
 module pipe_valid_stall3 #(parameter WIDTH = 8, DEPTH = 20, NUM_W = $clog2((DEPTH/3)+2)) (
   input logic clk, rst,
   input logic v0, v1, v2,
