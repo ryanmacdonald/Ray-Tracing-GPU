@@ -13,11 +13,22 @@ typedef struct packed {
   vector_t light;
 } scache_to_sendshadow_t;
 
+typedef struct packed {
+  rayID_t rayID;
+  triID_t triID;
+  logic is_miss;
+  logic is_shadow;
+  logic is_last;
+} triidstate_to_scache;
 
 typedef struct packed {
   rayID_t rayID;
   vector24_t normal;
   float24_color_t f_color;
+  logic is_miss;
+  logic is_shadow;
+  logic is_last;
+
 } scache_to_dirpint_t;
 
 
@@ -31,8 +42,9 @@ typedef struct packed {
 
 typedef struct packed {
   rayID_t rayID;
-  triID_t triID;
-} triidstate_to_scache;
+  
+} dirpint_to_calcdirect;
+
 
 
 typedef struct packed{
@@ -40,11 +52,6 @@ typedef struct packed{
   vector_t p_int;
 } sr_pvs_entry_t;
 
-
-typedef struct packed {
-  rayID_t rayID;
-
-} dirpint_to_calcdirect;
 
 
 typedef struct packed {
