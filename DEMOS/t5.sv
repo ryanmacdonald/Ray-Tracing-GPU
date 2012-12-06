@@ -163,6 +163,9 @@ module t_minus_5_days(
 		.data_out(pb_data_ds), .num_left_in_fifo(),
 		.empty(pb_empty), .full(pb_full), .exists_in_fifo());
 
+	logic [2:0] scale;
+	assign scale = 3'b000; // TODO
+//	simple_frame_buffer_handler fbh(.*, .pb_data(pb_data_ds));
 	frame_buffer_handler fbh(.*, .pb_data(pb_data_ds));
 
 endmodule: t_minus_5_days

@@ -104,6 +104,12 @@ typedef struct packed {
 } ray_vec_t;
 
 typedef struct packed {
+  logic [4:0] red;
+  logic [5:0] green;
+  logic [4:0] blue;
+} color16_t;
+
+typedef struct packed {
   logic [7:0] red;
   logic [7:0] green;
   logic [7:0] blue;
