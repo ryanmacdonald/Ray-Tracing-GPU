@@ -6,7 +6,10 @@
 // C --> Diffuse light color
 // B --> Background color
 // N --> Normal of triangle
-// L --> Normal from triangle to light
+// L --> Light Position
+// TODO ryan, make A and C and B, L  be seperate inputs
+// TODO also noticed that you have no fifos to go along with pipe valid stall
+// TODO also the dirpint unit needs the upstream stalls to be independent of the valid coming in
 
 module calc_direct(input logic clk, rst,
 		   input logic v0, v1, v2,

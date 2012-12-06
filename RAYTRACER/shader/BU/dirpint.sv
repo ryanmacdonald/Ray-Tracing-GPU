@@ -13,9 +13,13 @@ module dirpint (
   
   
   input logic dirpint_to_calcdirect_stall,
-  output dirpint_to_cc_t dirpint_to_cc_data,
-  output logic dirpint_to_cc_valid
+  output dirpint_to_calc_direct_t dirpint_to_calc_direct_data,
+  output logic dirpint_to_calc_direct_valid,
 
+  input logic dirpint_to_sendreflect_stall,
+  output dirpint_to_sendreflect_t dirpint_to_sendreflect_data,
+  output logic dirpint_to_sendreflect_valid
+  
   
   );
 
@@ -25,7 +29,6 @@ module dirpint (
 //------------------------------------------------------------------------
   // dirpint bram
 
-  logic wren_dirpint;
   rayID_t raddr_dirpint;
   ray_vec_t rddata_dirpint;
   assign raddr_dirpint = scache_to_dirpint_data.rayID;
@@ -41,7 +44,14 @@ module dirpint (
 
 
 //------------------------------------------------------------------------
-  float_color_t dirpint_VSpipe_in, dirpint_VSpipe_out;
+  struct packed {
+    rayID_t rayID;
+    vector24_t normal;
+    float24_T f_color;
+    logic is_miss;
+    logic is_shadow;
+    logic is_last;
+  } dirpint_VSpipe_in, dirpint_VSpipe_out;
 
   logic dirpint_VSpipe_valid_us, dirpint_VSpipe_stall_us;
   logic dirpint_VSpipe_valid_ds, dirpint_VSpipe_stall_ds;
@@ -49,6 +59,15 @@ module dirpint (
 
   assign dirpint_VSpipe_valid_us = arb_to_dirpint_valid;
   assign dirpint_VSpipe_in = arb_to_dirpint_data.f_color;
+
+  always_comb begin
+    dirpint_VSpipe_in.rayID = scache_to_dirpnt.rayID;
+    dirpint_VSpipe_in.normal = scache_to_dirpnt.normal;
+    dirpint_VSpipe_in.f_color = scache_to_dirpnt.f_color;
+    dirpint_VSpipe_in.is_miss = scache_to_dirpnt.is_miss;
+    dirpint_VSpipe_in.is_shadow = scache_to_dirpnt.is_shadow;
+    dirpint_VSpipe_in.is_last = scache_to_dirpnt.is_last;
+  end
 
   pipe_valid_stall #(.WIDTH($bits(dirpint_VSpipe_in)), .DEPTH(2)) pipe_inst(
     .clk, .rst,
@@ -60,9 +79,11 @@ module dirpint (
     .ds_stall(dirpint_VSpipe_stall_ds),
     .num_left_in_fifo(num_left_in_dirpint_fifo) );
 
+
+
   
 //------------------------------------------------------------------------
-  //fifo for pixel buffer
+  //fifo for dirpnt
 
 
   dirpint_to_cc_t dirpint_fifo_in, dirpint_fifo_out;
@@ -73,8 +94,10 @@ module dirpint (
   logic dirpint_fifo_we;
 
   always_comb begin
-    dirpint_fifo_in.pixelID = rddata_dirpint;
+    dirpint_fifo_in.rayID = rddata_dirpint;
     dirpint_fifo_in.f_color = dirpint_VSpipe_out; 
+ // add more shit 
+  
   end
   assign dirpint_fifo_re = ~dirpint_to_cc_stall & ~dirpint_fifo_empty;
   assign dirpint_fifo_we = dirpint_VSpipe_valid_ds;
@@ -92,6 +115,44 @@ module dirpint (
     .we(dirpint_fifo_we),
     .num_left_in_fifo(num_left_in_dirpint_fifo),
     .exists_in_fifo());
+
+  logic good_to_sendreflect;
+  assign good_to_sendreflect = dirpint_fifo_out.is_last & dirpint_fifo_out.is_shadow
+
+  logic ds_stall;
+  assign ds_stall = dirpint_to_calc_direct_stall | 
+                   (dirpint_to_sendreflect_stall & ~dirpint_fifo_out.is_last);
+
+  
+
+  // Output to sendreflect
+  always_comb begin
+    dirpint_to_sendreflect = 
+  end
+  assign 
+
+
+typedef struct packed {
+  rayID_t rayID;
+  vector_t dir;
+  vector_t p_int; 
+  vector_t normal;
+} dirpint_to_sendreflect_t;
+
+
+typedef struct packed {
+  rayID_t rayID;
+  float_t A; // ambient color of scene
+  float_t K; // color of triangle
+  float_t C; // 
+  logic is_shadow;
+  logic is_miss;
+  logic is_last;
+  vector_t N; // Normal
+  vector_t p_int;  // point of intersection
+  vector_t L; // Light Position  // TODO get rid of this vector and do the L calculation within directcalc
+} dirpint_to_calc_direct_t;
+
 
 
 endmodule    
