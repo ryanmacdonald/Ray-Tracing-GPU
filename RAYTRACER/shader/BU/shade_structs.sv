@@ -15,6 +15,13 @@ typedef struct packed {
 
 typedef struct packed {
   rayID_t rayID;
+  vector_t normal;
+  vector_t light;
+  vector_t p_int;
+} scache_to_sendshadow;
+
+typedef struct packed {
+  rayID_t rayID;
   triID_t triID;
   logic is_miss;
   logic is_shadow;
@@ -64,4 +71,5 @@ typedef struct packed {
   pixelID_t pixelID;
   float_color_t f_color;
 } pixstore_to_cc_t;
+
 

@@ -4,7 +4,7 @@ module BM(
   input logic v0,v1,v2,
 
   input is_init,
-  rayID_t init_rayID,
+  input rayID_t init_rayID,
 
   input calc_direct_to_BM_t calc_direct_to_BM_data,
   input logic calc_direct_to_BM_valid,

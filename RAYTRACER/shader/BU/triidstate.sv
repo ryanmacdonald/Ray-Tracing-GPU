@@ -9,9 +9,11 @@ module triidstate(
   output logic triidstate_stall_us,
 
   input logic wren_triid,
-  input triID_t triid_wrdata,
-  input logic is_spec_wrdata,
-
+  input rayID_t waddr_triid,
+  input logic is_spec_wdata,
+  input triID_t triid_wdata,
+  
+  
   output logic triidstate_to_scache_valid,
   output triidstate_to_scache_t triidstate_to_scache_data,
   input logic triidstate_to_scache_stall

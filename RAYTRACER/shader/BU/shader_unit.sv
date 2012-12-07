@@ -63,9 +63,10 @@ module simple_shader_unit(
   shadow_or_miss_t triidstate_data_us;
   logic triidstate_stall_us;
 
-  logic wren_triid;
-  triID_t triid_wrdata;
-  logic is_spec_wrdata;
+  logic wren_triid,
+  rayID_t waddr_triid,
+  logic is_spec_wdata,
+  triID_t triid_wdata,
 
   logic triidstate_to_scache_valid;
   triidstate_to_scache_t triidstate_to_scache_data;
@@ -235,7 +236,7 @@ module simple_shader_unit(
   logic [1:0][$bits(shader_to_scache_t)-1:0] toscache_arb_data_us;
   logic toscache_arb_valid_ds;
   logic toscache_arb_stall_ds;
-  to_shader_t toscache_arb_data_ds;
+  shader_to_scache_t toscache_arb_data_ds;
 
   shader_to_scache_t from_pcalc, from_triidstate;
   always_comb begin
@@ -280,7 +281,11 @@ module simple_shader_unit(
 		.data_ds(toscache_arb_data_ds)
 	);
 
+  assign shader_to_scache_data = toscache_arb_data_ds;
+  assign shader_to_scache_valid = toscache_arb_valid_ds;
+  assign toscache_arb_stall_ds = shader_to_scache_stall;
 
+  assign scache_to_shader_stall = scache_to_shader_valid & (scache_to_shader_data.is_dirpint ? scache_to_dirpint_stall : scache_to_sendshadow_stall ;
 
 //------------------------------------------------------------------------
   // miss_or_shadow arbitration
@@ -290,22 +295,28 @@ module simple_shader_unit(
   logic [3:0][$bits(shadow_or_miss_t)-1:0] mos_arb_data_us;
   logic mos_arb_valid_ds;
   logic mos_arb_stall_ds;
-  to_shader_t mos_arb_data_ds;
+  shadow_or_miss_t mos_arb_data_ds;
+
+// rayID, shadow, miss
 
   always_comb begin
     mos_arb_valid_us[0] = send_shadow_to_arb_valid;
     mos_arb_data_us[0] = send_shadow_to_arb_data;
+    send_shadow_to_arb_stall = mos_arb_stall_us[0];
     
-    mos_arb_valid_us[1] = send_shadow_to_arb_valid;
-    mos_arb_data_us[1] = send_shadow_to_arb_data;
-    
-    mos_arb_valid_us[2] = send_shadow_to_arb_valid;
-    mos_arb_data_us[2] = send_shadow_to_arb_data;
+    mos_arb_valid_us[1] = int_to_shader_valid;
+    mos_arb_data_us[1] = {int_to_shader_data.rayID, 1'b1, 1'b0};
+    int_to_shader_stall = mos_arb_stall_us[1];
+   
+    mos_arb_valid_us[2] = sint_to_shader_valid;
+    mos_arb_data_us[2] = {sint_to_shader_data.rayID, 1'b0, 1'b1};
+    sint_to_shader_stall = mos_arb_stall_us[2];
 
-    mos_arb_valid_us[3] = send_shadow_to_arb_valid;
-    mos_arb_data_us[3] = send_shadow_to_arb_data;
-  end
-
+    mos_arb_valid_us[3] = ss_to_shader_valid;
+    mos_arb_data_us[3] = {ss_to_shader_data.rayID, ss_to_shader_data.is_shadow, 1'b1};
+    ss_to_shader_stall = mos_arb_stall_us[3];
+ end
+  
 
   mos_arbitor #(.NUM_IN(4), .WIDTH($bits(shadow_or_miss_t))) to_scache_inst(
 		.clk,
@@ -317,10 +328,34 @@ module simple_shader_unit(
 		.stall_ds(mos_arb_stall_ds),
 		.data_ds(mos_arb_data_ds)
 	);
+  
+  assign triidstate_data_us = mos_arb_data_ds;
+  assign triidstate_valid_us = mos_arb_valid_ds;
+  assign mos_arb_stall_ds = triidstate_stall_us;
+
+  function vector_t convert24_32(vector24_t vec24);
+    vector_t r;
+    r.x = {vec24.x,8'h0};
+    r.y = {vec24.y,8'h0};
+    r.z = {vec24.z,8'h0};
+    return r;
+  endfunction
 
 //------------------------------------------------------------------------
   // sendshadow
-	send_shadow send_shadow_inst(
+	assign scache_to_sendshadow_valid = scache_to_shader_valid & ~scache_to_shader_data.is_dirpint & ~scache_to_sendshadow_stall;
+  always_comb begin
+    scache_to_sendshadow_data.rayID = scache_to_shader.rayID;
+    scache_to_sendshadow_data.normal = convert24_32(scache_to_shader.normal);
+    scache_to_sendshadow_data.light.x = $shortrealtobits(-10);
+    scache_to_sendshadow_data.light.y = $shortrealtobits(-10);
+    scache_to_sendshadow_data.light.z = $shortrealtobits(-10);
+    scache_to_sendshadow_data.p_int = scache_to_shader.p_int;
+  end
+
+  -10, 5, 10
+  
+  send_shadow send_shadow_inst(
 		.clk,
 		.rst,
 		.v0, .v1, .v2,
@@ -338,10 +373,17 @@ module simple_shader_unit(
 
 //------------------------------------------------------------------------
   // triidstate
+
+  assign wren_triid = scache_to_sendshadow_valid & ~scache_to_shadow_stall;
+  assign waddr_triid = scache_to_shader_data.rayID;
+  assign triid_wdata = scache_to_shader_data.triID;
+  assign is_spec_wdata = |scache_to_shader_data.spec;
+
  triidstate triidstate_inst(
 		.clk,
 		.rst,
-		.triidstate_valid_us,
+		.max_reflect(0), // TODO change this probably
+    .triidstate_valid_us,
 		.triidstate_data_us,
 		.triidstate_stall_us,
 		.wren_triid,
@@ -353,9 +395,17 @@ module simple_shader_unit(
 	);
 
 
-
 //------------------------------------------------------------------------
   // dirpint
+
+  assign we_dirpint = pcacl_to_shader_valid & ~pcalc_to_shader_stall;
+  assign waddr_dirpint = pcalc_to_shader.rayID;
+  always_comb begin
+    wdata_dirpint.origin = pcalc_to_shader.p_int;
+    wdata_dirpint.dir = pcalc_to_shader.dir;
+  end
+
+
 	dirpint dirpint_inst(
 		.clk,
 		.rst,
@@ -396,8 +446,8 @@ module simple_shader_unit(
 		.clk,
 		.rst,
 		.v0, .v1, .v2,
-		.ambient,
-		.light_color,
+		.ambient($shortrealtobits(0.2) ), // TODO
+		.light_color( $shortrealtobits(1)), //
 		.dirpint_to_calc_direct_stall,
 		.dirpint_to_calc_direct_data,
 		.dirpint_to_calc_direct_valid,
@@ -414,6 +464,7 @@ module simple_shader_unit(
 		.clk,
 		.rst,
 		.is_init,
+    .init_rayID,
 		.calc_direct_to_BM_data,
 		.calc_direct_to_BM_valid,
 		.calc_direct_to_BM_stall,
@@ -426,6 +477,49 @@ module simple_shader_unit(
 
 //------------------------------------------------------------------------
   // ray_issue arbitration
+
+  logic [2:0] sint_arb_valid_us;
+  logic [2:0] sint_arb_stall_us;
+  logic [2:0][$bits(shader_to_sint_t)-1:0] sint_arb_data_us;
+  logic sint_arb_valid_ds;
+  logic sint_arb_stall_ds;
+  shader_to_sint_t sint_arb_data_ds;
+
+// rayID, shadow, miss
+
+  always_comb begin
+    sint_arb_valid_us[0] = shader_to_sint_valid;
+    sint_arb_data_us[0] = shader_to_sint_data;
+    shader_to_sint_stall = sint_arb_stall_us[0];
+    
+    sint_arb_valid_us[1] = send_reflect_to_sint_valid;
+    sint_arb_data_us[1] = send_reflect_to_sint_data;
+    send_reflect_to_sint_stall = sint_arb_stall_us[1];
+   
+    sint_arb_valid_us[2] = send_prg_to_sint_valid;
+    sint_arb_data_us[2] = send_prg_to_sint_data;
+    send_prg_to_sint_stall = sint_arb_stall_us[2];
+ end
+  
+
+  sint_arbitor #(.NUM_IN(3), .WIDTH($bits(shadow_or_miss_t))) to_scache_inst(
+		.clk,
+		.rst,
+		.valid_us(sint_arb_valid_us),
+		.stall_us(sint_arb_stall_us),
+		.data_us(sint_arb_data_us),
+		.valid_ds(sint_arb_valid_ds),
+		.stall_ds(sint_arb_stall_ds),
+		.data_ds(sint_arb_data_ds)
+	);
+ 
+  assign shader_to_sint_valid = sint_arb_valid_ds;
+  assign shader_to_sint_data = sint_arb_data_ds;
+  assign sint_arb_stall_ds = shader_to_sint_stall;
+  
+  assign raystore_we = shader_to_sint_valid & ~shader_to_sint_stall ;
+  assign raystore_write_addr = shader_to_sint_data.rayID;
+  assign raystore_write_data = shader_to_sint_data.ray_vec;
 
 
 
