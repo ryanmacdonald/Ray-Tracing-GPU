@@ -1,9 +1,10 @@
 
-module send_shadow(input logic clk, rst,
+module send_shadow(
+       input logic clk, rst,
 		   input logic v0, v1, v2,
 
 		   input logic scache_to_sendshadow_valid,
-  		   input scache_to_sendshadow_t scache_to_sendshadow_data,
+  		 input scache_to_sendshadow_t scache_to_sendshadow_data,
 		   output logic scache_to_sendshadow_stall,
 
 		   output logic sendshadow_to_sint_valid,
@@ -12,7 +13,8 @@ module send_shadow(input logic clk, rst,
 
 		   output logic shadow_or_miss_valid,
 		   output shadow_or_miss_t shadow_or_miss_data,
-		   input logic shadow_or_miss_stall);
+		   input logic shadow_or_miss_stall
+       );
 
 
 	`ifndef SYNTH

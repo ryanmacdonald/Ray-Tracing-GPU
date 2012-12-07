@@ -32,7 +32,7 @@ typedef struct packed {
 
 typedef struct packed {
   rayID_t rayID;
-  float_t color;
+  float_color_t f_color;
   float16_t spec; // RYAN ADD THIS
   logic is_last;
 
