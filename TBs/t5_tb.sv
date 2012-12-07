@@ -228,6 +228,8 @@ module t5_tb;
 
     int manual_addr;
 
+	logic [9:0] vga_row, vga_col;
+
     int k;
     int byte_cnt;
 
@@ -308,6 +310,22 @@ module t5_tb;
         good = $time - t;
         $display("length of render = %t, num cycles = %d",good,good/`CLOCK_PERIOD);
 
+		assign vga_row = t5.fbh.reader.vga_row;
+		assign vga_col = t5.fbh.reader.vga_col;
+		vga_capture("screen.txt"); // NEW
+
+        @(posedge clk);
+		force t5.rp.prg_inst.scale = 3'd1;
+        force t5.render_frame = 1'b1;
+        @(posedge clk);
+        force t5.render_frame = 1'b0;
+
+        while(~t5.rendering_done)
+            @(posedge clk);
+
+
+		vga_capture("screen2.txt"); // NEW
+
 		/*
         repeat(10000) @(posedge clk);
 
@@ -335,8 +353,8 @@ module t5_tb;
     end
 
     final begin
-        screen_dump("screen.txt"); // perform screen dump
-        $finish;
+        screen_dump_16("screen3.txt"); // perform screen dump
+        $finish; // necessary?
     end
 
     logic rst;
