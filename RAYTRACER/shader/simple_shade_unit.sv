@@ -269,7 +269,8 @@ module simple_shader_unit(
   assign shader_to_sint_valid = prg_to_shader_valid & ~rayID_empty;
   always_comb begin
     shader_to_sint_data.rayID = rayID_fifo_out;
-    shader_to_sint_data.is_shadow = {$random}%4;
+//    shader_to_sint_data.is_shadow = {$random}%4;
+    shader_to_sint_data.is_shadow = 1'b0;
     shader_to_sint_data.ray_vec = prg_ray_vec;
   end
   assign rayID_rdreq = prg_to_shader_valid & ~prg_to_shader_stall ;

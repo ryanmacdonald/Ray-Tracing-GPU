@@ -110,9 +110,9 @@ typedef struct packed {
 
 typedef struct packed {
   logic [4:0] red;
-  logic [4:0] green;
-  logic [5:0] blue;
-} color_t ;
+  logic [5:0] green;
+  logic [4:0] blue;
+} color16_t;
 
 typedef struct packed {
   float_t red;
