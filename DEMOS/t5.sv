@@ -59,6 +59,7 @@ module t_minus_5_days(
 	// Ray pipe outputs
 	pixel_buffer_entry_t pb_data_us;
 	logic pb_we;
+	logic [2:0] scale;
 
 	// xmodem outputs
     logic xmodem_done;
@@ -84,6 +85,7 @@ module t_minus_5_days(
 
 	// frame buffer handler output
 	logic pb_re;
+	logic rendering_done;
 
 	// PS/2 outputs
 	keys_t    keys;             // Keys packet from PS/2 
@@ -99,7 +101,6 @@ module t_minus_5_days(
 
 		// TODO: make AABB from scene file instead of constant
 		logic  v0, v1, v2;
-		logic  rendering_done;
 		AABB_t sceneAABB;
 		
 	logic[1:0] cnt, cnt_n;
@@ -110,11 +111,6 @@ module t_minus_5_days(
 	assign v1 = (cnt == 2'b01);
 	assign v2 = (cnt == 2'b10);
 
-	logic[18:0] rendcnt, rendcnt_n;
-	assign rendcnt_n = pb_re ? ( rendering_done ? 19'b1 : rendcnt + 19'b1) : rendcnt;
-	ff_ar #(19,0) pb_cnt(.q(rendcnt),.d(rendcnt_n),.clk,.rst);
-
-	assign rendering_done = (rendcnt == `num_rays);
 
 	assign sceneAABB.xmin = 'h0;
 	assign sceneAABB.ymin = 'h0;
@@ -163,9 +159,7 @@ module t_minus_5_days(
 		.data_out(pb_data_ds), .num_left_in_fifo(),
 		.empty(pb_empty), .full(pb_full), .exists_in_fifo());
 
-	logic [2:0] scale;
-	assign scale = 3'b000; // TODO
-//	simple_frame_buffer_handler fbh(.*, .pb_data(pb_data_ds));
-	frame_buffer_handler fbh(.*, .pb_data(pb_data_ds));
+	simple_frame_buffer_handler fbh(.*, .pb_data(pb_data_ds));
+//	frame_buffer_handler fbh(.*, .pb_data(pb_data_ds));
 
 endmodule: t_minus_5_days

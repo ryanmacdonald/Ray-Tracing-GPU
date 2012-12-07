@@ -222,8 +222,10 @@
 `endif
 
 
-`define VGA_NUM_ROWS        10'd`NUM_ROWS
-`define VGA_NUM_COLS        10'd`NUM_COLS
+//`define VGA_NUM_ROWS        10'd`NUM_ROWS
+//`define VGA_NUM_COLS        10'd`NUM_COLS
+`define VGA_NUM_ROWS        10'd480
+`define VGA_NUM_COLS        10'd640
 
 
 // following in terms of 25 MHz clock
@@ -278,10 +280,18 @@
 ////////////////////// End of Defines for PRG //////////////////////
 
 ////////////////////// Defines for shader /////////////////////////
-`define MISS_COLOR 24'hff_ff_ff
-`define TRI_0_COLOR 24'haa_aa_aa
-`define TRI_2_COLOR 24'h08_cc_08
-`define TRI_1_COLOR 24'hf8_f8_02
-`define TRI_3_COLOR 24'hff_01_01
+
+// old 24 bit color
+//`define MISS_COLOR 24'hff_ff_ff
+//`define TRI_0_COLOR 24'haa_aa_aa
+//`define TRI_2_COLOR 24'h08_cc_08
+//`define TRI_1_COLOR 24'hf8_f8_02
+//`define TRI_3_COLOR 24'hff_01_01
+
+`define MISS_COLOR 16'hff_ff
+`define TRI_0_COLOR 16'b10101_101010_10101
+`define TRI_2_COLOR 16'b00000_110000_00000
+`define TRI_1_COLOR 16'b11111_111111_00000
+`define TRI_3_COLOR 16'b11111_000000_00000
 
 `endif

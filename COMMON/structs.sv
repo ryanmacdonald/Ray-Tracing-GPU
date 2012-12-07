@@ -221,23 +221,25 @@ typedef struct packed {
   float16_t spec;
   
   vector_t p_int;
-
+  triID_t triID;
   logic is_miss;
   logic is_shadow;
   logic is_last;
+  logic is_dirpint;
 
-} shader_to_scache_t;
+} scache_to_shader_t;
 
 typedef struct packed {
   rayID_t rayID;
   
   vector_t p_int;
-
+  triID_t triID;
   logic is_miss;
   logic is_shadow;
   logic is_last;
+  logic is_dirpint;
 
-} scache_to_shader_t;
+} shader_to_scache_t;
 
 
 typedef struct packed {

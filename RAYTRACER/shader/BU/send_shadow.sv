@@ -20,8 +20,10 @@ module send_shadow(
 	`ifndef SYNTH
 
 	`endif
+  
+  assign = ; // TODO the scache_to_sendshadow_stall needs to be independent of the valid
 
-
+  
 	vector_t norm, light, p_int;
 	vector_t light_vec;
 	logic miss;

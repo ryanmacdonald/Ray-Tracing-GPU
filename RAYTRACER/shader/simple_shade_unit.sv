@@ -285,17 +285,17 @@ module simple_shader_unit(
 
   function color_t calc_color(logic is_hit, triID_t triID, logic bb_miss, logic is_shadow); // added bb_miss for testing
     casex ({bb_miss,is_shadow,is_hit})
-      3'b1?? : return 24'hff_00_ff; // added for testing
-      3'b010 : return 24'h80_80_80; 
+      3'b1?? : return 16'b11111_000000_11111; // ff_00_ff; // added for testing
+      3'b010 : return 16'b10000_100000_10000; // 80_80_80; 
       3'b000 : return `MISS_COLOR;
-      3'b011 : return 24'h00_00_ff ;
+      3'b011 : return 16'b00000_000000_11111; // 00_00_ff ;
       3'b001 : begin
         unique case(triID)
           16'h0 : return `TRI_0_COLOR;
           16'h1 : return `TRI_1_COLOR;
           16'h2 : return `TRI_2_COLOR;
           16'h3 : return `TRI_3_COLOR;
-          default: return 24'h00_00_00;
+          default: return 16'h00_00;
         endcase
       end
     endcase
