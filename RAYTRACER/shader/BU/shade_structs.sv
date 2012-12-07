@@ -15,30 +15,11 @@ typedef struct packed {
 
 typedef struct packed {
   rayID_t rayID;
-  vector_t p_int;
-  vector_t normal;
-  vector_t light;
-} scache_to_sendshadow_t;
-
-
-typedef struct packed {
-  rayID_t rayID;
   triID_t triID;
   logic is_miss;
   logic is_shadow;
   logic is_last;
 } triidstate_to_scache;
-
-
-typedef struct packed {
-  rayID_t rayID;
-  vector24_t normal;
-  float24_color_t f_color;
-  logic is_miss;
-  logic is_shadow;
-  logic is_last;
-
-} scache_to_dirpint_t;
 
 
 typedef struct packed {
@@ -51,23 +32,24 @@ typedef struct packed {
 
 typedef struct packed {
   rayID_t rayID;
-  float_t color;
+  float_color_t f_color;
+  float16_t spec; // RYAN ADD THIS
   logic is_last;
+
 } calc_direct_to_BM_t;
 
 
 
 typedef struct packed {
   rayID_t rayID;
-  float_t A; // ambient color of scene
   float_t K; // color of triangle
-  float_t C; // 
   logic is_shadow;
   logic is_miss;
   logic is_last;
   vector_t N; // Normal
   vector_t p_int;  // point of intersection
   vector_t L; // Light Position  // TODO get rid of this vector and do the L calculation within directcalc
+  float16_t spec;
 } dirpint_to_calc_direct_t;
 
 
@@ -81,6 +63,5 @@ typedef struct packed {
 typedef struct packed {
   pixelID_t pixelID;
   float_color_t f_color;
-
 } pixstore_to_cc_t;
 

@@ -10,10 +10,11 @@ module triidstate(
 
   input logic wren_triid,
   input triID_t triid_wrdata,
+  input logic is_spec_wrdata,
 
   output logic triidstate_to_scache_valid,
   output triidstate_to_scache_t triidstate_to_scache_data,
-  input logic triidstate_to_scache_stall,
+  input logic triidstate_to_scache_stall
 
   );
 
@@ -59,15 +60,23 @@ module triidstate(
   
   // triid block ram
   rayID_t raddr_triid;
-  pixelID_t rddata_triid;
+  struct packed {
+    triID_t triID;
+    logic is_spec;
+  } wdata_triid_bram, rddata_triid;
+  
+  always_comb begin
+    wdata_triid_bram.triID = triid_wdata;
+    wdata_triid_bram.is_spec = is_spec_wdata;
+  end
   assign raddr_triid = triidstate_data_us.rayID;
-
+  
   bram_dual_rw_512x16 triid_bram(
   //.aclr(rst),
   .rdaddress(raddr_triid),
   .wraddress(waddr_triid),
   .clock(clk),
-  .data(wdata_triid),
+  .data(wdata_triid_bram),
   .wren(wren_triid),
   .q(rddata_triid) );
 
@@ -95,8 +104,9 @@ module triidstate(
   .q(rddata_state) );
 
    logic is_last;
-  assign is_last = (triidstate_VSpipe_out.is_miss & ~triidstate_VSpipe_out.is_shadow) 
-                   | (triidstate_VSpipe_out.is_shadow & raddr_state == max_reflect) ;
+  assign is_last =   (triidstate_VSpipe_out.is_miss & ~triidstate_VSpipe_out.is_shadow) 
+                   | (triidstate_VSpipe_out.is_shadow & raddr_state == max_reflect)
+                   | (triidstate_VSpipe_out.is_shadow & ~rddata_triid.is_spec;
 
   assign wdata_state = is_last ? 4'h0 : raddr_state + 1'b1 ;
  
@@ -120,7 +130,7 @@ module triidstate(
   assign toscache_fifo_we = triidstate_VSpipe_valid_ds;
   always_comb begin
     toscache_fifo_in.rayID = tridstate_VSpipe_out.rayID ;
-    toscache_fifo_in.triID = rddata_triid ;
+    toscache_fifo_in.triID = rddata_triid.triID ;
     toscache_fifo_in.is_shadow = tridstate_VSpipe_out.is_shadow ;
     toscache_fifo_in.is_miss = tridstate_VSpipe_out.is_miss ;
     toscache_fifo_in.is_last = is_last;

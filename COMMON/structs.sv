@@ -13,6 +13,12 @@ typedef struct packed {
   logic sign;
   logic [7:0] exp;
   logic [14:0] man;
+} float16_t;
+
+typedef struct packed {
+  logic sign;
+  logic [7:0] exp;
+  logic [14:0] man;
 } float24_t;
 
 typedef struct packed {
@@ -35,11 +41,10 @@ typedef struct packed {
 
 } vector24_t;
 
-
-
 typedef struct packed {
   logic [15:0] ID;
 } triID_t;
+
 
 `ifndef SINT_DEMO
 typedef struct packed {
@@ -208,15 +213,31 @@ typedef struct packed {
 
 } norm_node_t;
 
-// TODO edit these appropriately
 typedef struct packed {
   rayID_t rayID;
+  vector24_t normal;
+  float24_color_t f_color;
+
+  float16_t spec;
+  
+  vector_t p_int;
+
+  logic is_miss;
+  logic is_shadow;
+  logic is_last;
+
 } shader_to_scache_t;
 
 typedef struct packed {
   rayID_t rayID;
-} scache_to_shader_t;
+  
+  vector_t p_int;
 
+  logic is_miss;
+  logic is_shadow;
+  logic is_last;
+
+} scache_to_shader_t;
 
 
 typedef struct packed {

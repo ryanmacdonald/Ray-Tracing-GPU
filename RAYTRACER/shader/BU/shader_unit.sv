@@ -8,7 +8,9 @@ module simple_shader_unit(
   input prg_ray_t prg_to_shader_data,
   output logic prg_to_shader_stall,
 
-  
+ 
+
+ // From pipeline representing completed rays
   input logic pcalc_to_shader_valid,
   input rs_to_pcalc_t pcalc_to_shader_data,
   output logic pcalc_to_shader_stall,
@@ -25,7 +27,21 @@ module simple_shader_unit(
   input ss_to_shader_t ss_to_shader_data,
   output logic ss_to_shader_stall,
 
+ 
+
+
+  // dealing with scache
+  input logic scache_to_shader_valid,
+  input scache_to_shader_t scache_to_shader_data,
+  output logic scache_to_shader_stall,
   
+  output logic shader_to_scache_valid,
+  output shader_to_scache_t shader_to_scache_data,
+  input logic shader_to_scache_stall,
+
+
+  // Other outputs of the shader
+
   output logic pb_we,
   input logic pb_full,
   output pixel_buffer_entry_t pb_data_out,
@@ -66,10 +82,10 @@ module simple_shader_unit(
 //------------------------------------------------------------------------
   // rayID initialization logic
   logic is_init, is_init_n;  // State bit for initializing 
-  rayID_t rayID_cnt, rayID_cnt_n;
-  assign rayID_cnt_n = is_init ? rayID_cnt + 1'b1 : 'h0 ;
-  assign is_init_n = is_init ? (rayID_cnt == 9'd511 ? 1'b0 : 1'b1) : 1'b0 ; // TODO: replace magic number with parameterized expression
-  ff_ar #($bits(rayID_t),'h0) rayID_cnt_buf(.d(rayID_cnt_n), .q(rayID_cnt), .clk, .rst);
+  rayID_t init_rayID, init_rayID_n;
+  assign init_rayID_n = is_init ? init_rayID + 1'b1 : 'h0 ;
+  assign is_init_n = is_init ? (init_rayID == 9'd511 ? 1'b0 : 1'b1) : 1'b0 ; // TODO: replace magic number with parameterized expression
+  ff_ar #($bits(rayID_t),'h0) init_rayID_buf(.d(init_rayID_n), .q(init_rayID), .clk, .rst);
   ff_ar #(1,1'b1) is_init_buf(.d(is_init_n), .q(is_init), .clk, .rst);
   
 
@@ -93,12 +109,12 @@ module simple_shader_unit(
 
 
 //------------------------------------------------------------------------
-  // hitstate
+  // triidstate
 
 
 
 //------------------------------------------------------------------------
-  // vec_store
+  // dirpint
 
 
 

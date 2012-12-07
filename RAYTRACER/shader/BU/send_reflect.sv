@@ -3,7 +3,8 @@
 
 
 
-module send_reflect(input logic clk, rst,
+module send_reflect(
+        input logic clk, rst,
 		    input logic v0, v1, v2,
 		    
 		    input logic dirpint_to_sendreflect_valid,
@@ -12,7 +13,8 @@ module send_reflect(input logic clk, rst,
 
 		    output logic shader_to_sint_valid,
 		    output shader_to_sint_t shader_to_sint_data,
-		    input logic shader_to_sint_stall);
+		    input logic shader_to_sint_stall
+        );
 
 	`ifndef SYNTH
 		shortreal refdirx, refdiry, refdirz;
