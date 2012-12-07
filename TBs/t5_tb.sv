@@ -254,7 +254,7 @@ module t5_tb;
         btns[0] <= 1'b1; */
         //$value$plusargs("SCENE=%s",sf);
         //kdfp = $fopen(sf, "rb");
-        kdfp = $fopen("SCENES/t4s3.scene","rb");
+        kdfp = $fopen("SCENES/bunny.scene","rb");
         r = $fread(file_contents,kdfp);
         $fclose(kdfp);
 
@@ -314,6 +314,8 @@ module t5_tb;
 		assign vga_col = t5.fbh.reader.vga_col;
 		vga_capture("screen.txt"); // NEW
 
+		$finish; // REMOVE
+
         @(posedge clk);
 		force t5.rp.prg_inst.scale = 3'd1;
         force t5.render_frame = 1'b1;
@@ -354,7 +356,6 @@ module t5_tb;
 
     final begin
         screen_dump_16("screen3.txt"); // perform screen dump
-        $finish; // necessary?
     end
 
     logic rst;

@@ -161,10 +161,13 @@ module fbh_reader(
 	logic [9:0] col_addr;
 	logic [19:0] row_addr;
 	logic [19:0] row_rs;
+	logic [19:0] reader_addr_d;
 	assign row_rs = (vga_row >> (5-scale));
 	assign row_addr = (row_rs <<  (4+scale)) +  (row_rs << (2+scale)); // 640 = 2^9 + 2^7. 9-(5-scale)=4+scale ; 7-(5-scale)=2+scale
-	assign col_addr = ((vga_col+1'b1) >> (3'd5-scale));
-	assign reader_addr =  row_addr + col_addr; // TODO: buffer reader_addr
+	assign col_addr = ((vga_col+2'd2) >> (3'd5-scale));
+	assign reader_addr_d =  row_addr + col_addr; // TODO: buffer reader_addr
+
+	ff_ar #(.W(20)) read_addr_reg(.q(reader_addr), .d(reader_addr_d), .clk, .rst);
 
     assign VGA_RGB = (stripes_sel) ? { stripes_color[2],7'b0, stripes_color[1],7'b0, stripes_color[0],7'b0} :
                                        {color_out.red, 3'b000, color_out.green, 2'b00, color_out.blue, 3'b000};
