@@ -12,7 +12,7 @@ typedef struct packed {
 typedef struct packed {
   logic sign;
   logic [7:0] exp;
-  logic [14:0] man;
+  logic [6:0] man;
 } float16_t;
 
 typedef struct packed {
@@ -212,6 +212,12 @@ typedef struct packed {
   logic high_empty;
 
 } norm_node_t;
+
+typedef struct packed {
+  vector24_t normal;
+  float24_color_t f_color;
+  float16_t spec;
+} scache_rdata_t;
 
 typedef struct packed {
   rayID_t rayID;

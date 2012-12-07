@@ -133,6 +133,9 @@ module raypipe_simple_caches (
 	int_to_shader_t int_to_shader_data ;
 	logic int_to_shader_stall ;
 
+	// scache to shader
+	scache_to_shader_t scache_to_shader;
+
 	// list_to_rs
 	logic list_to_rs_valid ;
 	list_to_rs_t list_to_rs_data ;
@@ -225,6 +228,30 @@ module raypipe_simple_caches (
   assign ic_ds_stall = icache_to_rs_stall;
 
 
+	////////// scache//////////////
+	shader_to_scache_t   sc_us_sb_data;
+	logic                sc_us_valid;
+	triID_t              sc_us_addr;
+	logic                sc_us_stall;
+	scache_rdata_t       sc_ds_rdata;
+	shader_to_scache_t   sc_ds_sb_data;
+	logic                sc_ds_valid;
+	logic                sc_ds_stall;
+
+	assign sc_us_addr = sc_us_sb_data.triID;
+
+	always_comb begin
+	    scache_to_shader.rayID      = sc_ds_sb_data.rayID;
+		scache_to_shader.normal     = sc_ds_rdata.normal;
+		scache_to_shader.f_color    = sc_ds_rdata.f_color;
+		scache_to_shader.spec       = sc_ds_rdata.spec;
+		scache_to_shader.p_int      = sc_ds_sb_data.p_int;
+		scache_to_shader.triID      = sc_ds_sb_data.triID;
+		scache_to_shader.is_miss    = sc_ds_sb_data.is_miss;
+		scache_to_shader.is_shadow  = sc_ds_sb_data.is_shadow;
+		scache_to_shader.is_last    = sc_ds_sb_data.is_last;
+		scache_to_shader.is_dirpint = sc_ds_sb_data.is_dirpint;
+	end
 
 	////////// t0cache//////////////
 	tarb_t t0c_us_sb_data;
@@ -277,6 +304,33 @@ module raypipe_simple_caches (
   assign lcache_to_icache_valid = lc_ds_valid;
 
 	
+  //////////////////////// Shader Cache ////////////////////////
+
+/*    simple_cache #(
+         .SIDE_W($bits(shader_to_scache_t)),
+         .ADDR_W(`S_ADDR_W),
+         .LINE_W(`S_LINE_W),
+         .BLK_W(`S_BLK_W),
+         .TAG_W(`S_TAG_W),
+         .INDEX_W(`S_INDEX_W),
+         .NUM_LINES(`S_NUM_LINES),
+         .BO_W(`S_BO_W),
+         .BASE_ADDR(`S_BASE_ADDR))
+		scache (
+			.segment_done,
+			.us_sb_data(sc_us_sb_data),
+			.us_valid(sc_us_valid),
+			.us_addr(sc_us_addr),
+			.us_stall(sc_us_stall),
+			.sl_io,
+			.sl_we,
+			.sl_addr,
+			.ds_rdata(sc_ds_rdata),
+			.ds_sb_data(sc_ds_sb_data),
+			.ds_valid(sc_ds_valid),
+			.ds_stall(sc_ds_stall),
+			.clk, .rst); */
+
   //////////////////////// Intersection Cache ////////////////////////
 
 	simple_cache #(

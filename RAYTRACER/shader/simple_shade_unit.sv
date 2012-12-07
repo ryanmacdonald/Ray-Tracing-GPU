@@ -290,7 +290,7 @@ module simple_shader_unit(
       3'b000 : return `MISS_COLOR;
       3'b011 : return 16'b00000_000000_11111; // 00_00_ff ;
       3'b001 : begin
-        unique case(triID)
+        unique case(triID % 4) // NEW
           16'h0 : return `TRI_0_COLOR;
           16'h1 : return `TRI_1_COLOR;
           16'h2 : return `TRI_2_COLOR;

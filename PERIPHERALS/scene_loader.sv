@@ -1,6 +1,6 @@
 `default_nettype none
 
-typedef enum logic [1:0] {KDTREE, LISTS, UTTM, COLORS_NORMS} SegType;
+typedef enum logic [2:0] {KDTREE, LISTS, UTTM, COLORS_NORMS, AABB} SegType;
 
 typedef struct packed {
 	logic getting_size;
@@ -10,6 +10,7 @@ typedef struct packed {
 } sl_state;
 
 module scene_loader(
+	output AABB_t sceneAABB,
     output logic [24:0] sl_addr, // SDRAM width
     output logic [31:0] sl_io, // SDRAM width
     output logic sl_we,
@@ -25,6 +26,7 @@ module scene_loader(
     input logic clk, rst
 );
 
+
 	// independent of checkpoint logic
 
     logic byte0_ready, byte1_ready, byte2_ready, byte3_ready;
@@ -37,10 +39,31 @@ module scene_loader(
 	logic [24:0] base_addr; // TODO: this can surely be made smaller
 
     logic [11:0] meta_block_num; // 8 + 5 = 13. 25 - 13 = 12.
-    logic [24:0] addr_offset;
 
 	logic [31:0] four_xmodem_bytes;
     logic [7:0] data_reg0, data_reg1, data_reg2;
+
+    logic dest_mem;
+    assign dest_mem = (cs.current_seg != AABB);
+
+	logic [5:0] aabb_sr_q;
+	logic en_sr;
+    assign en_sr = (cs.current_seg == AABB) && (received_four_bytes & ~cs.getting_size);
+	shifter #(.W(6), .RV(6'b100000)) aabb_sr(.q(aabb_sr_q), .d(1'b0), .en(en_sr), .clr(1'b0), .clk, .rst);
+
+/*	assign sceneAABB.xmin = 'h0;
+	assign sceneAABB.ymin = 'h0;
+	assign sceneAABB.zmin = 'h0;
+	assign sceneAABB.xmax = 32'h4000_0000; // $shortrealtobits(2);
+	assign sceneAABB.ymax = 32'h4000_0000; // $shortrealtobits(2);
+	assign sceneAABB.zmax = 32'h4000_0000; // $shortrealtobits(2); */
+
+	ff_ar_en #(.W(32)) aabb_xmin(.q(sceneAABB.xmin), .d(sl_io), .en(aabb_sr_q[5]), .clk, .rst);
+	ff_ar_en #(.W(32)) aabb_ymin(.q(sceneAABB.ymin), .d(sl_io), .en(aabb_sr_q[4]), .clk, .rst);
+	ff_ar_en #(.W(32)) aabb_zmin(.q(sceneAABB.zmin), .d(sl_io), .en(aabb_sr_q[3]), .clk, .rst);
+	ff_ar_en #(.W(32)) aabb_xmax(.q(sceneAABB.xmax), .d(sl_io), .en(aabb_sr_q[2]), .clk, .rst);
+	ff_ar_en #(.W(32)) aabb_ymax(.q(sceneAABB.ymax), .d(sl_io), .en(aabb_sr_q[1]), .clk, .rst);
+	ff_ar_en #(.W(32)) aabb_zmax(.q(sceneAABB.zmax), .d(sl_io), .en(aabb_sr_q[0]), .clk, .rst);
 
     sl_state is, cs, good_ns, ns;
     sl_state checkpoint, next_checkpoint;
@@ -53,7 +76,7 @@ module scene_loader(
 
     assign sl_done = xmodem_done;
     assign sl_io = four_xmodem_bytes;
-    assign sl_we = received_four_bytes & ~cs.getting_size;
+    assign sl_we = (received_four_bytes & ~cs.getting_size) & dest_mem;
 
     assign block_done = (byte_cnt == 7'd127);
     assign inc_meta_cnt = (sl_block_num == 8'd255 & xmodem_saw_valid_block);
@@ -100,9 +123,10 @@ module scene_loader(
 			case(cs.current_seg)
 				KDTREE: good_ns.current_seg = (segment_done) ? LISTS : KDTREE;
 				LISTS: good_ns.current_seg = (segment_done) ? UTTM : LISTS;
-//				UTTM: good_ns.current_seg = (segment_done) ? COLORS_NORMS : UTTM; // uncomment this when ready for shader cache
-				UTTM: good_ns.current_seg = (segment_done) ? KDTREE : UTTM; // comment when ready for shader cache
-				COLORS_NORMS: good_ns.current_seg = (segment_done) ? KDTREE : COLORS_NORMS;
+				UTTM: good_ns.current_seg = (segment_done) ? COLORS_NORMS : UTTM; // uncomment this when ready for shader cache
+//				UTTM: good_ns.current_seg = (segment_done) ? KDTREE : UTTM; // comment when ready for shader cache
+				COLORS_NORMS: good_ns.current_seg = (segment_done) ? AABB : COLORS_NORMS;
+				AABB: good_ns.current_seg = (segment_done) ? KDTREE : AABB;
 				default: good_ns.current_seg = KDTREE;
 			endcase
 		end

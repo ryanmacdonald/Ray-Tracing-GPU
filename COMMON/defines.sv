@@ -38,7 +38,7 @@
 	`define INIT_CAM_Y $shortrealtobits(0)
 	`define INIT_CAM_Z $shortrealtobits(1)
 */
-		//`define BUNNY
+	`define BUNNY
 	`ifdef BUNNY
 	  `define INIT_CAM_X $shortrealtobits(0.25) // 0.25
 	  `define INIT_CAM_Y $shortrealtobits(0) // 0.0
