@@ -111,15 +111,6 @@ module t_minus_5_days(
 	assign v1 = (cnt == 2'b01);
 	assign v2 = (cnt == 2'b10);
 
-
-	assign sceneAABB.xmin = 'h0;
-	assign sceneAABB.ymin = 'h0;
-	assign sceneAABB.zmin = 'h0;
-	assign sceneAABB.xmax = 32'h4000_0000; // $shortrealtobits(2);
-	assign sceneAABB.ymax = 32'h4000_0000; // $shortrealtobits(2);
-	assign sceneAABB.zmax = 32'h4000_0000; // $shortrealtobits(2);
-
-
 	// Module instantiations
 
 	////////////////// PS/2 //////////////////

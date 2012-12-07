@@ -3,7 +3,7 @@
 `define CLOCK_PERIOD 20
 
 `define MAX_PIXEL_IDS        `num_rays
-`define MAX_SCENE_FILE_BYTES 37000
+`define MAX_SCENE_FILE_BYTES 39000
 
 module t5_tb;
 
@@ -254,7 +254,7 @@ module t5_tb;
         btns[0] <= 1'b1; */
         //$value$plusargs("SCENE=%s",sf);
         //kdfp = $fopen(sf, "rb");
-        kdfp = $fopen("SCENES/bunny.scene","rb");
+        kdfp = $fopen("SCENES/bunny_color_aabb.scene","rb");
         r = $fread(file_contents,kdfp);
         $fclose(kdfp);
 
@@ -310,11 +310,13 @@ module t5_tb;
         good = $time - t;
         $display("length of render = %t, num cycles = %d",good,good/`CLOCK_PERIOD);
 
+		repeat(10) @(posedge clk);
+
+		$finish; // REMOVE
+
 		assign vga_row = t5.fbh.reader.vga_row;
 		assign vga_col = t5.fbh.reader.vga_col;
 		vga_capture("screen.txt"); // NEW
-
-		$finish; // REMOVE
 
         @(posedge clk);
 		force t5.rp.prg_inst.scale = 3'd1;
