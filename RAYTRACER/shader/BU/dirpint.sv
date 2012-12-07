@@ -58,16 +58,17 @@ module dirpint (
   logic dirpint_VSpipe_valid_ds, dirpint_VSpipe_stall_ds;
   logic [1:0] num_left_in_dirpint_fifo;
 
-  assign dirpint_VSpipe_valid_us = arb_to_dirpint_valid;
+  assign dirpint_VSpipe_valid_us = scache_to_dirpint_valid;
+  assign scache_to_dirpint_stall = dirpint_VSpipe_stall_us;
 
   always_comb begin
-    dirpint_VSpipe_in.rayID = scache_to_dirpnt.rayID;
-    dirpint_VSpipe_in.normal = scache_to_dirpnt.normal;
-    dirpint_VSpipe_in.f_color = scache_to_dirpnt.f_color;
-    dirpint_VSpipe_in.spec = scache_to_dirpnt.spec;
-    dirpint_VSpipe_in.is_miss = scache_to_dirpnt.is_miss;
-    dirpint_VSpipe_in.is_shadow = scache_to_dirpnt.is_shadow;
-    dirpint_VSpipe_in.is_last = scache_to_dirpnt.is_last;
+    dirpint_VSpipe_in.rayID = scache_to_dirpint_data.rayID;
+    dirpint_VSpipe_in.normal = scache_to_dirpint_data.normal;
+    dirpint_VSpipe_in.f_color = scache_to_dirpint_data.f_color;
+    dirpint_VSpipe_in.spec = scache_to_dirpint_data.spec;
+    dirpint_VSpipe_in.is_miss = scache_to_dirpint_data.is_miss;
+    dirpint_VSpipe_in.is_shadow = scache_to_dirpint_data.is_shadow;
+    dirpint_VSpipe_in.is_last = scache_to_dirpint_data.is_last;
   end
 
   pipe_valid_stall #(.WIDTH($bits(dirpint_VSpipe_in)), .DEPTH(2)) pipe_inst(
@@ -83,7 +84,7 @@ module dirpint (
 
   
 //------------------------------------------------------------------------
-  //fifo for dirpnt
+  //fifo for dirpint
 
 
   struct packed {

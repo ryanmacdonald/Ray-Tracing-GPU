@@ -17,14 +17,20 @@ module color_convert(
 
 
 
-
 	pixelID_t us_data, ds_data;
 	logic us_valid, ds_valid;
 	logic us_stall, ds_stall;
+	logic[4:0] num_left_in_fifo;
 	assign us_data = pixstore_to_cc_data.pixelID;
 	assign us_valid = pixstore_to_cc_valid && ~pixstore_to_cc_stall;
 	assign pixstore_to_cc_stall = us_stall && pixstore_to_cc_valid;
-	pvs3 #($bits(pixelID),13) pvs0(.);
+	pvs3 #($bits(pixelID),13) pvs0(.us_valid(us_valid),
+				       .us_data(us_data),
+				       .us_stall(us_stall),
+				       .ds_valid(ds_valid),
+				       .ds_data(ds_data),
+				       .ds_stall(ds_stall),
+				       .num_left_in_fifo(num_left_in_fifo));
 
 
 	color_t color_int;
@@ -34,10 +40,24 @@ module color_convert(
 			      .color_int(color_int));
 
 
-	pixstore_to_cc_t f_in, f_out;
+	pixel_buffer_entry_t f_in, f_out;
+	assign f_in.pixelID = ds_data;
+	assign f_in.color = color_int;
+	assign f_we = ds_valid;
+	assign f_re = cc_to_pixel_buffer_valid && ~cc_to_pixel_buffer_stall;
+	assign cc_to_pixel_buffer_valid = ~f_empty;
 	logic f_we, f_re, f_full, f_empty;
-	logic[4:0] num_left_in_fifo;
-	fifo #($bits(pixestore_to_cc_t),5) f(.);
+	fifo #($bits(pixel_buffer_entry_t),3) f(.data_in(f_in),	
+						.we(f_we),
+						.re(f_re),
+						.full(f_full),
+						.empty(f_empty),
+						.data_out(f_out),
+						.num_left_in_fifo(num_left_in_fifo)
+						.clk,.rst);
+
+	
+	assign cc_to_pixel_buffer_data = f_out;
 
 
 endmodule
@@ -50,7 +70,7 @@ endmodule
 module color_convert_pl(input float_color_t color_fp,
 			input logic clk, rst,
 			input logic v0, v1, v2, 
-			output color16_t color_int);
+			output color_t color_int);
 
 
 
@@ -91,6 +111,9 @@ module color_convert_pl(input float_color_t color_fp,
 	assign rb_d = out_fti[3:0];
 	ff_ar_en #(4,0) rb(.q(rb_q),.d(rb_d),.en(v2),.clk,.rst);
 
+	assign color_int.red = rr_q;
+	assign color_int.green = rg_q;
+	assign color_int.blue = rb_q;
 
 
 endmodule: color_convert_pl
