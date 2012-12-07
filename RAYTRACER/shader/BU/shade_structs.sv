@@ -42,9 +42,7 @@ typedef struct packed {
 
 typedef struct packed {
   rayID_t rayID;
-  float_t A; // ambient color of scene
   float_t K; // color of triangle
-  float_t C; // 
   logic is_shadow;
   logic is_miss;
   logic is_last;
@@ -65,6 +63,5 @@ typedef struct packed {
 typedef struct packed {
   pixelID_t pixelID;
   float_color_t f_color;
-
 } pixstore_to_cc_t;
 

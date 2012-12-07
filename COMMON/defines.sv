@@ -15,6 +15,7 @@
 
 `define FP_R2	 	 32'h3F35_04F3
 `define FP_NR2 		 32'hBF35_04F3
+`define FP_64		 32'h4280_0000
 `define FP_32		 32'h4200_0000
 `define FP_16		 32'h4180_0000
 `define FP_8		 32'h4100_0000

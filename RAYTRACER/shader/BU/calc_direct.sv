@@ -13,6 +13,8 @@
 
 module calc_direct(input logic clk, rst,
 		   input logic v0, v1, v2,
+		   input float_color_t ambient,
+		   input float_color_t light_color,
 
 		   output logic dirpint_to_calc_direct_stall,
 		   input dirpint_to_calc_direct_t dirpint_to_calc_direct_data,
