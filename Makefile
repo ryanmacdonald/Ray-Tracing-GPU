@@ -20,7 +20,7 @@ t9:
 	$(CC) $(FLAGS) -top t9_tb COMMON/*v COMMON/altfp*/*.v COMMON/bram/*v COMMON/altbram_fifo/*v TBs/t9_tb.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v SDRAM/submodules/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv CAMERA/*.sv RAYTRACER/raypipe_2trav.sv  RAYTRACER/*/*v PRG/*v  DEMOS/t9.sv PS2/*v
 
 t5:
-	$(CC) $(FLAGS) -top t5_tb COMMON/*v COMMON/altfp*/*.v COMMON/bram/*v COMMON/altbram_fifo/*v TBs/t5_tb.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v SDRAM/submodules/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv CAMERA/*.sv RAYTRACER/raypipe_simple_caches.sv  RAYTRACER/*/*v PRG/*v  DEMOS/t5.sv PS2/*v
+	$(CC) $(FLAGS) -top t5_tb COMMON/*v COMMON/altfp*/*.v COMMON/bram/*v COMMON/altbram_fifo/*v TBs/t5_tb.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v SDRAM/submodules/*v PERIPHERALS/sram.sv PERIPHERALS/simple_frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv CAMERA/*.sv RAYTRACER/raypipe_simple_caches.sv  RAYTRACER/*/*v PRG/*v  DEMOS/t5.sv PS2/*v
 
 t32:
 	$(CC) $(FLAGS) -top t32_tb COMMON/*v COMMON/altfp*/*.v TBs/t32_tb.sv SDRAM/*v SDRAM/submodules/*v SDRAM/qsys_sdram_mem_model/synthesis/submodules/*v SDRAM/submodules/*v PERIPHERALS/sram.sv PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/temporary_scene_retriever.sv PERIPHERALS/xmodem.sv PERIPHERALS/scene_loader.sv DEMOS/t32.sv
@@ -42,6 +42,9 @@ sl:
 
 fbh:
 	$(CC) $(FLAGS) -top fbh_tb COMMON/*v COMMON/altfp*/*v PERIPHERALS/frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/sram.sv TBs/fbh_tb.sv
+
+simple_fbh:
+	$(CC) $(FLAGS) -top simple_fbh_tb COMMON/*v COMMON/altfp*/*v PERIPHERALS/simple_frame_buffer_handler.sv PERIPHERALS/vga.sv PERIPHERALS/sram.sv TBs/simple_fbh_tb.sv
 
 prime_calc:
 	$(CC) $(FLAGS) -top tb_prime_calc COMMON/*v COMMON/altfp_mult/*.v COMMON/altfp_add/*.v RAYTRACER/int/prime_calc.sv RAYTRACER/int/TBs/tb_prim_calc.sv

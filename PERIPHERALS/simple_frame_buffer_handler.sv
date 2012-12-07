@@ -1,6 +1,7 @@
 `default_nettype none
 
 module simple_frame_buffer_handler(
+	output logic rendering_done,
     // interface with pixel buffer
     output logic pb_re,
     input logic [2:0] scale,
@@ -22,6 +23,15 @@ module simple_frame_buffer_handler(
     input logic stripes_sel,
     input logic clk, rst
 );
+
+    logic [19:0] num_rays;
+
+    assign num_rays = (640 >> (5-scale))*(480 >> (5-scale));
+
+	logic[18:0] rendcnt, rendcnt_n;
+	assign rendcnt_n = pb_re ? ( (rendcnt == (num_rays-1))? 19'b0 : rendcnt + 19'b1) : rendcnt;
+	ff_ar #(19,0) pb_cnt(.q(rendcnt),.d(rendcnt_n),.clk,.rst);
+	assign rendering_done = (rendcnt == num_rays-1'b1) & pb_re;
 
     logic sram_re_b;
     assign sram_oe_b = sram_re_b;
@@ -71,11 +81,16 @@ module fbh_writer(
     assign sram_we_b = ~(sram_re_b & ~pb_empty);
     assign pb_re = ~sram_we_b;
 
-    color16_t color_out;
+    color_t color_out;
 
-    assign color_out.red = pb_data.color.red[7:3];
-    assign color_out.green = pb_data.color.green[7:2];
-    assign color_out.blue = pb_data.color.blue[7:3];
+//    assign color_out.red = pb_data.color.red[7:3];
+//    assign color_out.green = pb_data.color.green[7:2];
+//    assign color_out.blue = pb_data.color.blue[7:3];
+
+    assign color_out.red = pb_data.color.red;
+    assign color_out.green = pb_data.color.green;
+    assign color_out.blue = pb_data.color.blue;
+
 
     assign pb_PID = pb_data.pixelID.pixelID;
     assign writer_addr = {1'b0, pb_PID}; // TODO: MSB should flip for double frame buffer
@@ -115,8 +130,10 @@ module fbh_reader(
     assign flip_active_off = (vga_col == 10'h27e);
     ff_ar_en #(1,1'b0) fbh_active_ff(.q(fbh_active), .d(flip_active_on), .en(flip_active_on | flip_active_off), .clk, .rst);
 
+ 	logic en_a, en_b;
+
 	logic reg_sel;
-    ff_ar_en #(1,1'b0) reg_sel_ff(.q(reg_sel), .d(~reg_sel), .en(fbh_active), .clk, .rst);
+    ff_ar_en #(1,1'b0) reg_sel_ff(.q(reg_sel), .d(~reg_sel), .en(fbh_active & (en_a | en_b)), .clk, .rst);
 
     range_check #(.W(10)) row_rc(
         .is_between(row_on_screen),
@@ -125,24 +142,29 @@ module fbh_reader(
     logic [3:0] sr_val;
 	shifter #(.W(4), .RV(4'b0001)) sr(.q(sr_val), .d(sr_val[0]), .en(fbh_active), .clr(1'b0), .clk, .rst);
  
- 	logic en_a, en_b;
-	assign en_a = sr_val[1];
-	assign en_b = sr_val[3];
+	assign en_a = sr_val[0];
+	assign en_b = sr_val[2];
 
-	assign sram_re_b = ~(en_a | en_b);
+	assign sram_re_b = ~((en_a | en_b) & fbh_active);
 
-	color16_t a_reg, b_reg;
+	color_t a_reg, b_reg;
 	ff_ar_en #(.W(16)) a_reg_inst(.q(a_reg), .d(reader_data), .en(en_a), .clk, .rst);
 	ff_ar_en #(.W(16)) b_reg_inst(.q(b_reg), .d(reader_data), .en(en_b), .clk, .rst);
 
-	color16_t color_out;
+	color_t color_out;
 	assign color_out = (reg_sel)? a_reg : b_reg;
 
     logic [2:0] stripes_color;
     stripes stripes_inst(.vga_color(stripes_color), .vga_row, .vga_col);
 
-	// TODO: 5-scale 
-	assign reader_addr = (vga_row * 640) >> (scale << 1) + (vga_col >> scale); // TODO: use concatenation
+	// NOTE: the +1 is to read ahead by one pixel
+	logic [9:0] col_addr;
+	logic [19:0] row_addr;
+	logic [19:0] row_rs;
+	assign row_rs = (vga_row >> (5-scale));
+	assign row_addr = (row_rs <<  (4+scale)) +  (row_rs << (2+scale)); // 640 = 2^9 + 2^7. 9-(5-scale)=4+scale ; 7-(5-scale)=2+scale
+	assign col_addr = ((vga_col+1'b1) >> (3'd5-scale));
+	assign reader_addr =  row_addr + col_addr; // TODO: buffer reader_addr
 
     assign VGA_RGB = (stripes_sel) ? { stripes_color[2],7'b0, stripes_color[1],7'b0, stripes_color[0],7'b0} :
                                        {color_out.red, 3'b000, color_out.green, 2'b00, color_out.blue, 3'b000};

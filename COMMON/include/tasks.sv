@@ -48,17 +48,18 @@ task send_byte(input bit [7:0] data);
 endtask: send_byte
 
 // used by screen dump
-int row, col;
 integer screen_file_handle;
 logic [7:0] upper_byte, lower_byte;
 int color_word_cnt;
 
+int row, col;
+
 task screen_dump(input string screen_file);
     color_word_cnt = 0;
     screen_file_handle = $fopen(screen_file,"w");
-    $fwrite(screen_file_handle, "%d %d 3\n",`VGA_NUM_ROWS, `VGA_NUM_COLS);
-    for(row=0; row < `VGA_NUM_ROWS; row++) begin
-        for(col=0; col < `VGA_NUM_COLS*3/2; col++) begin // NOTE: 3/2 ratio will change if we ever go to 16 bit color
+    $fwrite(screen_file_handle, "%d %d 3\n",`NUM_ROWS, `NUM_COLS);
+    for(row=0; row < `NUM_ROWS; row++) begin
+        for(col=0; col < `NUM_COLS*3/2; col++) begin // NOTE: 3/2 ratio will change if we ever go to 16 bit color
             upper_byte = sr.memory[color_word_cnt][15:8];
             lower_byte = sr.memory[color_word_cnt][7:0];
             color_word_cnt++;
@@ -71,4 +72,66 @@ task screen_dump(input string screen_file);
     end
 
     $fclose(screen_file_handle);
+endtask
+
+task screen_dump_16(input string screen_file);
+    color_word_cnt = 0;
+    screen_file_handle = $fopen(screen_file,"w");
+    $fwrite(screen_file_handle, "%d %d 3\n",`NUM_ROWS, `NUM_COLS);
+    for(row=0; row < `NUM_ROWS; row++) begin
+        for(col=0; col < `NUM_COLS; col++) begin
+            upper_byte = sr.memory[color_word_cnt][15:8];
+            lower_byte = sr.memory[color_word_cnt][7:0];
+            color_word_cnt++;
+            if(upper_byte === 8'bx)
+                upper_byte = 'b0;
+            if(lower_byte === 8'bx)
+                lower_byte = 'b0;
+            $fwrite(screen_file_handle, "%d %d %d ", {upper_byte[7:3],3'b00}, {upper_byte[2:0],lower_byte[7:5],2'b0}, {lower_byte[4:0],3'b00});
+        end
+    end
+
+    $fclose(screen_file_handle);
+endtask
+
+int capture_cnt;
+int max_out_at;
+
+task vga_capture(input string screen_file);
+
+	logic [7:0] red, green, blue;
+
+	max_out_at = 107200;
+
+	capture_cnt = 0;
+
+	$display("aligning to next screen...");
+
+	while(vga_row != 0) begin // align to the next screen
+		@(posedge clk);
+	end
+
+    screen_file_handle = $fopen(screen_file,"w");
+    $fwrite(screen_file_handle, "%d %d 3\n",480, 640);
+
+	while(capture_cnt < max_out_at) begin
+		if(vga_row >= 0 && vga_row < 480 && vga_col >= 0 && vga_col < 640) begin
+			red = VGA_RGB[23:16];
+			green = VGA_RGB[15:8];
+			blue = VGA_RGB[7:0];
+            $fwrite(screen_file_handle, "%d %d %d ", red, green, blue);
+			capture_cnt++;
+			if(capture_cnt % 1000 == 0)
+				$display("captured: %d",capture_cnt);
+		end
+		@(posedge clk);
+		@(posedge clk);
+	end
+
+	for(int i=0; i< 307200 - max_out_at; i++) begin
+        $fwrite(screen_file_handle, "%d %d %d ", 16'd0, 16'd0, 16'd0);
+	end
+
+    $fclose(screen_file_handle);
+
 endtask

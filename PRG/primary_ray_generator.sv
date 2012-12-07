@@ -9,7 +9,8 @@ module prg(input logic clk, rst,
 	       input vector_t E, U, V, W,
 	       input logic prg_to_shader_stall,
 	       output logic prg_to_shader_valid, 
-	       output prg_ray_t prg_to_shader_data);
+	       output prg_ray_t prg_to_shader_data,
+           output logic [2:0] scale);
 	
 	`ifndef SYNTH
 		shortreal px_q, py_q, pz_q;
@@ -67,7 +68,7 @@ module prg(input logic clk, rst,
 
 	// For now, scale is constant, eventually this will be assigned to
 	// three input switches or buttons or keys
-	logic[2:0] scale, scale_n;
+	logic[2:0] scale_n;
 	logic sr_en;
 	assign sr_en = valid_sr_key_press && (state == IDLE);
 	ff_ar_en #(3,`RES_SCALE) sr(.q(scale),.d(scale_n),.en(sr_en),.clk,.rst);

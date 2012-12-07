@@ -20,7 +20,8 @@ module raypipe_simple_caches (
   // Interface to Pixel Buffer
   output logic pb_we,
   input logic pb_full,
-  output pixel_buffer_entry_t pb_data_us
+  output pixel_buffer_entry_t pb_data_us,
+  output logic [2:0] scale
 
   );
 
@@ -371,7 +372,8 @@ module raypipe_simple_caches (
 		.keys(keys),
 		.prg_to_shader_stall,
 		.prg_to_shader_valid,
-		.prg_to_shader_data
+		.prg_to_shader_data,
+		.scale
 	);
 	
 
