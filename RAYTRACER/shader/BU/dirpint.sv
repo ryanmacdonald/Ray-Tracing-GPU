@@ -12,7 +12,7 @@ module dirpint (
   output logic scache_to_dirpint_stall,
   
   
-  input logic dirpint_to_calcdirect_stall,
+  input logic dirpint_to_calc_direct_stall,
   output dirpint_to_calc_direct_t dirpint_to_calc_direct_data,
   output logic dirpint_to_calc_direct_valid,
 
