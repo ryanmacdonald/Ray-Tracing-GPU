@@ -7,7 +7,7 @@ module dirpint (
   input logic we_dirpint,
   
   
-  input scache_to_dirpint_t scache_to_dirpint_data,
+  input scache_to_shader_t scache_to_dirpint_data,
   input logic scache_to_dirpint_valid,
   output logic scache_to_dirpint_stall,
   
@@ -47,7 +47,8 @@ module dirpint (
   struct packed {
     rayID_t rayID;
     vector24_t normal;
-    float24_T f_color;
+    float24_t f_color;
+    float16_t spec;
     logic is_miss;
     logic is_shadow;
     logic is_last;
@@ -58,12 +59,12 @@ module dirpint (
   logic [1:0] num_left_in_dirpint_fifo;
 
   assign dirpint_VSpipe_valid_us = arb_to_dirpint_valid;
-  assign dirpint_VSpipe_in = arb_to_dirpint_data.f_color;
 
   always_comb begin
     dirpint_VSpipe_in.rayID = scache_to_dirpnt.rayID;
     dirpint_VSpipe_in.normal = scache_to_dirpnt.normal;
     dirpint_VSpipe_in.f_color = scache_to_dirpnt.f_color;
+    dirpint_VSpipe_in.spec = scache_to_dirpnt.spec;
     dirpint_VSpipe_in.is_miss = scache_to_dirpnt.is_miss;
     dirpint_VSpipe_in.is_shadow = scache_to_dirpnt.is_shadow;
     dirpint_VSpipe_in.is_last = scache_to_dirpnt.is_last;
@@ -80,25 +81,44 @@ module dirpint (
     .num_left_in_fifo(num_left_in_dirpint_fifo) );
 
 
-
   
 //------------------------------------------------------------------------
   //fifo for dirpnt
 
 
-  dirpint_to_cc_t dirpint_fifo_in, dirpint_fifo_out;
+  struct packed {
+    rayID_t rayID;
+    vector24_t normal;
+    float24_t f_color;
+    float16_t spec;
+    
+    vector_t dir;
+    vector_t p_int;
+    
+    logic is_miss;
+    logic is_shadow;
+    logic is_last;
+
+  } dirpint_fifo_in, dirpint_fifo_out;
   
+
   logic dirpint_fifo_full;
   logic dirpint_fifo_empty;
   logic dirpint_fifo_re;
   logic dirpint_fifo_we;
 
   always_comb begin
-    dirpint_fifo_in.rayID = rddata_dirpint;
-    dirpint_fifo_in.f_color = dirpint_VSpipe_out; 
- // add more shit 
-  
+    dirpint_fifo_in.rayID = dirpint_VSpipe_out.rayID; 
+    dirpint_fifo_in.f_color = dirpint_VSpipe_out.f_color; 
+    dirpint_fifo_in.normal = dirpint_VSpipe_out.normal;
+    dirpint_fifo_in.spec = dirpint_VSpipe_out.spec;
+    dirpint_fifo_in.p_int = rddata_dirpint.origin;
+    dirpint_fifo_in.dir = rddata_dirpint.dir;
+    dirpint_fifo_in.is_miss = dirpint_VSpipe_out.is_miss;
+    dirpint_fifo_in.is_shadow = dirpint_VSpipe_out.is_shadow;
+    dirpint_fifo_in.is_last = dirpint_VSpipe_out.is_last;
   end
+  
   assign dirpint_fifo_re = ~dirpint_to_cc_stall & ~dirpint_fifo_empty;
   assign dirpint_fifo_we = dirpint_VSpipe_valid_ds;
   assign dirpint_VSpipe_stall_ds = dirpint_to_cc_stall;
@@ -117,42 +137,44 @@ module dirpint (
     .exists_in_fifo());
 
   logic good_to_sendreflect;
-  assign good_to_sendreflect = dirpint_fifo_out.is_last & dirpint_fifo_out.is_shadow
+  assign good_to_sendreflect = ~dirpint_fifo_out.is_last & dirpint_fifo_out.is_shadow ;
 
   logic ds_stall;
-  assign ds_stall = dirpint_to_calc_direct_stall | 
-                   (dirpint_to_sendreflect_stall & ~dirpint_fifo_out.is_last);
+  assign ds_stall = ~dirpint_fifo_empty & (dirpint_to_calc_direct_stall | 
+                   (dirpint_to_sendreflect_stall & good_to_sendreflect));
 
   
 
   // Output to sendreflect
   always_comb begin
-    dirpint_to_sendreflect = 
+    dirpint_to_sendreflect.rayID = dirpintfifo_out.rayID;
+    dirpint_to_sendreflect.normal = convert24_32(dirpintfifo_out.normal);
+    dirpint_to_sendreflect.p_int = dirpintfifo_out.p_int;
+    dirpint_to_sendreflect.dir = dirpintfifo_out.dir;
   end
-  assign 
+  assign dirpint_to_sendreflect_valid = good_to_send_reflect & ~dirpint_fifo_empty & ~ds_stall;
+
+  function vector_t convert24_32(vector24_t vec24);
+    vector_t r;
+    r.x = {vec24.x,8'h0};
+    r.y = {vec24.y,8'h0};
+    r.z = {vec24.z,8'h0};
+    return r;
+  endfunction
 
 
-typedef struct packed {
-  rayID_t rayID;
-  vector_t dir;
-  vector_t p_int; 
-  vector_t normal;
-} dirpint_to_sendreflect_t;
+  always_comb begin
+    dirpint_to_calc_direct.rayID = dirpintfifo_out.rayID;
+    dirpint_to_calc_direct.K = {dirpintfifo_out.f_color, 8'h0};
+    dirpint_to_calc_direct.is_shadow = dirpintfifo_out.is_shadow;
+    dirpint_to_calc_direct.is_miss = dirpintfifo_out.is_miss;
+    dirpint_to_calc_direct.is_last = dirpintfifo_out.is_last;
+    dirpint_to_calc_direct.N = {dirpintfifo_out.normal,8'h0};
+    dirpint_to_calc_direct.p_int = dirpintfifo_out.p_int;
+    dirpint_to_calc_direct.spec = dirpintfifo_out.spec;
+  end
+  assign dirpint_to_calc_direct_valid = ~dirpint_fifo_empty & ~ds_stall ;
 
-
-typedef struct packed {
-  rayID_t rayID;
-  float_t A; // ambient color of scene
-  float_t K; // color of triangle
-  float_t C; // 
-  logic is_shadow;
-  logic is_miss;
-  logic is_last;
-  vector_t N; // Normal
-  vector_t p_int;  // point of intersection
-  vector_t L; // Light Position  // TODO get rid of this vector and do the L calculation within directcalc
-} dirpint_to_calc_direct_t;
-
-
+  assign dirpint_fifo_re = ~dirpint_fifo_empty & ~ds_stall ;
 
 endmodule    
