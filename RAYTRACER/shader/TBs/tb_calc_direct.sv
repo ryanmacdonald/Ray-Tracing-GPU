@@ -8,6 +8,8 @@ module tb_calc_direct;
 
 	logic clk, rst;
 	logic v0, v1, v2;
+
+	float_color_t ambient, light_color;
 	
 	logic dirpint_to_calc_direct_stall;
 	dirpint_to_calc_direct_t dirpint_to_calc_direct_data;
@@ -30,10 +32,13 @@ module tb_calc_direct;
 
 
 	initial begin
-		
+	
+
+	
 		clk <= 1; rst <= 0;
 		dirpint_to_calc_direct_valid <= 0;
 		@(posedge clk);
+		test('h0,0.0,0.0,0.0,'h0,'h0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0);
 		rst <= 1;
 		@(posedge clk);
 		rst <= 0;
@@ -44,8 +49,8 @@ module tb_calc_direct;
 		     1.0,1.0,1.0,
 		     1'b1,1'b1,
 		     1.0,0.0,0.0,
-		     3.0,3.0,0.0,
-		     0.0,0.0,0.0);
+		     0.0,0.0,0.0,
+		     3.0,3.0,0.0,150);
 
 		@(posedge clk);
 
@@ -53,8 +58,8 @@ module tb_calc_direct;
 		     1.0,2.0,1.0,
 		     1'b1,1'b0,
 		     1.0,0.0,0.0,
-		     3.0,3.0,0.0,
-	             0.0,0.0,0.0); 	
+		     0.0,0.0,0.0,
+	             1.0,0.0,0.0,150); 	
 
 
 
@@ -67,11 +72,12 @@ module tb_calc_direct;
 
 
 	task test(logic[8:0] rID,
-		  shortreal Asr, Ksr, Csr,
+		  shortreal Kr, Kg, Kb,
 		  logic s, m,
 		  shortreal Nx, Ny, Nz,
 		  shortreal px, py, pz,
-		  shortreal Lx, Ly, Lz);
+		  shortreal Lx, Ly, Lz,
+		  int r);
 
 	
 		@(posedge clk) begin
@@ -80,13 +86,19 @@ module tb_calc_direct;
 
 			dirpint_to_calc_direct_data.rayID <= rID;
 		
-			dirpint_to_calc_direct_data.A <= $shortrealtobits(Asr);
+			ambient.red <= 32'h0;
+			ambient.green <= 32'h0;
+			ambient.blue <= 32'h0;
 			
-			dirpint_to_calc_direct_data.K <= $shortrealtobits(Ksr);
+			dirpint_to_calc_direct_data.K.red <= $shortrealtobits(Kr);
+			dirpint_to_calc_direct_data.K.green <= $shortrealtobits(Kg);
+			dirpint_to_calc_direct_data.K.blue <= $shortrealtobits(Kb);
 
-			dirpint_to_calc_direct_data.C <= $shortrealtobits(Csr);
+			light_color.red <= 32'h0;
+			light_color.green <= 32'h0;
+			light_color.blue <= 32'h0;
 	
-			dirpint_to_calc_direct_data.miss <= m;
+			dirpint_to_calc_direct_data.is_miss <= m;
 			dirpint_to_calc_direct_data.is_shadow <= s;			
 
 			dirpint_to_calc_direct_data.N.x <= $shortrealtobits(Nx);
@@ -106,7 +118,7 @@ module tb_calc_direct;
 		@(posedge clk) dirpint_to_calc_direct_valid <= 0;
 
 		
-		repeat(150) @(posedge clk);
+		repeat(r) @(posedge clk);
 
 
 	endtask

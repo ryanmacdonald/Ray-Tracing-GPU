@@ -32,17 +32,24 @@ typedef struct packed {
 
 typedef struct packed {
   rayID_t rayID;
-  float_color_t f_color;
+  float_color_t color;
   float16_t spec; // RYAN ADD THIS
   logic is_last;
 
 } calc_direct_to_BM_t;
 
 
+typedef struct packed {
+  rayID_t rayID;
+  float16_t spec;
+  logic is_last;
+} calc_dir_pvs_entry_t;
+
+
 
 typedef struct packed {
   rayID_t rayID;
-  float_t K; // color of triangle
+  float_color_t K; // color of triangle
   logic is_shadow;
   logic is_miss;
   logic is_last;
