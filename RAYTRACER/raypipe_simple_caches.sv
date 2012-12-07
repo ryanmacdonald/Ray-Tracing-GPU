@@ -277,6 +277,33 @@ module raypipe_simple_caches (
   assign lcache_to_icache_valid = lc_ds_valid;
 
 	
+  //////////////////////// Shader Cache ////////////////////////
+
+    simple_cahce #(
+         .SIDE_W($bits(lcache_to_icache_t)),
+         .ADDR_W(`S_ADDR_W),
+         .LINE_W(`S_LINE_W),
+         .BLK_W(`S_BLK_W),
+         .TAG_W(`S_TAG_W),
+         .INDEX_W(`S_INDEX_W),
+         .NUM_LINES(`S_NUM_LINES),
+         .BO_W(`S_BO_W),
+         .BASE_ADDR(`S_BASE_ADDR))
+		scache (
+			.segment_done,
+			.us_sb_data(sc_us_sb_data),
+			.us_valid(sc_us_valid),
+			.us_addr(sc_us_addr),
+			.us_stall(sc_us_stall),
+			.sl_io,
+			.sl_we,
+			.sl_addr,
+			.ds_rdata(sc_ds_rdata),
+			.ds_sb_data(sc_ds_sb_data),
+			.ds_valid(sc_ds_valid),
+			.ds_stall(sc_ds_stall),
+			.clk, .rst);
+
   //////////////////////// Intersection Cache ////////////////////////
 
 	simple_cache #(
