@@ -14,7 +14,7 @@ module triidstate(
 
   output logic triidstate_to_scache_valid,
   output triidstate_to_scache_t triidstate_to_scache_data,
-  input logic triidstate_to_scache_stall,
+  input logic triidstate_to_scache_stall
 
   );
 

@@ -33,7 +33,7 @@ module dirpint (
   ray_vec_t rddata_dirpint;
   assign raddr_dirpint = scache_to_dirpint_data.rayID;
 
-  bram_dual_rw_512x19 dirpint_bram(
+  bram_dual_rw_512x192 dirpint_bram(
   //.aclr(rst),
   .rdaddress(raddr_dirpint),
   .wraddress(waddr_dirpint),

@@ -11,7 +11,8 @@
 // TODO also noticed that you have no fifos to go along with pipe valid stall
 // TODO also the dirpint unit needs the upstream stalls to be independent of the valid coming in
 
-module calc_direct(input logic clk, rst,
+module calc_direct(
+       input logic clk, rst,
 		   input logic v0, v1, v2,
 		   input float_color_t ambient,
 		   input float_color_t light_color,
@@ -22,7 +23,9 @@ module calc_direct(input logic clk, rst,
 
 		   input logic calc_direct_to_BM_stall,
 		   output calc_direct_to_BM_t calc_direct_to_BM_data,
-		   output logic calc_direct_to_BM_valid);
+		   output logic calc_direct_to_BM_valid
+       
+       );
 
 	
 	
