@@ -1,0 +1,38 @@
+
+<scene>
+
+    <camera>
+        <fov v=".785"/>
+        <near_clip v=".01"/>
+        <far_clip v="100.0"/>
+        <position x="1.0" y="1.0" z="-1.25"/>
+        <orientation a="3.14" x="-0.707" y="-0.707" z="0.0"/>
+    </camera>
+
+    <background_color r="1.0" g="1.0" b="1.0"/>
+
+    <refractive_index v="1.0"/>
+
+    <ambient_light r="0.2" g="0.2" b="0.2"/>
+
+    <point_light>
+        <position x="0.0" y="2.0" z="5.0"/>
+        <color r="1.0" g="1.0" b="1.0"/>
+    </point_light>
+
+    <material name="magenta">
+        <refractive_index v="0.0"/>
+        <ambient r="1.0" g="0.0" b="1.0"/>
+        <diffuse r="0.7" g="0.0" b="1.0"/>
+        <specular r="0.4" g="0.0" b="0.2"/>
+    </material>
+
+    <mesh name="venus" filename="models/elephav.obj"/>
+
+    <model material="magenta" mesh="venus">
+        <position x="1.0" y="0.5" z="1.0"/>
+        <scale x="0.01" y="0.01" z="0.01"/>
+    </model>
+
+</scene>
+

@@ -1,0 +1,142 @@
+<scene>
+    <camera>
+        <fov v="1.57"/>
+        <near_clip v=".01"/>
+        <far_clip v="200.0"/>
+        <position x="1.0" y="1.0" z="-1.25"/>
+        <orientation a="3.14" x="-0.707" y="-0.707" z="0.0"/>
+    </camera>
+
+    <background_color r="0.4" g="0.4" b="0.4"/>
+    <refractive_index v="1.0"/>
+    <ambient_light r="0.2" g="0.2" b="0.2"/>
+
+    <point_light>
+        <position x="1.0" y="1.0" z="1.0"/>
+        <color r="1.0" g="1.0" b="1.0"/>
+    </point_light>
+
+    <material name="gray_tri0">
+        <diffuse r="0.5" g="0.5" b="0.5"/>
+        <specular r="0.5" g="0.5" b="0.5"/>
+    </material>
+
+    <material name="yellow_tri1">
+        <diffuse r="1.0" g="1.0" b="0.0"/>
+        <specular r="0.5" g="0.5" b="0.5"/>
+    </material>
+
+    <material name="green_tri2">
+        <diffuse r="0.0" g="1.0" b="0.0"/>
+        <specular r="0.5" g="0.5" b="0.5"/>
+    </material>
+
+    <material name="red_tri3">
+        <diffuse r="1.0" g="0.0" b="0.0"/>
+        <specular r="0.5" g="0.5" b="0.5"/>
+    </material>
+
+    <vertex name="f2" material="gray_tri0">
+        <position x="2.0" y="0.0" z="0.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="0.0" v="500.0"/>
+    </vertex>
+
+    <vertex name="f1" material="gray_tri0">
+        <position x="0.0" y="0.0" z="1.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="0.0" v="0.0"/>
+    </vertex>
+
+    <vertex name="f3" material="gray_tri0">
+        <position x="0.0" y="0.8" z="2.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="500.0" v="500.0"/>
+    </vertex>
+
+     <triangle material="gray_tri0">
+        <position x="0.0" y="0.0" z="0.0"/>
+        <vertex name="f2"/>
+        <vertex name="f1"/>
+        <vertex name="f3"/>
+    </triangle> 
+
+    <vertex name="f4" material="yellow_tri1">
+        <position x="2.0" y="1.4" z="0.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="500.0" v="0.0"/>
+    </vertex>
+
+    <vertex name="f5" material="yellow_tri1">
+        <position x="2.0" y="2.0" z="1.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="500.0" v="0.0"/>
+    </vertex>
+
+     <vertex name="f6" material="yellow_tri1">
+        <position x="1.5" y="2.0" z="0.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="500.0" v="0.0"/>
+    </vertex>
+
+     <triangle material="yellow_tri1">
+        <position x="0.0" y="0.0" z="0.0"/>
+        <vertex name="f5"/>
+        <vertex name="f4"/>
+        <vertex name="f6"/>
+    </triangle> 
+
+  
+    <vertex name="f7" material="green_tri2">
+        <position x="0.0" y="1.1" z="0.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="500.0" v="0.0"/>
+    </vertex>
+
+    <vertex name="f8" material="green_tri2">
+        <position x="0.0" y="2.0" z="0.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="500.0" v="0.0"/>
+    </vertex>
+
+     <vertex name="f9" material="green_tri2">
+        <position x="0.0" y="2.0" z="2.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="500.0" v="0.0"/>
+    </vertex>
+
+     <triangle material="green_tri2">
+        <position x="0.0" y="0.0" z="0.0"/>
+        <vertex name="f8"/>
+        <vertex name="f7"/>
+        <vertex name="f9"/>
+    </triangle> 
+
+	<vertex name="f10" material="red_tri3">
+        <position x="0.0" y="2.0" z="2.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="500.0" v="0.0"/>
+    </vertex>
+
+    <vertex name="f11" material="red_tri3">
+        <position x="0.0" y="1.0" z="2.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="500.0" v="0.0"/>
+    </vertex>
+
+     <vertex name="f12" material="red_tri3">
+        <position x="2.0" y="2.0" z="2.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="500.0" v="0.0"/>
+    </vertex>
+
+     <triangle material="red_tri3">
+        <position x="0.0" y="0.0" z="0.0"/>
+        <vertex name="f10"/>
+        <vertex name="f11"/>
+        <vertex name="f12"/>
+    </triangle> 
+
+
+
+</scene>

@@ -1,0 +1,166 @@
+README
+Author: Eric Butler <edbutler@andrew.cmu.edu>
+
+---------------------------------------------------------------------------
+Overview
+---------------------------------------------------------------------------
+
+In here you will find instructions for building the project and a
+short description of each source file.
+
+There is quite a bit of starter code for project 4. It contains math
+utility functions and classes, code to load the application, code to load
+models, and code to handle mouse/keyboard input.
+
+Report any bugs to the TAs.
+
+---------------------------------------------------------------------------
+Building the Code
+---------------------------------------------------------------------------
+
+Linux
+-------------------------
+
+Run 'make' to build the code. All builds are done in the 'bin/' directory,
+and the final binary is copied to the top-level directory.
+
+There are two build modes: debug and release. Debug is the default. Debug
+builds with no optimizations and debugging info, while release builds with
+optimizations and no debugging info. Run 'make MODE=debug' or
+'make MODE=release' to build the different modes. We highly suggest using
+debug mode while developing the code.
+
+NOTE: You be at a physical machine to build on school machines. Using
+ssh and X-forwarding will not work, and won't even compile. If you do
+not wish to be at school and don't have Linux on your home machine, we
+have a build for Visual Studio on Windows. You will, however, still have
+to make sure it works on the school machines.
+
+All needed libraries and headers are installed on school machines. If
+building on your own machine, you will need to install headers/libs for:
+-SDL
+-libpng
+
+Windows
+-------------------------
+
+For convenience, we provide a Visual Studio 2008 solution for the project.
+You can find it in the msvc/ folder. All needed external headers, libraries,
+and dlls are included.
+
+Visual C++ 2008 Express Edition is freely available and suitable for
+buildilng the project.
+
+Note: since the current directory will be the msvc/ folder when debugging, 
+the application will not correctly find the models/ folder at runtime.
+Therefore, you must either change the current directory for debugging or
+copy the models/ folder into the msvc/ folder.
+
+Note: Your program MUST COMPILE on the SCS Linux machines. If you use
+Windows, make sure to test on Linux well in advance of the deadline.
+
+---------------------------------------------------------------------------
+Running the Program
+---------------------------------------------------------------------------
+
+./binsol/debug/raytracer.exe [-r] [-d width height] input_scene [output_file]
+
+Options:
+
+    -r:
+        Raytraces the scene and saves to the output file without
+        loading a window or creating an opengl context.
+    -d width height
+        The dimensions of image to raytrace (and window if using
+        and opengl context. Defaults to width=800, height=600.
+    input_scene:
+        The scene file to load and raytrace.
+    output_file:
+        The output file in which to write the rendered images.
+        If not specified, default timestamped filenames are used.
+
+Instructions:
+
+    Press 'r' to raytrace the scene. Press 'r' again to go back to
+    go back to OpenGL rendering. Press 'f' to dump the most recently
+    raytraced image to the output file.
+
+    Use the mouse and 'w', 'a', 's', 'd', 'q', and 'e' to move the
+    camera around. The keys translate the camera, and left and right
+    mouse buttons rotate the camera.
+
+    If not using windowed mode (i.e., -r was specified), then output
+    image will be automatically generated and the program will exit.
+
+---------------------------------------------------------------------------
+C++ Notes
+---------------------------------------------------------------------------
+
+For the sake of simpler math routines and data structures, the code uses
+C++ over straight C. The code tries to stay away from most features of the
+language to keep it as simple as possible. This project attempts to break
+you into C++ easily.
+
+Questions about virtual functions, classes, or any C++ idioms are welcome.
+
+---------------------------------------------------------------------------
+Source Files and Directory Structure
+---------------------------------------------------------------------------
+
+The code base is rather big, so here's a description of the top-level
+directories and every header/source file pair we give you. You are free
+to edit any of them and add as many as you like, as long as the program
+behavior remains the same.
+
+You should have a look at:
+- writeup.txt
+- src/raytracer/raytracer.cpp and hpp
+- src/scene/*.hpp
+
+Note: we omit the '.cpp' or '.hpp' from the source file names
+in the follow listing.
+
+Legend:
+#   - must edit this file
+*   - should look at (header) file
+
+README              -- this file
+writeup.txt#        -- Description of your project and implementation.
+
+Makefile            -- makefile for the project.
+make.mk             -- more of the makefile.
+sources.mk          -- list of sources and target, edit to add new source files
+
+models/             -- models used in scenes.
+images/             -- textures used in scenes.
+scenes/*            -- scenes on which to test your program.
+reference_shots/*   -- images of each scene created with the referece solution
+
+msvc/               -- Visual Studio 2008 build files and solution.
+
+src/glsl/           == Project-specific files. Main file to edit is here.
+    main            -- Main function, application backend, and scene rendering.
+    raytracer#      -- Shell for implementation. This is the main file you
+                        must edit.
+
+src/application/    == General application files. You can ignore all of it.
+    application     -- SDL backend, runs main loop.
+    camera_roam     -- Functions for camera control via mouse and keyboard.
+    imageio         -- Functions to load and save PNG files.
+    opengl          -- Header to include correct OpenGL headers.
+    scene_loader    -- Code to load a scene from a file.
+
+src/math/           == Math utilities.
+    camera*         -- Camera class with functions to mutate.
+    color           -- A class for RGB colors and related functions.
+    math            -- Basic header and a few generic functions.
+    matrix          -- 3D, 4D matrix classes and several related functions.
+    quaternion      -- Quaternion class and several related functions--very
+                        useful for 3D rotations.
+    vector          -- 2D, 3D, 4D vector classes and many related functions.
+
+src/scene/          == Scene-specific files and rendering. You can ignore all
+                        of this (though you'll need to use it the raytracer).
+
+src/tinyxml/        == XML parser, used with scenes. You can ignore this.
+

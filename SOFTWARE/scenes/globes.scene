@@ -1,0 +1,111 @@
+
+<scene>
+    <camera>
+        <fov v=".785"/>
+        <near_clip v=".01"/>
+        <far_clip v="200.0"/>
+        <position x="0.0" y="8.0" z="14.0"/>
+        <orientation a="-0.50" x="1.0" y="0.0" z="0.0"/>
+    </camera>
+
+    <background_color r="0.4" g="0.4" b="0.4"/>
+
+    <refractive_index v="1.0"/>
+
+    <ambient_light r="0.0" g="0.0" b="0.0"/>
+
+    <point_light>
+        <position x="-10.0" y="5.0" z="10.0"/>
+        <color r="1.0" g="1.0" b="1.0"/>
+    </point_light>
+
+    <point_light>
+        <position x="14.0" y="8.0" z="10.0"/>
+        <color r="1.0" g="1.0" b="1.0"/>
+    </point_light>
+
+    <material name="crystal">
+        <refractive_index v="2.0"/>
+        <diffuse r="1.0" g="1.0" b="1.0"/>
+        <specular r="1.0" g="1.0" b="1.0"/>
+    </material>
+
+    <material name="floor" texture="images/tiles.png">
+        <ambient r="0.5" g="0.5" b="0.5"/>
+        <diffuse r="0.5" g="0.5" b="0.5"/>
+        <specular r="0.5" g="0.5" b="0.5"/>
+        <refractive_index v="0.0"/>
+    </material>
+
+    <material name="mirror">
+        <ambient r="0.0" g="0.0" b="0.0"/>
+        <diffuse r="0.0" g="0.0" b="0.0"/>
+        <specular r="0.5" g="0.5" b="0.5"/>
+        <refractive_index v="0.0"/>
+    </material>
+
+    <vertex name="f1" material="floor">
+        <position x="-2000.0" y="0.0" z="-2000.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="0.0" v="0.0"/>
+    </vertex>
+
+    <vertex name="f2" material="floor">
+        <position x="-2000.0" y="0.0" z="2000.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="0.0" v="500.0"/>
+    </vertex>
+
+    <vertex name="f3" material="floor">
+        <position x="2000.0" y="0.0" z="2000.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="500.0" v="500.0"/>
+    </vertex>
+
+    <vertex name="f4" material="floor">
+        <position x="2000.0" y="0.0" z="-2000.0"/>
+        <normal x="0.0" y="1.0" z="0.0"/>
+        <tex_coord u="500.0" v="0.0"/>
+    </vertex>
+ 
+     <triangle material="floor">
+        <position x="0.0" y="0.0" z="0.0"/>
+        <vertex name="f1"/>
+        <vertex name="f2"/>
+        <vertex name="f3"/>
+    </triangle> 
+
+     <triangle material="floor">
+        <position x="0.0" y="0.0" z="0.0"/>
+        <vertex name="f3"/>
+        <vertex name="f4"/>
+        <vertex name="f1"/>
+    </triangle> 
+
+    <sphere material="mirror">
+        <position x="0.0" y="3.8002" z="0.0"/>
+        <radius v="1.8"/>
+    </sphere>
+
+    <sphere material="mirror">
+        <position x="5.0" y="3.8002" z="0.0"/>
+        <radius v="1.8"/>
+    </sphere>
+
+    <sphere material="mirror">
+        <position x="-5.0" y="3.8002" z="0.0"/>
+        <radius v="1.8"/>
+    </sphere>
+
+    <sphere material="mirror">
+        <position x="-3.0" y="3.8002" z="-2.0"/>
+        <radius v="1.8"/>
+    </sphere>
+
+    <sphere material="mirror">
+        <position x="3.0" y="3.8002" z="-2.0"/>
+        <radius v="1.8"/>
+    </sphere>
+
+</scene>
+
