@@ -50,7 +50,7 @@ module calc_direct(
 			  dirpint_to_calc_direct_data.is_shadow &&
 			  dirpint_to_calc_direct_data.is_miss;
 	logic[5:0] p0_num_left_in_fifo;
-	pipe_valid_stall3 #($bits(calc_dir_pvs_entry_t),103) 
+	pipe_valid_stall3 #($bits(calc_dir_pvs_entry_t),108) 
 						pvs0(.us_valid(pvs0_us_valid&&~p0_stall),
 						    .us_stall(pvs0_us_stall),
 						    .us_data(pvs0_us_data),
@@ -177,7 +177,7 @@ module calc_direct(
 					     .stall_us({sa_p0_us_stall,sa_p1_us_stall,sa_p2_us_stall}),
 					     .data_us({sa_p0_data,sa_p1_data,sa_p2_data}),
 					     .valid_ds(calc_direct_to_BM_valid),
-					     .stall_ds(calc_direct_to_BM_valid),
+					     .stall_ds(calc_direct_to_BM_stall),
 					     .data_ds(calc_direct_to_BM_data),
 					     .clk,.rst);
 
@@ -188,6 +188,7 @@ module calc_direct(
 	assign pvs2_valid = dirpint_to_calc_direct_valid &&
 			    ~dirpint_to_calc_direct_data.is_shadow &&
 			    dirpint_to_calc_direct_data.is_miss;
+	assign sa_p2_us_valid = pvs2_valid;
 	assign pvs2_ds_stall = sa_p2_us_stall;
 	assign pvs2_ds_data.rayID = dirpint_to_calc_direct_data.rayID;
 	assign pvs2_ds_data.spec = dirpint_to_calc_direct_data.spec;
@@ -248,22 +249,27 @@ module shadow_and_miss_pl(input logic clk, rst,
 	// norm(L)
 
 
+	vector_t norm_buf, norm_buf_in;
+	assign norm_buf_in = norm_out;
+	ff_ar_en #($bits(vector_t),0) bf(.q(norm_buf),.d(norm_buf_in),.en(v0),.clk,.rst);
+
+
 	vector_t b0_out, b0_in;
 	assign b0_in = N;
-	buf_t1 #(63,$bits(vector_t)) b0(.data_out(b0_out),.data_in(b0_in),.v0,.clk,.rst );
+	buf_t1 #(65,$bits(vector_t)) b0(.data_out(b0_out),.data_in(b0_in),.v0,.clk,.rst );
 	// delay N
 
 
 	vector_t a_d, b_d;
 	float_t r_d;
 	assign a_d = b0_out;
-	assign b_d = norm_out;
-	dot_prod d(.a(a_d),.b(b_d),.result(r_d),.v0(v0),.v1(v1),.v2(v2),.clk,.rst);
+	assign b_d = norm_buf;
+	dot_prod d(.a(a_d),.b(b_d),.result(r_d),.v0(v1),.v1(v2),.v2(v0),.clk,.rst);
 	// dot(N,L)
 
 	
 	float_t a_mult0, b_mult0, r_mult0;
-	assign a_mult0 = 
+	assign a_mult0 = v1 ? C.red : (v2 ? C.green : C.blue);
 	assign b_mult0 = r_d;
 	altfp_mult mult0(.dataa(a_mult0),.datab(b_mult0),
 			 .result(r_mult0),.clock(clk),.aclr(rst),
@@ -272,7 +278,7 @@ module shadow_and_miss_pl(input logic clk, rst,
 
 
 	float_t a_add1, b_add1, res_add1;
-	assign a_add1 = A;
+	assign a_add1 = v0 ? A.red : (v1 ? A.green : A.blue);
 	assign b_add1 = r_mult0;
 	altfp_add add1(.dataa(a_add1),.datab(b_add1),
 		       .result(res_add1),.clock(clk),.aclr(rst),
@@ -282,7 +288,7 @@ module shadow_and_miss_pl(input logic clk, rst,
 
 	float_t b3_out, b3_in;
 	assign b3_in = v1 ? kr_out.red : ( v2 ? kr_out.green : kr_out.blue );
-	buf_t3 #(94,$bits(float_t)) b3(.data_out(b3_out),.data_in(b3_in),.clk,.rst);
+	buf_t3 #(96,$bits(float_t)) b3(.data_out(b3_out),.data_in(b3_in),.clk,.rst);
 	// delay K
 
 	float_t a_mult1, b_mult1, r_mult1;

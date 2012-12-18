@@ -133,7 +133,7 @@ module camera_controller(
 					render_frame = 1;
 					nextState = ROTATING;
 				end
-				else if(valid_key_press && ~valid_rot_key_press && rendering) begin
+				else if(valid_key_press && ~valid_rot_key_press && ~rendering) begin
 					ld_curr_camera = 1;
 					render_frame = 1;	
 					nextState = RENDERING;

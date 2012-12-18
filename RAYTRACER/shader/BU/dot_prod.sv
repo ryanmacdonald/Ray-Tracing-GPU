@@ -46,7 +46,8 @@ module dot_prod(input vector_t a, b,
 		       .nan(),.overflow(),.underflow(),.zero(),
 		       .clock(clk),.aclr(rst));
 
-	assign result = result_add2;
+
+	ff_ar_en #($bits(float_t),0) rr(.q(result),.d(result_add2),.en(v2),.clk,.rst);
 
 
 endmodule: dot_prod

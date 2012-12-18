@@ -37,6 +37,8 @@ module tb_calc_direct;
 	
 		clk <= 1; rst <= 0;
 		dirpint_to_calc_direct_valid <= 0;
+		calc_direct_to_BM_stall <= 0;
+		dirpint_to_calc_direct_data <= 'h0;
 		@(posedge clk);
 		test('h0,0.0,0.0,0.0,'h0,'h0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0);
 		rst <= 1;
@@ -59,7 +61,15 @@ module tb_calc_direct;
 		     1'b1,1'b0,
 		     1.0,0.0,0.0,
 		     0.0,0.0,0.0,
-	             1.0,0.0,0.0,150); 	
+	             1.0,0.0,0.0,150); 
+
+
+		test(9'hA5,
+		     1.0,1.0,1.0,
+		     1'b0,1'b1,
+		     1.0,1.0,1.0,
+		     0.0,0.0,0.0,
+		     0.0,0.0,0.0,150);	
 
 
 
